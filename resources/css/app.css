@@ -1,3 +1,5 @@
+/* resources/css/app.css */
+
 html,
 body {
     margin: 0;
@@ -11,5 +13,11 @@ body {
 }
 body {
     font-family: 'Poppins', sans-serif;
-    background: #f0f2f5;
+    background: #f9fafc;
+    color: #333;
+}
+
+.app-container {
+    display: flex;
+    height: 100vh;
 }

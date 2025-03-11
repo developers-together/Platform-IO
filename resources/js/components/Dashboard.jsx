@@ -1,8 +1,7 @@
-// resources/js/components/AppLayout.jsx
-import { FiCheck, FiMoon, FiSun, FiX } from 'react-icons/fi';
-import './AppLayout.css';
+// resources/js/components/Dashboard.jsx
+import { FiCheck, FiX } from 'react-icons/fi';
+import './Dashboard.css';
 
-// ----- TASKS CARD -----
 function TasksCard() {
     return (
         <div className="card tasks-card">
@@ -29,12 +28,11 @@ function TasksCard() {
     );
 }
 
-// ----- AI SUGGESTED ACTIONS CARD -----
 function AISuggestedActionsCard() {
     const suggestions = [
         'Refactor data layer for speed',
         'Integrate real-time notifications',
-        'Implement voice-to-text in messaging',
+        'Implement voice-to-text',
         'Schedule weekly code reviews',
     ];
     return (
@@ -55,7 +53,6 @@ function AISuggestedActionsCard() {
     );
 }
 
-// ----- UPCOMING EVENTS CARD -----
 function EventsCard() {
     return (
         <div className="card events-card">
@@ -69,7 +66,6 @@ function EventsCard() {
     );
 }
 
-// ----- CALENDAR CARD -----
 function CalendarCard() {
     const days = Array.from({ length: 30 }, (_, i) => i + 1);
     return (
@@ -94,22 +90,15 @@ function CalendarCard() {
     );
 }
 
-// ----- RECENT FILES CARD -----
 function RecentFilesCard() {
-    const files = [
-        { name: 'Proposal.pdf', type: 'pdf' },
-        { name: 'Design.sketch', type: 'sketch' },
-        { name: 'Report.docx', type: 'doc' },
-        { name: 'Budget.xlsx', type: 'xlsx' },
-    ];
+    const files = ['Proposal.pdf', 'Design.sketch', 'Report.docx', 'Budget.xlsx'];
     return (
         <div className="card files-card">
             <h3>Recent Files</h3>
             <ul>
-                {files.map((file, index) => (
-                    <li key={index}>
-                        <span className="file-icon">📄</span>
-                        {file.name}
+                {files.map((file, i) => (
+                    <li key={i}>
+                        <span className="file-icon">📄</span> {file}
                     </li>
                 ))}
             </ul>
@@ -117,7 +106,6 @@ function RecentFilesCard() {
     );
 }
 
-// ----- RECENT CHAT CARD -----
 function RecentChatCard() {
     const chats = [
         { user: 'Alice', message: 'I updated the wireframes.' },
@@ -128,10 +116,9 @@ function RecentChatCard() {
         <div className="card chat-card">
             <h3>Recent Chat</h3>
             <ul>
-                {chats.map((chat, index) => (
-                    <li key={index}>
-                        <strong>{chat.user}: </strong>
-                        <span>{chat.message}</span>
+                {chats.map((chat, i) => (
+                    <li key={i}>
+                        <strong>{chat.user}:</strong> {chat.message}
                     </li>
                 ))}
             </ul>
@@ -139,25 +126,19 @@ function RecentChatCard() {
     );
 }
 
-export default function AppLayout({ darkMode, setDarkMode }) {
+export default function Dashboard() {
     return (
-        <div className="app-layout">
-            {/* The sidebar is handled at a higher level, so we just do main content here */}
-            <div className={`main-content ${darkMode ? 'dark' : ''}`}>
-                <header className="top-header">
-                    <h2>Dashboard</h2>
-                    <div className="toggle-icon" onClick={() => setDarkMode(!darkMode)} title="Toggle Dark/Light Mode">
-                        {darkMode ? <FiSun /> : <FiMoon />}
-                    </div>
-                </header>
-                <div className="dashboard-grid">
-                    <TasksCard />
-                    <AISuggestedActionsCard />
-                    <EventsCard />
-                    <CalendarCard />
-                    <RecentFilesCard />
-                    <RecentChatCard />
-                </div>
+        <div className="dashboard-page">
+            <header className="db-header">
+                <h2>Dashboard</h2>
+            </header>
+            <div className="dashboard-grid">
+                <TasksCard />
+                <AISuggestedActionsCard />
+                <EventsCard />
+                <CalendarCard />
+                <RecentFilesCard />
+                <RecentChatCard />
             </div>
         </div>
     );

@@ -1,0 +1,172 @@
+/* Two-column layout: left panel + center chat */
+.chat-page-container {
+    display: grid;
+    grid-template-columns: 240px 1fr; /* static left panel width */
+    gap: 20px;
+    height: 100%;
+    padding: 20px;
+    background: #f9fafc;
+}
+
+/* LEFT PANEL (static, no collapse) */
+.left-panel {
+    background: #2f3136; /* Discord-like dark */
+    border-radius: 6px;
+    padding: 10px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Channels & DMs */
+.channel-section,
+.dm-section {
+    margin-bottom: 10px;
+}
+
+.channel-section h4,
+.dm-section h4 {
+    margin: 0 0 6px;
+    font-weight: 600;
+}
+
+.separator {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin: 8px 0;
+}
+
+.left-panel ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.left-panel li {
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.left-panel li:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* CENTER CHAT AREA */
+.chat-center {
+    background: #fff;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-header {
+    background: #f0f0f0;
+    padding: 10px 16px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-actions button {
+    margin-left: 8px;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 10px 16px;
+    overflow-y: auto;
+    background: #fafafa;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat-message {
+    display: flex;
+    gap: 10px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.msg-body {
+    background: #fff;
+    border-radius: 6px;
+    padding: 8px;
+    flex: 1;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.msg-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+.msg-user {
+    font-weight: 600;
+}
+.msg-time {
+    font-size: 0.8rem;
+    color: #888;
+}
+.msg-text {
+    margin-bottom: 6px;
+}
+.msg-actions {
+    display: none;
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    gap: 6px;
+}
+.msg-body:hover .msg-actions {
+    display: flex;
+}
+.msg-actions button {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #666;
+}
+
+/* Input bar */
+.chat-input {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 16px;
+    background: #f0f0f0;
+    border-top: 1px solid #ddd;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.chat-input button {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: #0052d4;
+}

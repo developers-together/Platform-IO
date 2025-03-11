@@ -1,0 +1,135 @@
+/* resources/js/components/Dashboard.css */
+
+.dashboard-page {
+    padding: 20px;
+    background: #f9fafc;
+    height: 100%;
+}
+
+.db-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.db-header h2 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+/* 3x2 card layout */
+.dashboard-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-auto-rows: 300px;
+}
+
+/* Card styling */
+.card {
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(8px);
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.card h3 {
+    margin: 0 0 15px;
+    font-size: 1.5rem;
+}
+
+.card ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.card li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+/* The "•••" tasks action */
+.action {
+    margin-left: auto;
+    color: #00b0ff;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+/* AI card accept/reject */
+.ai-card .ai-item {
+    position: relative;
+    justify-content: space-between;
+    padding: 6px 0;
+}
+.ai-actions {
+    display: none;
+    gap: 8px;
+}
+.ai-card .ai-item:hover .ai-actions {
+    display: flex;
+}
+.action-btn.accept {
+    color: #00b0ff;
+}
+.action-btn.reject {
+    color: #ff1744;
+}
+
+/* Calendar grid */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    flex: 1;
+}
+.calendar-day {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    position: relative;
+    font-size: 0.9rem;
+}
+.day-actions {
+    display: none;
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 4px;
+}
+.calendar-day:hover .day-actions {
+    display: flex;
+}
+.btn-accept,
+.btn-reject {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+/* Files & Chat */
+.files-card .file-icon {
+    margin-right: 8px;
+}
+.chat-card li {
+    margin-bottom: 8px;
+}

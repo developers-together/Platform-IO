@@ -1,3 +1,5 @@
+/* resources/js/components/AppLayout.css */
+
 :root {
     --bg-light: #f9fafc;
     --bg-dark: #121212;
@@ -5,8 +7,8 @@
     --text-dark: #e0e0e0;
     --card-bg-light: rgba(255, 255, 255, 0.85);
     --card-bg-dark: rgba(50, 50, 50, 0.85);
-    --accent-color-light: #00b0ff; /* Neon blue for light mode */
-    --accent-color-dark: #0077cc; /* Darker blue for dark mode */
+    --accent-color-light: #00b0ff;
+    --accent-color-dark: #0077cc;
     --transition-speed: 0.3s;
     --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
     --shadow-dark: 0 4px 12px rgba(0, 0, 0, 0.4);
@@ -14,8 +16,7 @@
 
 .app-layout {
     display: flex;
-    min-height: 100vh;
-    font-family: 'Poppins', sans-serif;
+    flex: 1;
 }
 
 /* Main content area */
@@ -71,7 +72,7 @@
     gap: 20px;
 }
 
-/* Card styling with hover effect */
+/* Card styling */
 .card {
     background-color: var(--card-bg-light);
     border-radius: 16px;
@@ -119,11 +120,7 @@
     font-size: 1rem;
 }
 
-.card li input[type='checkbox'] {
-    margin-right: 10px;
-}
-
-/* Action dots (for tasks) */
+/* Action dots for tasks */
 .action {
     margin-left: auto;
     color: var(--accent-color-light);
@@ -131,7 +128,7 @@
     font-size: 1.2rem;
 }
 
-/* --- AI Card specific --- */
+/* AI Card */
 .ai-card .ai-item {
     display: flex;
     align-items: center;
@@ -162,7 +159,7 @@
     color: #ff1744;
 }
 
-/* --- Calendar Card --- */
+/* Calendar Card */
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -200,7 +197,7 @@
     font-size: 1rem;
 }
 
-/* --- Files & Chat Cards --- */
+/* Files & Chat Cards */
 .files-card .file-icon {
     margin-right: 8px;
 }
