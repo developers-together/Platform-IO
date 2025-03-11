@@ -1,0 +1,210 @@
+:root {
+    --bg-light: #f9fafc;
+    --bg-dark: #121212;
+    --text-light: #333;
+    --text-dark: #e0e0e0;
+    --card-bg-light: rgba(255, 255, 255, 0.85);
+    --card-bg-dark: rgba(50, 50, 50, 0.85);
+    --accent-color-light: #00b0ff; /* Neon blue for light mode */
+    --accent-color-dark: #0077cc; /* Darker blue for dark mode */
+    --transition-speed: 0.3s;
+    --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-dark: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Main content area */
+.main-content {
+    flex: 1;
+    padding: 20px;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    transition:
+        background-color var(--transition-speed),
+        color var(--transition-speed);
+    overflow-y: auto;
+}
+
+.main-content.dark {
+    background-color: var(--bg-dark);
+    color: var(--text-dark);
+}
+
+/* Header */
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.top-header h2 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+.toggle-icon {
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: var(--accent-color-light);
+    transition: transform var(--transition-speed);
+}
+
+.main-content.dark .toggle-icon {
+    color: var(--accent-color-dark);
+}
+
+.toggle-icon:hover {
+    transform: scale(1.1);
+}
+
+/* Dashboard grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-auto-rows: 300px;
+    gap: 20px;
+}
+
+/* Card styling with hover effect */
+.card {
+    background-color: var(--card-bg-light);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow-light);
+    backdrop-filter: blur(8px);
+    transition:
+        background-color var(--transition-speed),
+        box-shadow var(--transition-speed),
+        transform 0.2s;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.main-content.dark .card {
+    background-color: var(--card-bg-dark);
+    box-shadow: var(--shadow-dark);
+}
+
+/* Card headings */
+.card h3 {
+    margin: 0 0 15px;
+    font-size: 1.5rem;
+}
+
+/* List styles */
+.card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.card li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.card li input[type='checkbox'] {
+    margin-right: 10px;
+}
+
+/* Action dots (for tasks) */
+.action {
+    margin-left: auto;
+    color: var(--accent-color-light);
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+/* --- AI Card specific --- */
+.ai-card .ai-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    position: relative;
+}
+
+.ai-card .ai-actions {
+    display: none;
+    gap: 8px;
+}
+
+.ai-card .ai-item:hover .ai-actions {
+    display: flex;
+}
+
+.ai-card .action-btn {
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.ai-card .action-btn.accept {
+    color: var(--accent-color-light);
+}
+
+.ai-card .action-btn.reject {
+    color: #ff1744;
+}
+
+/* --- Calendar Card --- */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    flex: 1;
+}
+
+.calendar-day {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    position: relative;
+    font-size: 0.9rem;
+}
+
+.day-actions {
+    display: none;
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 4px;
+}
+
+.calendar-day:hover .day-actions {
+    display: flex;
+}
+
+.btn-accept,
+.btn-reject {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+/* --- Files & Chat Cards --- */
+.files-card .file-icon {
+    margin-right: 8px;
+}
+
+.chat-card li {
+    margin-bottom: 8px;
+}
