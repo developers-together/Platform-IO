@@ -1,16 +1,18 @@
-/* Two-column layout: left panel + center chat */
+/* resources/js/components/ChatPage.css */
+
+/* Layout: Two-column: Left Panel (static) and Center Chat */
 .chat-page-container {
     display: grid;
-    grid-template-columns: 240px 1fr; /* static left panel width */
+    grid-template-columns: 240px 1fr;
     gap: 20px;
     height: 100%;
     padding: 20px;
     background: #f9fafc;
 }
 
-/* LEFT PANEL (static, no collapse) */
+/* LEFT PANEL */
 .left-panel {
-    background: #2f3136; /* Discord-like dark */
+    background: #2f3136;
     border-radius: 6px;
     padding: 10px;
     color: #fff;
@@ -19,7 +21,6 @@
     gap: 10px;
 }
 
-/* Channels & DMs */
 .channel-section,
 .dm-section {
     margin-bottom: 10px;
@@ -81,6 +82,7 @@
     border: none;
     font-size: 1.1rem;
     cursor: pointer;
+    color: #0052d4;
 }
 
 .chat-messages {
@@ -118,16 +120,20 @@
     justify-content: space-between;
     margin-bottom: 4px;
 }
+
 .msg-user {
     font-weight: 600;
 }
+
 .msg-time {
     font-size: 0.8rem;
     color: #888;
 }
+
 .msg-text {
     margin-bottom: 6px;
 }
+
 .msg-actions {
     display: none;
     position: absolute;
@@ -135,9 +141,11 @@
     bottom: 8px;
     gap: 6px;
 }
+
 .msg-body:hover .msg-actions {
     display: flex;
 }
+
 .msg-actions button {
     background: none;
     border: none;
@@ -146,14 +154,21 @@
     color: #666;
 }
 
-/* Input bar */
+/* CHAT INPUT AREA */
 .chat-input {
     display: flex;
-    gap: 10px;
-    align-items: center;
+    flex-direction: column;
+    gap: 8px;
     padding: 10px 16px;
     background: #f0f0f0;
     border-top: 1px solid #ddd;
+}
+
+.chat-input-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
 }
 
 .chat-input input {
@@ -169,4 +184,41 @@
     font-size: 1.3rem;
     cursor: pointer;
     color: #0052d4;
+}
+
+/* IMAGE PREVIEW */
+.image-preview-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.image-preview {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.remove-image-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: background 0.2s;
+}
+
+.remove-image-btn:hover {
+    background: #ccc;
 }

@@ -1,2 +1,6 @@
 /vendor
+<<<<<<< Updated upstream
 /platformio
+=======
+platformio
+>>>>>>> Stashed changes
