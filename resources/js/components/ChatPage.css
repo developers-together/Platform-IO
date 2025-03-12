@@ -154,6 +154,42 @@
     color: #666;
 }
 
+/* REPLY BLOCK INSIDE A MESSAGE */
+.reply-container {
+    display: flex;
+    align-items: flex-start;
+    background-color: #f2f3f5;
+    border-radius: 6px;
+    padding: 6px 8px;
+    margin-bottom: 6px; /* spacing above main message content */
+    position: relative;
+    color: #555;
+}
+
+.reply-arrow {
+    margin-right: 6px;
+    color: #aaa;
+    display: flex;
+    align-items: center;
+}
+
+.reply-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.reply-user {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.reply-text {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: #666;
+}
+
 /* CHAT INPUT AREA */
 .chat-input {
     display: flex;
@@ -186,7 +222,35 @@
     color: #0052d4;
 }
 
-/* IMAGE PREVIEW */
+/* If user is replying to a message, show a small block above the input */
+.reply-preview {
+    display: flex;
+    align-items: center;
+    background: #f2f3f5;
+    padding: 6px 8px;
+    border-radius: 6px;
+    gap: 8px;
+}
+
+.reply-preview span {
+    font-size: 0.85rem;
+    color: #555;
+}
+
+.cancel-reply {
+    background: rgba(0, 0, 0, 0.2);
+    border: none;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* IMAGE PREVIEW (above input) */
 .image-preview-container {
     position: relative;
     width: 100%;
