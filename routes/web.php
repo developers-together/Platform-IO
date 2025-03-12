@@ -19,14 +19,18 @@ require __DIR__.'/auth.php';
 
 
 Route::get('/tasks/index', [TaskController::class, 'index']);
-Route::get('/tasks/json', [TaskController::class, 'getTasks']); // API for calendar
+Route::get('/tasks/json', [TaskController::class, 'getTasks']);
 Route::post('/tasks/store', [TaskController::class, 'store'])->name('tasks.store');
 Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 Route::put('/tasks/{id}', [TaskController::class, 'update'])->name('tasks.update');
 
 Route::get('/event/index', [CalendarController::class, 'index']);
-Route::get('/event/json', [CalendarController::class, 'getTasks']); // API for calendar
+Route::get('/event/json', [CalendarController::class, 'getTasks']);
 Route::post('/event/store', [CalendarController::class, 'store'])->name('event.store');
 Route::delete('/event/{id}', [CalendarController::class, 'destroy'])->name('event.destroy');
 Route::put('/event/{id}', [CalendarController::class, 'update'])->name('event.update');
 
+Route::post('/chats', [ChatController::class, 'create']);
+Route::post('/chats/join', [ChatController::class, 'joinChat']);
+Route::post('/messages', [MessageController::class, 'sendMessage']);
+Route::get('/messages/{groupId}', [MessageController::class, 'getMessages']);
