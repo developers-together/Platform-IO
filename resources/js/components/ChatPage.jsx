@@ -1,11 +1,12 @@
 import { FiCornerUpLeft, FiMoreHorizontal, FiPaperclip, FiPhone, FiSend, FiSmile, FiTrash2, FiVideo } from 'react-icons/fi';
 import './ChatPage.css';
+import { useState } from "react";
 
 export default function ChatPage() {
     // Example data
     const channels = ['General', 'Project X', 'Design'];
     const dms = ['Alice', 'Bob', 'Charlie'];
-    const messages = [
+    const [messages,setMessages] = useState([
         {
             id: 1,
             user: 'Alice',
@@ -27,7 +28,24 @@ export default function ChatPage() {
             text: 'I’m good, thanks!',
             time: '10:03 AM',
         },
-    ];
+    ]);
+    const [inputText, setInputText] = useState("");
+    const sendMessage = () => {
+        if (inputText.trim() === "") return; // Don't send empty messages
+        const newMessage = {
+            id: messages.length > 0 ? messages[messages.length - 1].id+1 : 0 , // Unique ID
+            user: "You", // Change this dynamically if needed
+            avatar: "https://icons.veryicon.com/png/o/miscellaneous/rookie-official-icon-gallery/225-default-avatar.png",
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            text: inputText,
+        };
+        // Update state with new message
+        setMessages([...messages, newMessage]);
+        setInputText(""); // Clear input after sending
+    };
+    const deleteMessage = (id) => {
+        setMessages((prevMessages) => prevMessages.filter((msg) => msg.id !== id));
+    };
 
     return (
         <div className="chat-page-container">
@@ -86,7 +104,7 @@ export default function ChatPage() {
                                     <button>
                                         <FiSmile />
                                     </button>
-                                    <button>
+                                    <button onClick={() => deleteMessage(msg.id)}>
                                         <FiTrash2 />
                                     </button>
                                 </div>
@@ -99,8 +117,14 @@ export default function ChatPage() {
                     <button>
                         <FiPaperclip />
                     </button>
-                    <input type="text" placeholder="Type a message..." />
-                    <button>
+                    <input id="chatinput" 
+                    type="text" 
+                    placeholder="Type a message..." 
+                    onChange={(e) => setInputText(e.target.value)} 
+                    value={inputText}
+                    onKeyDown={(e) => e.key === "Enter" && sendMessage()}/>
+                    <button id="sendbutton" 
+                    onClick={sendMessage}>
                         <FiSend />
                     </button>
                 </div>
