@@ -258,9 +258,14 @@
     justify-content: flex-start;
 }
 
+.highlight {
+    background-color: rgb(174, 174, 174); /* Or any highlight color */
+    transition: background-color 1s ease-in-out;
+}
+
 .image-preview {
-    max-width: 200px;
-    max-height: 200px;
+    max-width: 100px;
+    max-height: 100px;
     border-radius: 8px;
     object-fit: cover;
 }

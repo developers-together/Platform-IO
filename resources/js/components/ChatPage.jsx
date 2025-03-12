@@ -80,6 +80,17 @@ export default function ChatPage() {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    const messageRefs = useRef({});
+    const [highlightedMessage, setHighlightedMessage] = useState(null);
+    const scrollToMessage = (replyingTo) => {
+        console.log(replyingTo);
+        if (replyingTo) {
+            messageRefs.current[replyingTo.id].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        setHighlightedMessage(replyingTo.id);
+        setTimeout(() => setHighlightedMessage(null), 1000);  // change second arguement to change highlight duration default(1000)
+    };
+
     return (
         <div className="chat-page-container">
             {/* LEFT PANEL */}
@@ -122,7 +133,9 @@ export default function ChatPage() {
 
                 <div className="chat-messages">
                     {messages.map((msg) => (
-                        <div key={msg.id} className="chat-message">
+                        <div key={msg.id} 
+                        ref={(el) => (messageRefs.current[msg.id] = el)}
+                        className="chat-message">
                             {/* If avatar is empty, fallback to default avatar (optional) */}
                             {msg.avatar ? (
                                 <img className="avatar" src={msg.avatar} alt={msg.user} />
@@ -130,10 +143,13 @@ export default function ChatPage() {
                                 <Avatar name={msg.user} options={{ size: '64', rounded: true }} className="avatar" />
                             )}
 
-                            <div className="msg-body">
+                            <div
+                            key={msg.id}
+                            className={`msg-body ${highlightedMessage === msg.id ? 'highlight' : ''}`}
+                            >
                                 {/* If this message is replying to another, show the reply container */}
                                 {msg.replyTo && (
-                                    <div className="reply-container">
+                                    <div className="reply-container" onClick={() => scrollToMessage(msg.replyTo)} style={{ cursor: 'pointer', color: 'blue' }}>
                                         <div className="reply-arrow">
                                             {/* small arrow icon or inline svg */}
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
