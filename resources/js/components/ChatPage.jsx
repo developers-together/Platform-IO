@@ -111,8 +111,8 @@ useEffect(() => {
                                     <span className="msg-user">{msg.user}</span>
                                     <span className="msg-time">{msg.time}</span>
                                 </div>
-                                <div className="msg-text">{msg.text}</div>
-                                {msg.image && <img src={msg.image} alt="Uploaded" ref={chatEndRef} style={{ maxWidth: "100%", maxHeight: "200px", borderRadius: "8px" }}/>}
+                                {msg.image && <img src={msg.image} alt="Uploaded" style={{ maxWidth: "100%", maxHeight: "200px", borderRadius: "8px" }}/>}
+                                <div className="msg-text" ref={chatEndRef}>{msg.text}</div>
                                 <div className="msg-actions">
                                     <button>
                                         <FiCornerUpLeft />
