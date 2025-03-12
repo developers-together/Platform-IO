@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { FiCornerUpLeft, FiMoreHorizontal, FiPaperclip, FiPhone, FiSend, FiSmile, FiTrash2, FiVideo } from 'react-icons/fi';
 import './ChatPage.css';
 import { useRef, useState, useEffect} from "react";
