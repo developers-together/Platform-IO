@@ -1,5 +1,5 @@
-// resources/js/components/Dashboard.jsx
-import { FiCheck, FiX } from 'react-icons/fi';
+import { useState } from 'react';
+import { FiCheck, FiChevronDown, FiChevronUp, FiX } from 'react-icons/fi';
 import './Dashboard.css';
 
 function TasksCard() {
@@ -7,21 +7,45 @@ function TasksCard() {
         <div className="card tasks-card">
             <h3>My Tasks</h3>
             <ul>
-                <li>
-                    <input type="checkbox" /> Finalize project architecture
-                    <span className="action">•••</span>
+                {/* Each list item is now a "task-item" row */}
+                <li className="task-item">
+                    <div className="task-left">
+                        <input type="checkbox" />
+                        <span className="task-name">Finalize project architecture</span>
+                    </div>
+                    <span className="task-options">•••</span>
                 </li>
-                <li>
-                    <input type="checkbox" /> Develop UI prototypes
-                    <span className="action">•••</span>
+
+                <li className="task-item">
+                    <div className="task-left">
+                        <input type="checkbox" />
+                        <span className="task-name">Develop UI prototypes</span>
+                    </div>
+                    <span className="task-options">•••</span>
                 </li>
-                <li>
-                    <input type="checkbox" /> Optimize code performance
-                    <span className="action">•••</span>
+
+                <li className="task-item">
+                    <div className="task-left">
+                        <input type="checkbox" />
+                        <span className="task-name">Optimize code performance</span>
+                    </div>
+                    <span className="task-options">•••</span>
                 </li>
-                <li>
-                    <input type="checkbox" /> Update technical docs
-                    <span className="action">•••</span>
+
+                <li className="task-item">
+                    <div className="task-left">
+                        <input type="checkbox" />
+                        <span className="task-name">Update technical docs</span>
+                    </div>
+                    <span className="task-options">•••</span>
+                </li>
+
+                <li className="task-item">
+                    <div className="task-left">
+                        <input type="checkbox" />
+                        <span className="task-name">Update technical docs</span>
+                    </div>
+                    <span className="task-options">•••</span>
                 </li>
             </ul>
         </div>
@@ -54,13 +78,42 @@ function AISuggestedActionsCard() {
 }
 
 function EventsCard() {
+    const events = [
+        {
+            time: '10:00–11:00',
+            title: 'Meeting with a client',
+            desc: 'Tell How To Boost Website Traffic',
+        },
+        {
+            time: '05:40–13:20',
+            title: 'Visit online course',
+            desc: 'Check updates about design course',
+        },
+        {
+            time: '9:00–13:00',
+            title: 'Design new UI and check sales',
+            desc: 'Tell How To Boost Website Traffic',
+        },
+    ];
+
     return (
         <div className="card events-card">
-            <h3>Upcoming Events</h3>
+            <h3 className="events-title">Upcoming events</h3>
             <ul>
-                <li>12/05 - Virtual Hackathon Kickoff</li>
-                <li>15/05 - UX Design Workshop</li>
-                <li>20/05 - Team Strategy Meeting</li>
+                {events.map((evt, idx) => (
+                    <li key={idx} className="event-item">
+                        <div className="event-time-dot">
+                            {/* Dot for color bullet */}
+                            <span className="dot"></span>
+                            <span className="event-time">{evt.time}</span>
+                        </div>
+                        <div className="event-info">
+                            <div className="event-title">{evt.title}</div>
+                            <div className="event-desc">{evt.desc}</div>
+                        </div>
+                        <div className="event-options">•••</div>
+                    </li>
+                ))}
             </ul>
         </div>
     );
@@ -68,37 +121,51 @@ function EventsCard() {
 
 function CalendarCard() {
     const days = Array.from({ length: 30 }, (_, i) => i + 1);
+
+    // Example array of days that have events
+    const eventDays = [3, 10, 15, 21];
+
     return (
         <div className="card calendar-card">
             <h3>Calendar</h3>
             <div className="calendar-grid">
-                {days.map((day) => (
-                    <div key={day} className="calendar-day">
-                        {day}
-                        <div className="day-actions">
-                            <button className="btn-accept" title="Accept Event">
-                                <FiCheck />
-                            </button>
-                            <button className="btn-reject" title="Reject Event">
-                                <FiX />
-                            </button>
+                {days.map((day) => {
+                    // Check if this day has an event
+                    const hasEvent = eventDays.includes(day);
+
+                    return (
+                        <div key={day} className="calendar-day">
+                            {day}
+                            {hasEvent && <span className="event-dot"></span>}
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
 }
 
 function RecentFilesCard() {
-    const files = ['Proposal.pdf', 'Design.sketch', 'Report.docx', 'Budget.xlsx'];
+    // Example data—adjust as you like
+    const files = [
+        { name: 'IDs', type: 'folder' },
+        { name: 'Design.sketch', type: 'file' },
+        { name: 'Report.docx', type: 'file' },
+        { name: 'Budget.xlsx', type: 'file' },
+    ];
+
     return (
         <div className="card files-card">
             <h3>Recent Files</h3>
             <ul>
                 {files.map((file, i) => (
-                    <li key={i}>
-                        <span className="file-icon">📄</span> {file}
+                    <li className="file-item" key={i}>
+                        <div className="file-left">
+                            {/* For a folder, show a folder icon; for a file, show something else. */}
+                            <span className="file-icon">{file.type === 'folder' ? '📁' : '📄'}</span>
+                            <span className="file-name">{file.name}</span>
+                        </div>
+                        <span className="file-options">•••</span>
                     </li>
                 ))}
             </ul>
@@ -107,18 +174,51 @@ function RecentFilesCard() {
 }
 
 function RecentChatCard() {
-    const chats = [
-        { user: 'Alice', message: 'I updated the wireframes.' },
-        { user: 'Bob', message: 'The API is now faster!' },
-        { user: 'Charlie', message: "Let's schedule a meeting." },
-    ];
+    const [groups, setGroups] = useState([
+        {
+            name: 'UI Design',
+            isOpen: true,
+            messages: [
+                { user: 'Charlie', text: 'We need a new color scheme.' },
+                { user: 'Bob', text: 'How about a fresh gradient?' },
+            ],
+        },
+        {
+            name: 'Team Alpha',
+            isOpen: false,
+            messages: [
+                { user: 'Alice', text: 'Just finished the wireframes!' },
+                { user: 'Bob', text: "Great, I'll review them soon." },
+            ],
+        },
+    ]);
+
+    // Toggle open/close by flipping isOpen
+    const toggleGroup = (index) => {
+        setGroups((prev) => prev.map((grp, i) => (i === index ? { ...grp, isOpen: !grp.isOpen } : grp)));
+    };
+
     return (
         <div className="card chat-card">
             <h3>Recent Chat</h3>
             <ul>
-                {chats.map((chat, i) => (
-                    <li key={i}>
-                        <strong>{chat.user}:</strong> {chat.message}
+                {groups.map((group, idx) => (
+                    <li key={idx} className="chat-group-card">
+                        {/* Header row (full width) */}
+                        <div className="chat-group-header" onClick={() => toggleGroup(idx)}>
+                            <span className="dot2"></span>
+                            <span className="chat-group-name">{group.name}</span>
+                            {group.isOpen ? <FiChevronUp className="chat-group-arrow" /> : <FiChevronDown className="chat-group-arrow" />}
+                        </div>
+
+                        {/* Instead of conditionally rendering, always render w/ a class toggle */}
+                        <div className={`chat-group-body ${group.isOpen ? 'open' : ''}`}>
+                            {group.messages.map((msg, i) => (
+                                <div key={i} className="chat-group-message">
+                                    <strong>{msg.user}:</strong> {msg.text}
+                                </div>
+                            ))}
+                        </div>
                     </li>
                 ))}
             </ul>

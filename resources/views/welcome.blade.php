@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Futuristic Control Center</title>
+  <title>Platform-IO</title>
   @viteReactRefresh
   @vite('resources/js/app.jsx')
   <!-- Google Font -->
