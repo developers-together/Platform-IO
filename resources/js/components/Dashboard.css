@@ -101,6 +101,52 @@
     gap: 8px; /* space between checkbox & text */
 }
 
+.circular-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #b9bbbe;
+    border-radius: 50%;
+    outline: none;
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    transition: border-color 0.2s; /* Add transition for hover effect */
+}
+
+.circular-checkbox:hover {
+    border-color: #5a5b5c; /* Hover effect */
+}
+
+.circular-checkbox:checked {
+    border-color: #29b31c; /* Change color when checked */
+}
+
+.circular-checkbox:checked::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background-color: #29b31c; /* Change color when checked */
+    border-radius: 50%;
+}
+
+.circular-checkbox + .task-name {
+    transition:
+        text-decoration 0.3s ease,
+        color 0.3s ease;
+}
+
+.circular-checkbox:checked + .task-name {
+    text-decoration: line-through;
+    color: #888;
+}
+
 /* Right side: the three-dot action */
 .task-options {
     font-size: 1.2rem;
@@ -383,9 +429,9 @@
     color: #555;
 }
 
-.dot2 {
+.chat-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #f13e3c;
+    background: #29b31c;
 }
