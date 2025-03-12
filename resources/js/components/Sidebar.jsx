@@ -7,7 +7,7 @@ export default function Sidebar({ currentPage, setCurrentPage, sidebarOpen, setS
         { icon: <FiMenu />, label: 'Menu', page: null },
         { icon: <FiHome />, label: 'Dashboard', page: 'dashboard' },
         { icon: <FiMessageSquare />, label: 'Chat', page: 'chat' },
-        { icon: <FiCheckSquare />, label: 'Tasks', page: null },
+        { icon: <FiCheckSquare />, label: 'Tasks', page: 'Tasks' },
         { icon: <FiCalendar />, label: 'Calendar', page: null },
         { icon: <FiCpu />, label: 'AI', page: null },
     ];

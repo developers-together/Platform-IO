@@ -1,21 +1,25 @@
-// resources/js/app.jsx
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import '../css/app.css';
 import ChatPage from './components/ChatPage';
 import Dashboard from './components/Dashboard';
 import Sidebar from './components/Sidebar';
+import TasksPage from './components/TasksPage';
 
-function App() {
-    // Switch pages
+export default function App() {
     const [currentPage, setCurrentPage] = useState('dashboard');
-    // Toggle sidebar open/closed
+    // Toggle for the collapsible sidebar, if you’re using that
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
     return (
-        <div className="app-container">
+        <div style={{ display: 'flex', height: '100vh' }}>
             <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-            <div style={{ flex: 1 }}>{currentPage === 'dashboard' ? <Dashboard /> : <ChatPage />}</div>
+            <div style={{ flex: 1 }}>
+                {currentPage === 'dashboard' && <Dashboard />}
+                {currentPage === 'chat' && <ChatPage />}
+                {currentPage === 'Tasks' && <TasksPage />}
+                {/* Add other pages as needed */}
+            </div>
         </div>
     );
 }
