@@ -10,7 +10,7 @@ function TasksCard() {
                 {/* Each list item is now a "task-item" row */}
                 <li className="task-item">
                     <div className="task-left">
-                        <input type="checkbox" />
+                        <input type="checkbox" className="circular-checkbox" />
                         <span className="task-name">Finalize project architecture</span>
                     </div>
                     <span className="task-options">•••</span>
@@ -18,7 +18,7 @@ function TasksCard() {
 
                 <li className="task-item">
                     <div className="task-left">
-                        <input type="checkbox" />
+                        <input type="checkbox" className="circular-checkbox" />
                         <span className="task-name">Develop UI prototypes</span>
                     </div>
                     <span className="task-options">•••</span>
@@ -26,7 +26,7 @@ function TasksCard() {
 
                 <li className="task-item">
                     <div className="task-left">
-                        <input type="checkbox" />
+                        <input type="checkbox" className="circular-checkbox" />
                         <span className="task-name">Optimize code performance</span>
                     </div>
                     <span className="task-options">•••</span>
@@ -34,7 +34,7 @@ function TasksCard() {
 
                 <li className="task-item">
                     <div className="task-left">
-                        <input type="checkbox" />
+                        <input type="checkbox" className="circular-checkbox" />
                         <span className="task-name">Update technical docs</span>
                     </div>
                     <span className="task-options">•••</span>
@@ -42,7 +42,7 @@ function TasksCard() {
 
                 <li className="task-item">
                     <div className="task-left">
-                        <input type="checkbox" />
+                        <input type="checkbox" className="circular-checkbox" />
                         <span className="task-name">Update technical docs</span>
                     </div>
                     <span className="task-options">•••</span>
@@ -206,7 +206,7 @@ function RecentChatCard() {
                     <li key={idx} className="chat-group-card">
                         {/* Header row (full width) */}
                         <div className="chat-group-header" onClick={() => toggleGroup(idx)}>
-                            <span className="dot2"></span>
+                            <span className="chat-dot"></span>
                             <span className="chat-group-name">{group.name}</span>
                             {group.isOpen ? <FiChevronUp className="chat-group-arrow" /> : <FiChevronDown className="chat-group-arrow" />}
                         </div>
