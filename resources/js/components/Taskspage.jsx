@@ -1,14 +1,6 @@
 // resources/js/components/TasksPage.jsx
 import { useState } from 'react';
-import {
-    FiCheckSquare, // new check icon for completed tasks
-    FiChevronDown,
-    FiChevronUp,
-    FiEdit2,
-    FiPlus,
-    FiStar,
-    FiTrash2,
-} from 'react-icons/fi';
+import { FiCheckSquare, FiChevronDown, FiChevronUp, FiEdit2, FiPlus, FiStar, FiTrash2 } from 'react-icons/fi';
 import './TasksPage.css';
 
 export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, setCurrentPage }) {
@@ -21,7 +13,7 @@ export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, se
     const [completed, setCompleted] = useState([{ id: 101, text: 'Set up repo', completed: true, starred: false, editing: false }]);
 
     const [newTask, setNewTask] = useState('');
-    const [showCompleted, setShowCompleted] = useState(true); // default: show
+    const [showCompleted, setShowCompleted] = useState(true);
     const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
     // add new task
@@ -66,7 +58,6 @@ export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, se
         setCompleted((prev) => prev.filter((t) => t.id !== id));
         setTasks((prev) => {
             const updated = [...prev, found];
-            // starred tasks at front
             return updated.sort((a, b) => b.starred - a.starred);
         });
     };
@@ -76,7 +67,7 @@ export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, se
         setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, editing: true } : t)));
     };
 
-    // save an edit
+    // save edit
     const handleEditSave = (id, newText) => {
         setTasks((prev) =>
             prev.map((t) => {
@@ -88,7 +79,7 @@ export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, se
         );
     };
 
-    // star/unstar => reorder tasks so starred are at front
+    // star/unstar => reorder tasks
     const handleStar = (id) => {
         setTasks((prev) => {
             const updated = prev.map((t) => {
@@ -101,16 +92,12 @@ export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, se
         });
     };
 
-    // render a single active task row
     const renderTaskRow = (task) => {
         const { id, text, starred, editing } = task;
-
         return (
-            <div className="task-row" key={id}>
-                {/* Circle for completing */}
+            <div className="task-row glass-card" key={id}>
                 <span className="circle-check" onClick={() => handleCompleteTask(id)}></span>
 
-                {/* If editing, show input; else text */}
                 {editing ? (
                     <input
                         className="task-edit-input"
@@ -127,14 +114,13 @@ export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, se
                     <span className={`task-text ${starred ? 'starred-text' : ''}`}>{text}</span>
                 )}
 
-                {/* Icons: star is always visible, plus edit + trash on hover */}
+                {/* always show star, hover for edit/trash */}
                 <div className="task-icons">
                     <FiStar className={`task-icon star-icon ${starred ? 'starred' : ''}`} onClick={() => handleStar(id)} />
                     <FiEdit2 className="task-icon edit-icon" onClick={() => handleEditTask(id)} />
                     <FiTrash2 className="task-icon delete-icon" onClick={() => setConfirmDeleteId(id)} />
                 </div>
 
-                {/* Confirm bubble for deletion */}
                 {confirmDeleteId === id && (
                     <div className="confirm-bubble fade-in">
                         <span>Delete task?</span>
@@ -146,26 +132,20 @@ export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, se
         );
     };
 
-    // render a single completed task row
-    const renderCompletedRow = (task) => {
-        return (
-            <div className="task-row completed" key={task.id}>
-                <FiCheckSquare className="completed-check" onClick={() => handleUncompleteTask(task.id)} />
-                <span className="completed-text">{task.text}</span>
-            </div>
-        );
-    };
+    const renderCompletedRow = (task) => (
+        <div className="task-row completed glass-card" key={task.id}>
+            <FiCheckSquare className="completed-check" onClick={() => handleUncompleteTask(task.id)} />
+            <span className="completed-text">{task.text}</span>
+        </div>
+    );
 
     return (
         <div className="tasks-page-wrapper">
             <div className="tasks-page-content">
-                {/* Header on top */}
-                <header className="tasks-header">Project name - Team name</header>
+                <header className="tasks-header">Team name - project name</header>
 
-                {/* Main tasks center */}
                 <div className="tasks-center">{tasks.map((t) => !t.completed && renderTaskRow(t))}</div>
 
-                {/* Completed tasks immediately below */}
                 <div className="completed-section">
                     <div className="completed-header" onClick={() => setShowCompleted(!showCompleted)}>
                         Completed tasks {showCompleted ? <FiChevronUp /> : <FiChevronDown />}
@@ -173,8 +153,7 @@ export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, se
                     {showCompleted && <div className="completed-container">{completed.map((t) => renderCompletedRow(t))}</div>}
                 </div>
 
-                {/* Full-width add task at the bottom */}
-                <div className="add-task-bar">
+                <div className="add-task-bar glass-card">
                     <span className="plus-icon" onClick={handleAddTask} title="Add Task">
                         <FiPlus />
                     </span>
@@ -184,9 +163,7 @@ export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, se
                         value={newTask}
                         onChange={(e) => setNewTask(e.target.value)}
                         onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                handleAddTask();
-                            }
+                            if (e.key === 'Enter') handleAddTask();
                         }}
                     />
                 </div>

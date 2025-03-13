@@ -21,8 +21,9 @@
 .dashboard-grid {
     display: grid;
     gap: 20px;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     grid-auto-rows: 300px;
+    grid-auto-flow: dense;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
 /* Card styling */
@@ -159,24 +160,111 @@
     color: #5a5b5c;
 }
 
-/* AI card accept/reject */
-.ai-card .ai-item {
+/* AI Card Styling */
+.ai-card {
+    background: linear-gradient(135deg, #0052d4, #4364f7);
+    color: white;
+    grid-row: span 2;
+    grid-column: -2; /* Positions card in the second last column */
+    border: 1px solid rgba(255, 255, 255, 0.15);
     position: relative;
-    justify-content: space-between;
-    padding: 6px 0;
+    overflow: hidden;
 }
-.ai-actions {
-    display: none;
-    gap: 8px;
-}
-.ai-card .ai-item:hover .ai-actions {
+
+.ai-card h3 {
+    color: white;
+    font-size: 1.8rem;
     display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    position: relative;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
+
+.ai-card ::-webkit-scrollbar {
+    display: none;
+}
+
+/* AI Icon styling */
+.ai-card h3::before {
+    content: '🤖';
+    font-size: 2rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* AI List Items */
+.ai-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+}
+
+.ai-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Update action button styles */
+.ai-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 12px;
+}
+
+.action-btn {
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    background: transparent;
+    border: 1.5px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5px;
+}
+
 .action-btn.accept {
-    color: #00b0ff;
+    color: #34d399;
+    border-color: rgba(255, 255, 255, 0.3);
 }
+
+.action-btn.accept:hover {
+    background: #34d399;
+    color: white;
+    border-color: transparent;
+}
+
 .action-btn.reject {
-    color: #ff1744;
+    color: #f87171;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.action-btn.reject:hover {
+    background: #f87171;
+    color: white;
+    border-color: transparent;
+}
+
+/* Make text more readable */
+.ai-item span {
+    font-weight: 500;
+    letter-spacing: 0.02em;
 }
 
 /* Calendar grid */
@@ -208,54 +296,6 @@
     background-color: #f13e3c;
     border-radius: 50%;
     pointer-events: none; /* ignore mouse events, optional */
-}
-
-/* A container list for the files */
-.files-card ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-.files-card ul::-webkit-scrollbar {
-    display: none;
-}
-
-/* Each file item row */
-.file-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #ebecec; /* dark background like in your screenshot */
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin-bottom: 10px;
-    color: black; /*  text on dark background */
-    transition: background 0.2s;
-}
-
-/* Left part: icon + file/folder name */
-.file-left {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* spacing between icon & text */
-}
-
-.file-icon {
-    font-size: 1.2rem;
-}
-
-/* Right part: 3-dot menu */
-.file-options {
-    font-size: 1.2rem;
-    cursor: pointer;
-    color: #b9bbbe;
-    transition: 0.2s;
-}
-.file-options:hover {
-    color: #5a5b5c;
 }
 
 /* Ensure the <li> inside .chat-card is block-based */

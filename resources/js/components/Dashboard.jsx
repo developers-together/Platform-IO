@@ -58,6 +58,10 @@ function AISuggestedActionsCard() {
         'Integrate real-time notifications',
         'Implement voice-to-text',
         'Schedule weekly code reviews',
+        'Refactor data layer for speed',
+        'Integrate real-time notifications',
+        'Implement voice-to-text',
+        'Schedule weekly code reviews',
     ];
     return (
         <div className="card ai-card">
@@ -67,8 +71,12 @@ function AISuggestedActionsCard() {
                     <li key={index} className="ai-item">
                         <span>{text}</span>
                         <div className="ai-actions">
-                            <FiCheck className="action-btn accept" title="Accept" />
-                            <FiX className="action-btn reject" title="Reject" />
+                            <button className="action-btn accept" title="Accept suggestion">
+                                <FiCheck />
+                            </button>
+                            <button className="action-btn reject" title="Reject suggestion">
+                                <FiX />
+                            </button>
                         </div>
                     </li>
                 ))}
@@ -145,34 +153,6 @@ function CalendarCard() {
     );
 }
 
-function RecentFilesCard() {
-    // Example data—adjust as you like
-    const files = [
-        { name: 'IDs', type: 'folder' },
-        { name: 'Design.sketch', type: 'file' },
-        { name: 'Report.docx', type: 'file' },
-        { name: 'Budget.xlsx', type: 'file' },
-    ];
-
-    return (
-        <div className="card files-card">
-            <h3>Recent Files</h3>
-            <ul>
-                {files.map((file, i) => (
-                    <li className="file-item" key={i}>
-                        <div className="file-left">
-                            {/* For a folder, show a folder icon; for a file, show something else. */}
-                            <span className="file-icon">{file.type === 'folder' ? '📁' : '📄'}</span>
-                            <span className="file-name">{file.name}</span>
-                        </div>
-                        <span className="file-options">•••</span>
-                    </li>
-                ))}
-            </ul>
-        </div>
-    );
-}
-
 function RecentChatCard() {
     const [groups, setGroups] = useState([
         {
@@ -234,11 +214,10 @@ export default function Dashboard() {
             </header>
             <div className="dashboard-grid">
                 <TasksCard />
-                <AISuggestedActionsCard />
-                <EventsCard />
-                <CalendarCard />
-                <RecentFilesCard />
                 <RecentChatCard />
+                <AISuggestedActionsCard />
+                <CalendarCard />
+                <EventsCard />
             </div>
         </div>
     );

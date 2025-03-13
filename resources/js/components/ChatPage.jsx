@@ -1,27 +1,22 @@
-// resources/js/components/ChatPage.jsx
 import { useEffect, useRef, useState } from 'react';
 import { FiCornerUpLeft, FiImage, FiMoreHorizontal, FiPhone, FiSend, FiSmile, FiTrash2, FiVideo, FiXCircle } from 'react-icons/fi';
-import Avatar from './Avatar'; // Optional avatar component, or remove if you don't use it
+import Avatar from './Avatar';
 import './ChatPage.css';
 
 export default function ChatPage() {
-    // Sample data
     const channels = ['General', 'Project X', 'Design'];
     const dms = ['Alice', 'Bob', 'Charlie'];
 
-    // Chat state
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
-
-    // The message we are currently replying to (if any)
     const [replyingTo, setReplyingTo] = useState(null);
 
-    // File input + chat scroll references
     const fileInputRef = useRef(null);
     const chatEndRef = useRef(null);
+    const messageRefs = useRef({});
+    const [highlightedMessage, setHighlightedMessage] = useState(null);
 
-    // Called when user selects an image
     const imageUpload = (event) => {
         const file = event.target.files[0];
         if (!file) return;
@@ -30,15 +25,10 @@ export default function ChatPage() {
             setSelectedImage(reader.result);
         };
         reader.readAsDataURL(file);
-        // Clear file input so user can select the same file again
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
+        fileInputRef.current.value = '';
     };
 
-    // Called when user clicks "Reply" on a message
     const handleReply = (msg) => {
-        // We'll store the user + snippet of text for the reply
         setReplyingTo({
             id: msg.id,
             user: msg.user,
@@ -46,71 +36,66 @@ export default function ChatPage() {
         });
     };
 
-    // Called when user clicks "Send"
     const sendMessage = () => {
         if (!inputText.trim() && !selectedImage) return;
-
-        // Build new message object
         const newMessage = {
             id: messages.length > 0 ? messages[messages.length - 1].id + 1 : 0,
             user: 'You',
-            avatar: '', // or a real avatar URL
+            avatar: '',
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             text: inputText,
             image: selectedImage,
-            replyTo: replyingTo, // store the reply info if we have it
+            replyTo: replyingTo,
         };
-
-        // Add to messages
         setMessages([...messages, newMessage]);
-
-        // Clear input, image, and reply
         setInputText('');
         setSelectedImage(null);
         setReplyingTo(null);
     };
 
-    // Delete a message by ID
     const deleteMessage = (id) => {
         setMessages((prev) => prev.filter((msg) => msg.id !== id));
     };
 
-    // Auto-scroll to bottom on new messages
+    const scrollToMessage = (replyingTo) => {
+        if (replyingTo) {
+            messageRefs.current[replyingTo.id]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setHighlightedMessage(replyingTo.id);
+            setTimeout(() => setHighlightedMessage(null), 1000);
+        }
+    };
+
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const messageRefs = useRef({});
-    const [highlightedMessage, setHighlightedMessage] = useState(null);
-    const scrollToMessage = (replyingTo) => {
-        console.log(replyingTo);
-        if (replyingTo) {
-            messageRefs.current[replyingTo.id].scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        setHighlightedMessage(replyingTo.id);
-        setTimeout(() => setHighlightedMessage(null), 1000);  // change second arguement to change highlight duration default(1000)
-    };
-
     return (
         <div className="chat-page-container">
             {/* LEFT PANEL */}
+            {/* LEFT PANEL */}
             <div className="left-panel">
-                <div className="channel-section">
-                    <h4>Channels</h4>
-                    <ul>
-                        {channels.map((c, i) => (
-                            <li key={i}>{c}</li>
-                        ))}
-                    </ul>
+                {/* Channels Card */}
+                <div className="left-card">
+                    <h4 className="panel-heading">Channels</h4>
+                    <div className="left-card-content">
+                        <ul>
+                            {channels.map((c, i) => (
+                                <li key={i}>{c}</li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
-                <hr className="separator" />
-                <div className="dm-section">
-                    <h4>Direct Messages</h4>
-                    <ul>
-                        {dms.map((d, i) => (
-                            <li key={i}>{d}</li>
-                        ))}
-                    </ul>
+
+                {/* Direct Messages Card */}
+                <div className="left-card">
+                    <h4 className="panel-heading">Direct Messages</h4>
+                    <div className="left-card-content">
+                        <ul>
+                            {dms.map((d, i) => (
+                                <li key={i}>{d}</li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             </div>
 
@@ -133,39 +118,22 @@ export default function ChatPage() {
 
                 <div className="chat-messages">
                     {messages.map((msg) => (
-                        <div key={msg.id} 
-                        ref={(el) => (messageRefs.current[msg.id] = el)}
-                        className="chat-message">
-                            {/* If avatar is empty, fallback to default avatar (optional) */}
+                        <div
+                            key={msg.id}
+                            ref={(el) => (messageRefs.current[msg.id] = el)}
+                            className={`chat-message ${highlightedMessage === msg.id ? 'highlight' : ''}`}
+                        >
                             {msg.avatar ? (
                                 <img className="avatar" src={msg.avatar} alt={msg.user} />
                             ) : (
                                 <Avatar name={msg.user} options={{ size: '64', rounded: true }} className="avatar" />
                             )}
 
-                            <div
-                            key={msg.id}
-                            className={`msg-body ${highlightedMessage === msg.id ? 'highlight' : ''}`}
-                            >
-                                {/* If this message is replying to another, show the reply container */}
+                            <div className="msg-body">
                                 {msg.replyTo && (
-                                    <div className="reply-container" onClick={() => scrollToMessage(msg.replyTo)} style={{ cursor: 'pointer', color: 'blue' }}>
-                                        <div className="reply-arrow">
-                                            {/* small arrow icon or inline svg */}
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                                                <path
-                                                    d="M14 7l-5 5 5 5"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                            </svg>
-                                        </div>
-                                        <div className="reply-info">
-                                            <span className="reply-user">{msg.replyTo.user}</span>
-                                            <span className="reply-text">{msg.replyTo.text}</span>
-                                        </div>
+                                    <div className="reply-container" onClick={() => scrollToMessage(msg.replyTo)}>
+                                        <span className="reply-user">{msg.replyTo.user}</span>
+                                        <span className="reply-text">{msg.replyTo.text}</span>
                                     </div>
                                 )}
 
@@ -174,10 +142,7 @@ export default function ChatPage() {
                                     <span className="msg-time">{msg.time}</span>
                                 </div>
 
-                                {/* If there's an image, show it */}
-                                {msg.image && (
-                                    <img src={msg.image} alt="Uploaded" style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px' }} />
-                                )}
+                                {msg.image && <img src={msg.image} alt="Uploaded" className="uploaded-image" />}
 
                                 <div className="msg-text">{msg.text}</div>
                                 <div className="msg-actions">
@@ -199,7 +164,6 @@ export default function ChatPage() {
 
                 {/* CHAT INPUT */}
                 <div className="chat-input">
-                    {/* If user is replying to something, show a small snippet above input */}
                     {replyingTo && (
                         <div className="reply-preview">
                             <span>
@@ -211,7 +175,6 @@ export default function ChatPage() {
                         </div>
                     )}
 
-                    {/* If user selected an image, show preview */}
                     {selectedImage && (
                         <div className="image-preview-container">
                             <img className="image-preview" src={selectedImage} alt="Preview" />
@@ -227,14 +190,13 @@ export default function ChatPage() {
                             <FiImage />
                         </button>
                         <input
-                            id="chatinput"
                             type="text"
                             placeholder="Type a message..."
                             value={inputText}
                             onChange={(e) => setInputText(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                         />
-                        <button id="sendbutton" onClick={sendMessage}>
+                        <button onClick={sendMessage}>
                             <FiSend />
                         </button>
                     </div>
