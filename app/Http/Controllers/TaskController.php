@@ -29,6 +29,8 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
+            'date' => 'nullable|date',
+            'colour' => 'nullable|string',
             'completed' => 'nullable|boolean',
             'team_id' => 'required'
         ]);
@@ -41,6 +43,8 @@ class TaskController extends Controller
       'title'=> $validated['title'],
       'description' => $validated['description'],
       'due_date' => $validated['due_date'],
+      'date' => $validated['date'],
+      'colour' => $validated['colour'],
       'completed' => $validated['completed']
       ]);
         return response()->json(['success' => true, 'task' => $task]);
@@ -66,6 +70,8 @@ class TaskController extends Controller
         ->update([
             'title'=> $validated['title'],
             'description' => $validated['description'],
+            'date' => $validated['date'],
+            'colour' => $validated['colour'],
             'due_date' => $validated['due_date'],
             'completed' => $validated['completed']
         ]);
