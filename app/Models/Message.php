@@ -2,22 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class Message extends Model
+class Message extends Pivot
 {
-    use HasFactory;
+    // use HasFactory;
 
-    protected $fillable = ['user_id', 'group_id', 'message'];
+    protected $fillable = ['user_id', 'chat_id', 'message'];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class);
+    // }
 
-    public function chat()
-    {
-        return $this->belongsTo(Chat::class);
-    }
+    // public function chat()
+    // {
+    //     return $this->belongsTo(Chat::class);
+    // }
 }
 

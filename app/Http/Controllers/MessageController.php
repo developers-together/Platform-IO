@@ -3,17 +3,34 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Message;
+use App\Models\Chat;
+use Illuminate\Support\Facades\Auth;
 
 class MessageController extends Controller
 {
     public function sendMessage(Request $request)
     {
-        $message = Message::create([
-            'user_id' => $request->user_id,
-            'chat_id' => $request->chat_id,
-            'message' => $request->message
+
+        $validated = $request->validate([
+        'chat_id' => 'required',
+        'message' => 'required|string'
         ]);
+
+        $id = Auth::id();
+        if(chat::where('id',$validated['chat_id'])){
+        $message = Message::create([
+        'chat_id' => $validated['chat_id'],
+        'user_id' => $id,
+        'message' => $validated['message']
+        ]);
+
         return response()->json($message);
+    
+    }
+
+    return response()->json('error');
+        
     }
 
 

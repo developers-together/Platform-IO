@@ -1,3 +1,4 @@
 /vendor
 platformio
 platformio.sqlite
+database/platformio.sqlite
