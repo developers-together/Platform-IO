@@ -12,15 +12,9 @@ class TaskController extends Controller
     // Display all tasks
     public function index()
     {
-        return view('tasks.index');
+        return response()->json(Task::all());
     }
 
-    // Fetch tasks for FullCalendar
-    public function getTasks()
-    {
-        $tasks = Task::select('id', 'title', 'due_date as start')->get();
-        return response()->json($tasks);
-    }
 
      // Store a new task in the database
     public function store(Request $request)
@@ -36,6 +30,7 @@ class TaskController extends Controller
         ]);
 
         $team = Team::findOrFail($validated['team_id']);
+
         Gate::authorize('update', $team);
 
       $task = Task::create([
@@ -57,8 +52,8 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
             'completed' => 'nullable|boolean',
+            'task_id' => 'required',
             'team_id' => 'required',
-            'task_id' => 'required'
         ]);
 
         $team = Team::findOrFail($validated['team_id']);

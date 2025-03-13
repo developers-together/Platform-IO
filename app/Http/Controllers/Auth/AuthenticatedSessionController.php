@@ -27,13 +27,24 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request)
     {
         $request->authenticate();
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+            // Get the authenticated user
+    $user = auth()->user();
+
+    // Generate an API token if using Laravel Sanctum
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    // Return JSON response with user info and token
+    return response()->json([
+        'message' => 'Login successful',
+        'user' => $user,
+        'token' => $token,
+    ], 200);
     }
 
     /**
