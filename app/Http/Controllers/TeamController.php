@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateTeamRequest;
 use App\Models\Team;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Gate;
 
 class TeamController extends Controller
 {
@@ -164,6 +165,9 @@ class TeamController extends Controller
      */
     public function update(UpdateTeamRequest $request, Team $team)
     {
+
+        Gate::authorize('update', $team);
+
         $validated = $request->validate([
             'name'=>'string|required|max:255',
             'projectname'=>'string|required|max:255',
@@ -223,6 +227,8 @@ class TeamController extends Controller
      */
     public function destroy(Team $team)
     {
+        Gate::authorize('delete', $team);
+
         try {
 
             $team->delete();
