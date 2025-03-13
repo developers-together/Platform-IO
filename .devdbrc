@@ -6,5 +6,9 @@
   {
     "type": "sqlite",
     "path": "/home/shehab/projects/Platform-IO/database/database.sqlite"
+  },
+  {
+    "type": "sqlite",
+    "path": "/home/shehab/projects/Platform-IO/database/platformio.sqlite"
   }
 ]

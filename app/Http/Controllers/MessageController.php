@@ -36,7 +36,7 @@ class MessageController extends Controller
 
     public function getMessages($chatId)
     {
-        $messages = Message::where('chat_id', $chatId)->with('user')->get();
+        $messages = Message::where('chat_id', $chatId)->pivot('message')->with('user')->get();
         return response()->json($messages);
     }
 }
