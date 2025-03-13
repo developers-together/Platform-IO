@@ -1,7 +1,6 @@
 /vendor
-<<<<<<< Updated upstream
-/platformio
-=======
 platformio
->>>>>>> Stashed changes
-platformio
+platformio.sqlite
+database/platformio.sqlite
+database/database.sqlite
+
