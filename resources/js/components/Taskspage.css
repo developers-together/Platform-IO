@@ -1,0 +1,267 @@
+/* The wrapper with sidebar left, tasks content right */
+.tasks-page-wrapper {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    background: #f9fafc;
+}
+
+/* The main tasks content area (right side) */
+.tasks-page-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    overflow: hidden;
+}
+
+/* Header with project/team name */
+.tasks-header {
+    background: #f0f0f0;
+    padding: 16px;
+    font-size: 1.4rem;
+    font-weight: 600;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Active tasks area */
+.tasks-center {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    background: #fafafa;
+}
+
+/* One row for each active task */
+.task-row {
+    background: #fff;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+    display: flex;
+    align-items: center;
+    position: relative;
+    transition:
+        background 0.2s,
+        transform 0.2s;
+}
+
+.task-row:hover {
+    background: #f3f3f3;
+    transform: scale(1.01);
+}
+
+/* Circle for marking complete (active tasks) */
+.circle-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #999;
+    margin-right: 12px;
+    cursor: pointer;
+    transition:
+        border-color 0.2s,
+        transform 0.2s;
+}
+.circle-check:hover {
+    border-color: #0052d4;
+    transform: scale(1.1);
+}
+
+/* Task text */
+.task-text {
+    flex: 1;
+    font-size: 1rem;
+    color: #333;
+    transition: color 0.2s;
+}
+
+.starred-text {
+    font-weight: 600;
+}
+
+/* The icons on the right: star always visible, edit & trash on hover */
+.task-icons {
+    display: flex; /* star is always visible now */
+    gap: 10px;
+    margin-left: auto;
+}
+
+/* Each icon has transitions & hover scale */
+.task-icon {
+    font-size: 1.2rem;
+    color: #777;
+    cursor: pointer;
+    transition:
+        color 0.2s,
+        transform 0.2s;
+}
+.task-icon:hover {
+    color: #333;
+    transform: scale(1.1);
+}
+
+/* Star icon states */
+.star-icon {
+    stroke-width: 2;
+    fill: transparent;
+    color: #ccc;
+    transition:
+        fill 0.2s,
+        color 0.2s;
+}
+.star-icon.starred {
+    fill: #f9d100; /* full yellow fill */
+    color: #f9d100;
+    stroke: #f9d100;
+}
+
+/* The confirm bubble for deletion, centered over the row */
+.confirm-bubble {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 10;
+    opacity: 0;
+    animation: fadeIn 0.3s forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+.confirm-bubble span {
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.confirm-bubble button {
+    background: #0052d4;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.confirm-bubble button:hover {
+    background: #003c9f;
+}
+
+/* Completed tasks right below normal tasks */
+.completed-section {
+    background: #fafafa;
+    padding: 0 16px 16px;
+}
+
+/* The collapsible header & container */
+.completed-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    color: #333;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: color 0.2s;
+}
+.completed-header:hover {
+    color: #0052d4;
+}
+
+.completed-container {
+    display: flex;
+    flex-direction: column;
+}
+
+/* completed tasks style */
+.task-row.completed {
+    opacity: 0.7;
+    text-decoration: line-through;
+}
+
+/* New check icon for completed tasks row */
+.completed-check {
+    font-size: 1.4rem;
+    margin-right: 12px;
+    color: #00b0ff;
+    cursor: pointer;
+    transition:
+        transform 0.2s,
+        color 0.2s;
+}
+.task-row.completed:hover .completed-check {
+    color: #0052d4;
+    transform: scale(1.2);
+}
+
+.completed-text {
+    color: #777;
+    font-size: 1rem;
+}
+
+/* Inline edit input */
+.task-edit-input {
+    flex: 1;
+    font-size: 1rem;
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* The bottom add task bar, full width */
+.add-task-bar {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f0f0f0;
+    border-top: 1px solid #ddd;
+    gap: 8px;
+}
+
+.add-task-bar .plus-icon {
+    font-size: 1.4rem;
+    color: #666;
+    cursor: pointer;
+    margin-right: 6px;
+    transition:
+        color 0.2s,
+        transform 0.2s;
+}
+.add-task-bar .plus-icon:hover {
+    color: #0052d4;
+    transform: scale(1.1);
+}
+
+.add-task-bar input {
+    flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+/* Fade in utility */
+.fade-in {
+    animation: fadeIn 0.3s forwards;
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
