@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-<<<<<<< HEAD
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\ChatController;
@@ -16,13 +15,10 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
-=======
->>>>>>> 97db9418d596dc0b0117f9dd3e09d17b7e4e72b4
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
-<<<<<<< HEAD
 
 Route::get('/tasks/index', [TaskController::class, 'index']);
 Route::get('/tasks/json', [TaskController::class, 'getTasks']);
@@ -85,5 +81,3 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });
-=======
->>>>>>> 97db9418d596dc0b0117f9dd3e09d17b7e4e72b4
