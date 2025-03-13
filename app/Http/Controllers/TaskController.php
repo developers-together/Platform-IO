@@ -36,7 +36,6 @@ class TaskController extends Controller
         ]);
 
         $team = Team::findOrFail($validated['team_id']);
-
         Gate::authorize('update', $team);
 
       $task = Task::create([
