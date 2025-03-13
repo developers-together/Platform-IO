@@ -47,7 +47,7 @@ class TeamController extends Controller
         })
     ]);
 
-    
+
     }
 
     /**
@@ -67,7 +67,7 @@ class TeamController extends Controller
         'name'=>'string|required|max:255',
         'projectname'=>'string|required|max:255',
         'description'=>'string|nullable',
-        'members.*.user_id'=>'integer|distinct|exists:users,id',
+        'members.*.user_id'=>'integer',
         'members.*.role'=>['required',Rule::in(['leader','member','viewer'])],
         'members' => [
             'sometimes',
@@ -86,7 +86,7 @@ class TeamController extends Controller
        'name'=> $validated['name'],
        'projectname' =>$validated['projectname'],
         'description'=>$validated['description'] ?? null
-    
+
     ]);
 
     if (isset($validated['members'])) {
@@ -101,7 +101,7 @@ class TeamController extends Controller
     {
 
         $leaders = collect($members)->where('role', 'leader');
-    
+
         if ($leaders->count() !== 1) {
             abort(422, 'Team must have exactly one leader');
         }
@@ -114,7 +114,7 @@ class TeamController extends Controller
         })->toArray();
 
         $team->users()->attach($pivotData);
-    
+
     }
 
     /**
@@ -184,7 +184,7 @@ class TeamController extends Controller
                     }
                 }
             ]
-    
+
         ]);
 
         $team->update([
@@ -196,9 +196,9 @@ class TeamController extends Controller
             if (isset($validated['members'])) {
                 $this->syncMembersWithRoles($team, $validated['members']);
             }
-        
+
             return response()->json($team->fresh()->load('users'), 200);
-        
+
 
     }
 
@@ -206,7 +206,7 @@ class TeamController extends Controller
     {
 
         $leaders = collect($members)->where('role', 'leader');
-    
+
         if ($leaders->count() !== 1) {
             abort(422, 'Team must have exactly one leader');
         }
@@ -219,7 +219,7 @@ class TeamController extends Controller
         })->toArray();
 
         $team->users()->sync($pivotData);
-    
+
     }
 
     /**
@@ -232,7 +232,7 @@ class TeamController extends Controller
         try {
 
             $team->delete();
-            
+
             return response()->json([
                 'message' => 'Team deleted successfully',
                 'data' => [
@@ -240,7 +240,7 @@ class TeamController extends Controller
                     'deleted_at' => now()->toDateTimeString()
                 ]
             ], 200);
-    
+
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete team',

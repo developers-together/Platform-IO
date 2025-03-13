@@ -18,6 +18,7 @@ return new class extends Migration
             $table->dateTime('due_date')->nullable();
             $table->dateTime('date')->nullable();
             $table->string('colour')->nullable();
+            $table->foreignId('team_id')->constrained()->onDelete('cascade');
             $table->boolean('completed')->default(false);
             $table->timestamps();
         });
