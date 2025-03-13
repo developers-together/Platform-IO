@@ -26,12 +26,12 @@ class TaskController extends Controller
             'date' => 'nullable|date',
             'colour' => 'nullable|string',
             'completed' => 'nullable|boolean',
-            'team_id' => 'required'
+            'team_id' => 'required',
         ]);
 
-        $team = Team::findOrFail($validated['team_id']);
+        // $team = Team::findOrFail($validated['team_id']);
 
-        Gate::authorize('update', $team);
+        // Gate::authorize('update', $team);
 
       $task = Task::create([
       'title'=> $validated['title'],
@@ -39,7 +39,8 @@ class TaskController extends Controller
       'due_date' => $validated['due_date'],
       'date' => $validated['date'],
       'colour' => $validated['colour'],
-      'completed' => $validated['completed']
+      'completed' => $validated['completed'],
+      'team_id' => $validated['team_id']
       ]);
         return response()->json(['success' => true, 'task' => $task]);
     }
@@ -47,18 +48,21 @@ class TaskController extends Controller
     // Update an existing task in the database
     public function update(Request $request)
     {
-       $validated = $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
             'completed' => 'nullable|boolean',
-            'task_id' => 'required',
+            'task_id' => 'required|exists:tasks,id',
             'team_id' => 'required',
+            'date' => 'nullable|date',
+            'colour' => 'nullable|string|max:255',
         ]);
 
-        $team = Team::findOrFail($validated['team_id']);
 
-        Gate::authorize('update', $team);
+        // $team = Team::findOrFail($validated['team_id']);
+
+        // Gate::authorize('update', $team);
 
         $task = Task::where('id', $validated['task_id'])
         ->update([
@@ -70,20 +74,34 @@ class TaskController extends Controller
             'completed' => $validated['completed']
         ]);
 
+        $task = Task::find($validated['task_id']);
         return response()->json(['success' => true, 'task' => $task]);
     }
 
     // Delete a task from the database
     public function destroy(Task $task, Request $request)
     {
-        $validated = $request->validate(['team_id' => 'required']);
+        $validated = $request->validate([
+            'task_id' => 'required|exists:tasks,id',
+        ]);
 
-        $team = Team::findOrFail($validated['team_id']);
+        $task = Task::find($validated['task_id']);
 
-        Gate::authorize('update', $team);
+        if (!$task) {
+            return response()->json(['success' => false, 'message' => 'Task not found'], 404);
+        }
 
         $task->delete();
         return response()->json(['success' => true]);
+
+        // $validated = $request->validate(['team_id' => 'required']);
+
+        // $team = Team::findOrFail($validated['team_id']);
+
+        // // Gate::authorize('update', $team);
+
+        // $task->delete();
+        // return response()->json(['success' => true]);
     }
 
 
