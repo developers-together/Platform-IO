@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 class ChatController extends Controller
 {
     public function create(Request $request)
-    {
+    { 
         $chat = Chat::create([
             'name' => $request->name
         ]);
