@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FiCornerUpLeft, FiImage, FiMoreHorizontal, FiPhone, FiSend, FiSmile, FiTrash2, FiVideo, FiXCircle } from 'react-icons/fi';
 import Avatar from './Avatar';
 import './ChatPage.css';
@@ -11,11 +11,15 @@ export default function ChatPage() {
     const [inputText, setInputText] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
     const [replyingTo, setReplyingTo] = useState(null);
+    const [deletingMessageIds, setDeletingMessageIds] = useState([]);
+    const [newMessageId, setNewMessageId] = useState(null);
 
     const fileInputRef = useRef(null);
     const chatEndRef = useRef(null);
     const messageRefs = useRef({});
     const [highlightedMessage, setHighlightedMessage] = useState(null);
+
+    const messageIds = useMemo(() => new Set(messages.map((msg) => msg.id)), [messages]);
 
     const imageUpload = (event) => {
         const file = event.target.files[0];
@@ -38,8 +42,10 @@ export default function ChatPage() {
 
     const sendMessage = () => {
         if (!inputText.trim() && !selectedImage) return;
+
+        const messageId = Date.now();
         const newMessage = {
-            id: messages.length > 0 ? messages[messages.length - 1].id + 1 : 0,
+            id: messageId,
             user: 'You',
             avatar: '',
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -47,18 +53,29 @@ export default function ChatPage() {
             image: selectedImage,
             replyTo: replyingTo,
         };
-        setMessages([...messages, newMessage]);
+
+        setNewMessageId(messageId);
+        setMessages((prev) => [...prev, newMessage]);
+
+        setTimeout(() => {
+            setNewMessageId(null);
+        }, 500);
+
         setInputText('');
         setSelectedImage(null);
         setReplyingTo(null);
     };
 
     const deleteMessage = (id) => {
-        setMessages((prev) => prev.filter((msg) => msg.id !== id));
+        setDeletingMessageIds((prev) => [...prev, id]);
+        setTimeout(() => {
+            setMessages((prev) => prev.filter((msg) => msg.id !== id));
+            setDeletingMessageIds((prev) => prev.filter((msgId) => msgId !== id));
+        }, 300);
     };
 
     const scrollToMessage = (replyingTo) => {
-        if (replyingTo) {
+        if (replyingTo && messageIds.has(replyingTo.id)) {
             messageRefs.current[replyingTo.id]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             setHighlightedMessage(replyingTo.id);
             setTimeout(() => setHighlightedMessage(null), 1000);
@@ -71,10 +88,8 @@ export default function ChatPage() {
 
     return (
         <div className="chat-page-container">
-            {/* LEFT PANEL */}
-            {/* LEFT PANEL */}
+            {/* Left Panel */}
             <div className="left-panel">
-                {/* Channels Card */}
                 <div className="left-card">
                     <h4 className="panel-heading">Channels</h4>
                     <div className="left-card-content">
@@ -85,8 +100,6 @@ export default function ChatPage() {
                         </ul>
                     </div>
                 </div>
-
-                {/* Direct Messages Card */}
                 <div className="left-card">
                     <h4 className="panel-heading">Direct Messages</h4>
                     <div className="left-card-content">
@@ -99,7 +112,7 @@ export default function ChatPage() {
                 </div>
             </div>
 
-            {/* CENTER CHAT */}
+            {/* Chat Center */}
             <div className="chat-center">
                 <div className="chat-header">
                     <h3>General Chat</h3>
@@ -121,29 +134,30 @@ export default function ChatPage() {
                         <div
                             key={msg.id}
                             ref={(el) => (messageRefs.current[msg.id] = el)}
-                            className={`chat-message ${highlightedMessage === msg.id ? 'highlight' : ''}`}
+                            className={`chat-message ${highlightedMessage === msg.id ? 'highlight' : ''} ${deletingMessageIds.includes(msg.id) ? 'deleting' : ''} ${msg.id === newMessageId ? 'adding' : ''}`}
                         >
                             {msg.avatar ? (
                                 <img className="avatar" src={msg.avatar} alt={msg.user} />
                             ) : (
                                 <Avatar name={msg.user} options={{ size: '64', rounded: true }} className="avatar" />
                             )}
-
                             <div className="msg-body">
                                 {msg.replyTo && (
-                                    <div className="reply-container" onClick={() => scrollToMessage(msg.replyTo)}>
+                                    <div
+                                        className={`reply-container ${
+                                            deletingMessageIds.includes(msg.replyTo.id) || !messageIds.has(msg.replyTo.id) ? 'deleted-reply' : ''
+                                        }`}
+                                        onClick={() => scrollToMessage(msg.replyTo)}
+                                    >
                                         <span className="reply-user">{msg.replyTo.user}</span>
                                         <span className="reply-text">{msg.replyTo.text}</span>
                                     </div>
                                 )}
-
                                 <div className="msg-header">
                                     <span className="msg-user">{msg.user}</span>
                                     <span className="msg-time">{msg.time}</span>
                                 </div>
-
                                 {msg.image && <img src={msg.image} alt="Uploaded" className="uploaded-image" />}
-
                                 <div className="msg-text">{msg.text}</div>
                                 <div className="msg-actions">
                                     <button onClick={() => handleReply(msg)}>
@@ -162,7 +176,7 @@ export default function ChatPage() {
                     <div ref={chatEndRef}></div>
                 </div>
 
-                {/* CHAT INPUT */}
+                {/* Chat Input */}
                 <div className="chat-input">
                     {replyingTo && (
                         <div className="reply-preview">
@@ -174,7 +188,6 @@ export default function ChatPage() {
                             </button>
                         </div>
                     )}
-
                     {selectedImage && (
                         <div className="image-preview-container">
                             <img className="image-preview" src={selectedImage} alt="Preview" />
@@ -183,7 +196,6 @@ export default function ChatPage() {
                             </button>
                         </div>
                     )}
-
                     <div className="chat-input-row">
                         <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} onChange={imageUpload} />
                         <button onClick={() => fileInputRef.current?.click()}>
