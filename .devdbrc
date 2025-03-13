@@ -1,0 +1,10 @@
+[
+  {
+    "type": "sqlite",
+    "path": "/home/shehab/projects/Platform-IO/platformio"
+  },
+  {
+    "type": "sqlite",
+    "path": "/home/shehab/projects/Platform-IO/database/database.sqlite"
+  }
+]
