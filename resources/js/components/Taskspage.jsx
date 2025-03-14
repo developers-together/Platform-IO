@@ -1,38 +1,34 @@
-// resources/js/components/TasksPage.jsx
-import { useState, useEffect } from 'react';
-import { FiCheckSquare, FiChevronDown, FiChevronUp, FiEdit2, FiPlus, FiStar, FiTrash2 } from 'react-icons/fi';
-import './TasksPage.css';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { FiCheck, FiCheckCircle, FiChevronDown, FiChevronUp, FiCircle, FiEdit, FiPlus, FiStar, FiTrash2, FiX } from 'react-icons/fi';
+import './TasksPage.css';
 
-export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, setCurrentPage }) {
+export default function TasksPage() {
     const [tasks, setTasks] = useState([]);
-    useEffect(() => {
-        axios.get("http://localhost:8000/api/tasks/index")
-            .then(response => {
-                const formattedTasks = response.data.map(task => ({
-                    id: task.id || Date.now(),  // Use backend ID or fallback to current timestamp
-                    text: task.title || "Untitled Task", // Use title or set default
-                    completed: task.completed ?? false, // Ensure boolean
-                    starred: false, // Not in DB, default to false
-                    editing: false, // Not in DB, default to false
-                }));
-                // console.log("Tasks fetched successfully:", response.data);
-                setTasks(formattedTasks);
-            })
-            .catch(error => {
-                console.error("Error fetching tasks:", error);
-            });
-    }, []); // Runs once when the component mounts
-
-    const [completed, setCompleted] = useState([{ id: 101, text: 'Set up repo', completed: true, starred: false, editing: false }]);
-
+    const [completed, setCompleted] = useState([]);
     const [newTask, setNewTask] = useState('');
     const [showCompleted, setShowCompleted] = useState(true);
     const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+    const [deletingId, setDeletingId] = useState(null);
 
-    // add new task
+    useEffect(() => {
+        axios
+            .get('http://localhost:8000/api/tasks/index')
+            .then((response) => {
+                const formattedTasks = response.data.map((task) => ({
+                    id: task.id || Date.now(),
+                    text: task.title || 'Untitled Task',
+                    completed: task.completed ?? false,
+                    starred: false,
+                    editing: false,
+                }));
+                setTasks(formattedTasks.filter((task) => !task.completed));
+                setCompleted(formattedTasks.filter((task) => task.completed));
+            })
+            .catch((error) => console.error('Error fetching tasks:', error));
+    }, []);
+
     const handleAddTask = () => {
-        console.log(tasks[0]);
         if (!newTask.trim()) return;
         const newObj = {
             id: Date.now(),
@@ -41,180 +37,145 @@ export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, se
             starred: false,
             editing: false,
         };
-        setTasks((prev) => {
-            const updated = [...prev, newObj];
-            // starred tasks at front
-            return updated.sort((a, b) => b.starred - a.starred);
+        setTasks((prev) => [...prev, newObj].sort((a, b) => b.starred - a.starred));
+
+        axios.post('http://localhost:8000/api/tasks/store', {
+            title: newObj.text,
+            description: newObj.text || null,
+            due_date: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            date: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            colour: 'red',
+            completed: false,
+            team_id: '1',
         });
-            axios.post(
-                "http://localhost:8000/api/tasks/store",
-                {title: newObj.text,
-                    description: newObj.text || null,
-                    due_date: new Date(Date.now()).toISOString().slice(0, 19).replace("T", " "), 
-                    date: new Date(Date.now()).toISOString().slice(0, 19).replace("T", " "), 
-                    colour: "red",
-                    completed: false,
-                    team_id: "1", // Ensure this is a string
-                
-                },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                        // "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                    },
-                    // withCredentials: true, // If using Laravel Sanctum for authentication
-                }
-            );
-            // alert("Task added successfully!");
 
         setNewTask('');
     };
 
-    // confirm or cancel delete
     const handleDeleteTask = (id) => {
-        setTasks((prev) => prev.filter((t) => t.id !== id));
-        setCompleted((prev) => prev.filter((t) => t.id !== id));
-        setConfirmDeleteId(null);
-        axios.delete("http://localhost:8000/api/tasks/destroy", {
-            data: { task_id: id },
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-        // .then(() => {
-        //     setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
-        // })
-        // .catch(error => {
-        //     console.error("Error deleting task:", error);
-        // });
+        setDeletingId(id);
+        setTimeout(() => {
+            setTasks((prev) => prev.filter((t) => t.id !== id));
+            setCompleted((prev) => prev.filter((t) => t.id !== id));
+            setConfirmDeleteId(null);
+            setDeletingId(null);
+
+            axios.delete('http://localhost:8000/api/tasks/destroy', {
+                data: { task_id: id },
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }, 300);
     };
 
-    // complete a task => move to completed
     const handleCompleteTask = (id) => {
         const found = tasks.find((t) => t.id === id);
         if (!found) return;
-        found.completed = true;
         setTasks((prev) => prev.filter((t) => t.id !== id));
         setCompleted((prev) => [found, ...prev]);
     };
 
-    // un-complete a task => move back to tasks
     const handleUncompleteTask = (id) => {
         const found = completed.find((t) => t.id === id);
         if (!found) return;
-        found.completed = false;
         setCompleted((prev) => prev.filter((t) => t.id !== id));
-        setTasks((prev) => {
-            const updated = [...prev, found];
-            return updated.sort((a, b) => b.starred - a.starred);
-        });
+        setTasks((prev) => [...prev, found].sort((a, b) => b.starred - a.starred));
     };
 
-    // edit a task
     const handleEditTask = (id) => {
         setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, editing: true } : t)));
     };
 
-    // save edit
     const handleEditSave = (id, newText) => {
-        setTasks((prev) =>
-            prev.map((t) => {
-                if (t.id === id) {
-                    return { ...t, text: newText, editing: false };
-                }
-                return t;
-            }),
-        );
+        setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, text: newText, editing: false } : t)));
     };
 
-    // star/unstar => reorder tasks
     const handleStar = (id) => {
-        setTasks((prev) => {
-            const updated = prev.map((t) => {
-                if (t.id === id) {
-                    return { ...t, starred: !t.starred };
-                }
-                return t;
-            });
-            return updated.sort((a, b) => b.starred - a.starred);
-        });
+        setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, starred: !t.starred } : t)).sort((a, b) => b.starred - a.starred));
     };
 
-    const renderTaskRow = (task) => {
-        const { id, text, starred, editing } = task;
-        return (
-            <div className="task-row glass-card" key={id}>
-                <span className="circle-check" onClick={() => handleCompleteTask(id)}></span>
+    return (
+        <div className="tasks-page">
+            <header className="tasks-header">
+                <h1>Team Name - Project Name</h1>
+            </header>
 
-                {editing ? (
-                    <input
-                        className="task-edit-input"
-                        defaultValue={text}
-                        autoFocus
-                        onBlur={(e) => handleEditSave(id, e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                handleEditSave(id, e.target.value);
-                            }
-                        }}
-                    />
-                ) : (
-                    <span className={`task-text ${starred ? 'starred-text' : ''}`}>{text}</span>
-                )}
+            <div className="tasks-group">
+                <div className="tasks-list">
+                    {tasks.map((task) => (
+                        <div className={`task-row ${task.starred ? 'starred' : ''} ${deletingId === task.id ? 'deleting' : ''}`} key={task.id}>
+                            <div className="task-content">
+                                <button className="check-button" onClick={() => handleCompleteTask(task.id)} aria-label="Complete task">
+                                    <FiCircle className="check-icon" />
+                                </button>
 
-                {/* always show star, hover for edit/trash */}
-                <div className="task-icons">
-                    <FiStar className={`task-icon star-icon ${starred ? 'starred' : ''}`} onClick={() => handleStar(id)} />
-                    <FiEdit2 className="task-icon edit-icon" onClick={() => handleEditTask(id)} />
-                    <FiTrash2 className="task-icon delete-icon" onClick={() => setConfirmDeleteId(id)} />
+                                {task.editing ? (
+                                    <input
+                                        className="task-edit-input"
+                                        defaultValue={task.text}
+                                        autoFocus
+                                        onBlur={(e) => handleEditSave(task.id, e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleEditSave(task.id, e.target.value)}
+                                    />
+                                ) : (
+                                    <span className="task-text">{task.text}</span>
+                                )}
+
+                                <div className="task-actions">
+                                    <FiStar className={`star-icon ${task.starred ? 'active' : ''}`} onClick={() => handleStar(task.id)} />
+                                    <FiEdit className="edit-icon" onClick={() => handleEditTask(task.id)} />
+                                    <FiTrash2 className="delete-icon" onClick={() => setConfirmDeleteId(task.id)} />
+                                    {confirmDeleteId === task.id && (
+                                        <div className="confirm-dialog">
+                                            <span>Delete this task?</span>
+                                            <div className="confirm-buttons">
+                                                <button className="confirm-yes" onClick={() => handleDeleteTask(task.id)}>
+                                                    <FiCheck />
+                                                </button>
+                                                <button className="confirm-no" onClick={() => setConfirmDeleteId(null)}>
+                                                    <FiX />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
+            </div>
 
-                {confirmDeleteId === id && (
-                    <div className="confirm-bubble fade-in">
-                        <span>Delete task?</span>
-                        <button onClick={() => handleDeleteTask(id)}>Yes</button>
-                        <button onClick={() => setConfirmDeleteId(null)}>No</button>
+            <div className="completed-section">
+                <div className="completed-header" onClick={() => setShowCompleted(!showCompleted)}>
+                    <span>Completed Tasks ({completed.length})</span>
+                    {showCompleted ? <FiChevronUp /> : <FiChevronDown />}
+                </div>
+                {showCompleted && (
+                    <div className="completed-list">
+                        {completed.length > 0 ? (
+                            completed.map((task) => (
+                                <div className="completed-task" key={task.id}>
+                                    <FiCheckCircle className="completed-icon" onClick={() => handleUncompleteTask(task.id)} />
+                                    <span className="completed-text">{task.text}</span>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="empty-state">No completed tasks yet</div>
+                        )}
                     </div>
                 )}
             </div>
-        );
-    };
 
-    const renderCompletedRow = (task) => (
-        <div className="task-row completed glass-card" key={task.id}>
-            <FiCheckSquare className="completed-check" onClick={() => handleUncompleteTask(task.id)} />
-            <span className="completed-text">{task.text}</span>
-        </div>
-    );
-
-    return (
-        <div className="tasks-page-wrapper">
-            <div className="tasks-page-content">
-                <header className="tasks-header">Team name - project name</header>
-
-                <div className="tasks-center">{tasks.map((t) => !t.completed && renderTaskRow(t))}</div>
-
-                <div className="completed-section">
-                    <div className="completed-header" onClick={() => setShowCompleted(!showCompleted)}>
-                        Completed tasks {showCompleted ? <FiChevronUp /> : <FiChevronDown />}
-                    </div>
-                    {showCompleted && <div className="completed-container">{completed.map((t) => renderCompletedRow(t))}</div>}
-                </div>
-
-                <div className="add-task-bar glass-card">
-                    <span className="plus-icon" onClick={handleAddTask} title="Add Task">
-                        <FiPlus />
-                    </span>
-                    <input
-                        type="text"
-                        placeholder="Add a task..."
-                        value={newTask}
-                        onChange={(e) => setNewTask(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleAddTask();
-                        }}
-                    />
-                </div>
+            <div className="add-task-container">
+                <input
+                    type="text"
+                    placeholder="Add a new task..."
+                    value={newTask}
+                    onChange={(e) => setNewTask(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddTask()}
+                />
+                <button className="add-button" onClick={handleAddTask}>
+                    <FiPlus />
+                </button>
             </div>
         </div>
     );

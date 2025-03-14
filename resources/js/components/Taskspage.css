@@ -1,277 +1,420 @@
-/* resources/js/components/TasksPage.css */
-
-/* The tasks-page-wrapper with the sidebar on the left, tasks content on the right */
-.tasks-page-wrapper {
-    display: flex;
-    width: 100%;
-    height: 100vh;
-    background: #f9fafc;
-}
-
-/* The main tasks content area (right side) */
-.tasks-page-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    overflow: hidden;
-}
-
-/* The top header for tasks */
-.tasks-header {
-    background: #f0f0f0;
-    padding: 16px;
-    font-size: 1.4rem;
-    font-weight: 600;
-    border-bottom: 1px solid #ddd;
-}
-
-/* tasks-center container */
-.tasks-center {
-    flex: 1;
-    padding: 16px;
-    overflow-y: auto;
-    background: #fafafa;
-}
-
-/* A re-usable style matching your 'card' concept with glass background */
-.glass-card {
-    background-color: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(8px);
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition:
-        transform 0.2s,
-        box-shadow 0.2s;
-}
-
-/* .task-row is also a .glass-card */
-.task-row {
-    padding: 12px 16px;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    position: relative;
-}
-
-.task-row:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-}
-
-/* Circle check to complete tasks */
-.circle-check {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 2px solid #999;
-    margin-right: 12px;
-    cursor: pointer;
-    transition:
-        border-color 0.2s,
-        transform 0.2s;
-}
-.circle-check:hover {
-    border-color: #0052d4;
-    transform: scale(1.1);
-}
-
-/* normal task text */
-.task-text {
-    flex: 1;
-    font-size: 1rem;
-    color: #333;
-    transition: color 0.2s;
-}
-
-.starred-text {
-    font-weight: 600;
-}
-
-/* Star is always visible, edit/trash appear on hover? Let's keep them all visible for consistency. */
-.task-icons {
-    display: flex;
-    gap: 10px;
-    margin-left: auto;
-}
-
-.task-icon {
-    font-size: 1.2rem;
-    color: #777;
-    cursor: pointer;
-    transition:
-        color 0.2s,
-        transform 0.2s;
-}
-.task-icon:hover {
-    color: #333;
-    transform: scale(1.1);
-}
-
-/* star states */
-.star-icon {
-    stroke-width: 2;
-    fill: transparent;
-    color: #ccc;
-    transition:
-        fill 0.2s,
-        color 0.2s;
-}
-.star-icon.starred {
-    fill: #f9d100;
-    color: #f9d100;
-    stroke: #f9d100;
-}
-
-/* confirm bubble for deletion */
-.confirm-bubble {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(8px);
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    z-index: 10;
-    opacity: 0;
-    animation: fadeIn 0.3s forwards;
-}
-
-@keyframes fadeIn {
-    to {
-        opacity: 1;
-    }
-}
-
-.confirm-bubble span {
-    font-size: 0.9rem;
-    color: #333;
-}
-.confirm-bubble button {
-    background: #0052d4;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    padding: 4px 8px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.confirm-bubble button:hover {
-    background: #003c9f;
-}
-
-/* The completed tasks section below normal tasks */
-.completed-section {
-    padding: 0 16px 16px;
-}
-
-.completed-header {
-    margin-top: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 1rem;
-    color: #333;
-    font-weight: 500;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.completed-header:hover {
-    color: #0052d4;
-}
-
-.completed-container {
-    display: flex;
-    flex-direction: column;
-}
-
-/* completed style: line-through, lower opacity, same glass style */
-.task-row.completed {
-    opacity: 0.7;
-    text-decoration: line-through;
-}
-
-/* New check icon for completed tasks row */
-.completed-check {
-    font-size: 1.4rem;
-    margin-right: 12px;
-    color: #00b0ff;
-    cursor: pointer;
-    transition:
-        transform 0.2s,
-        color 0.2s;
-}
-.task-row.completed:hover .completed-check {
-    color: #0052d4;
-    transform: scale(1.2);
-}
-
-.completed-text {
-    color: #777;
-    font-size: 1rem;
-}
-
-/* inline edit input */
-.task-edit-input {
-    flex: 1;
-    font-size: 1rem;
-    padding: 4px 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-/* The bottom add task bar, also glass-card */
-.add-task-bar {
-    display: flex;
-    align-items: center;
-    padding: 12px 16px;
-    gap: 8px;
-    margin: 20px;
-    /* mimic the card style: glass-like */
-    background-color: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(8px);
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.add-task-bar .plus-icon {
-    font-size: 1.4rem;
-    color: #666;
-    cursor: pointer;
-    margin-right: 6px;
-    transition:
-        color 0.2s,
-        transform 0.2s;
-}
-.add-task-bar .plus-icon:hover {
-    color: #0052d4;
-    transform: scale(1.1);
-}
-
-.add-task-bar input {
-    flex: 1;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 1rem;
-}
-
-/* fadeIn */
-.fade-in {
-    animation: fadeIn 0.3s forwards;
-}
 @keyframes fadeIn {
     from {
         opacity: 0;
+        transform: translateY(10px);
     }
     to {
         opacity: 1;
+        transform: translateY(0);
     }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+@keyframes trayOpen {
+    from {
+        max-height: 0;
+        opacity: 0;
+    }
+    to {
+        max-height: 250px;
+        opacity: 1;
+    }
+}
+
+@keyframes trayClose {
+    from {
+        max-height: 250px;
+        opacity: 1;
+    }
+    to {
+        max-height: 0;
+        opacity: 0;
+    }
+}
+
+.tasks-page {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    height: calc(100vh - 60px);
+    display: flex;
+    flex-direction: column;
+    background: #f9fafc;
+    width: 100%;
+    overflow: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.tasks-page ::-webkit-scrollbar {
+    display: none;
+}
+
+.tasks-header h1 {
+    font-size: 1.5rem;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+    text-align: left;
+    padding-left: 0.5rem;
+    font-weight: 600;
+}
+
+.tasks-group {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 1rem;
+}
+
+.tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding-right: 0.5rem;
+}
+
+/* TASK ROW STYLING */
+.task-row {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem;
+    transition: all 0.2s ease;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    animation: slideIn 0.3s ease both;
+}
+
+.task-row.starred {
+    border: 2px solid #f6e05e;
+    background-color: #fffcf0;
+    box-shadow: 0 2px 8px rgba(246, 224, 94, 0.15);
+}
+
+.task-row.deleting {
+    animation: fadeOut 0.3s ease forwards;
+}
+
+.task-content {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.check-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.check-icon {
+    font-size: 1.4rem;
+    color: #cbd5e0;
+    transition: all 0.2s ease;
+}
+
+.check-button:hover .check-icon {
+    color: #4299e1;
+    transform: scale(1.1);
+}
+
+.task-text {
+    flex: 1;
+    font-size: 1rem;
+    color: #2d3748;
+    margin: 0 0.8rem;
+}
+
+.task-actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-left: auto;
+    position: relative;
+}
+
+.task-actions svg {
+    font-size: 1.3rem;
+    padding: 6px;
+    cursor: pointer;
+    color: #718096;
+    transition: all 0.2s ease;
+    width: 28px;
+    height: 28px;
+}
+
+.star-icon {
+    transition: all 0.2s ease;
+}
+
+.star-icon:hover {
+    transform: scale(1.2);
+    color: #f6ad55;
+}
+
+.star-icon.active {
+    color: #f6ad55;
+    fill: #f6ad55;
+}
+
+.delete-icon:hover {
+    color: #f56565;
+    transform: scale(1.1);
+}
+
+.edit-icon:hover {
+    color: #4299e1;
+    transform: scale(1.1);
+}
+
+/* CONFIRM DELETE DIALOG */
+.confirm-dialog {
+    position: absolute;
+    right: calc(100% + 10px);
+    bottom: 50%;
+    transform: translateY(50%);
+    background: white;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    border: 1px solid #e2e8f0;
+    height: 60px;
+    width: 290px;
+    z-index: 1000;
+}
+
+.confirm-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.confirm-yes,
+.confirm-no {
+    padding: 0.4rem 0.6rem;
+    border: 2px solid;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.confirm-yes svg,
+.confirm-no svg {
+    color: #2d3748;
+}
+
+.confirm-yes svg:hover,
+.confirm-no svg:hover {
+    color: white;
+}
+
+.confirm-yes {
+    border-color: #48bb78;
+    background: white;
+    color: #48bb78;
+}
+
+.confirm-no {
+    border-color: #f56565;
+    background: white;
+    color: #f56565;
+}
+
+.confirm-yes:hover {
+    background: #48bb78;
+    color: white;
+}
+
+.confirm-no:hover {
+    background: #f56565;
+    color: white;
+}
+
+.confirm-buttons {
+    color: #2d3748;
+}
+
+.confirm-buttons:hover {
+    color: #2d3748;
+}
+
+/* COMPLETED TASKS SECTION */
+.completed-section {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+/* Completed Tasks Header */
+.completed-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.8rem 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+    margin-bottom: 0.5rem;
+}
+
+.completed-header:hover {
+    background: #f1f3f5;
+}
+
+/* Completed Tasks List */
+.completed-list {
+    max-height: 250px;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    animation: trayOpen 0.3s ease-in-out;
+}
+
+.completed-list.closed {
+    max-height: 0;
+    animation: trayClose 0.3s ease-in-out;
+}
+
+/* Completed Task Item */
+.completed-task {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #48bb78;
+}
+
+/* Completed Task Check Icon */
+.completed-icon {
+    color: #48bb78;
+    cursor: pointer;
+    font-size: 1.4rem;
+    transition: transform 0.2s ease;
+}
+
+.completed-icon:hover {
+    transform: scale(1.1);
+}
+
+/* ADD TASK BAR */
+.add-task-container {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    gap: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-top: 1rem;
+    z-index: 1;
+    flex-direction: row-reverse;
+    margin-bottom: -1rem;
+}
+
+.add-task-container input {
+    flex: 1;
+    padding: 0.8rem 1.2rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: #f8f9fa;
+}
+
+.add-task-container input:focus {
+    border-color: #4299e1;
+    outline: none;
+    background: #ffffff;
+}
+
+.add-button {
+    background: #0052d4;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.4rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.add-button:hover {
+    background: #0041ac;
+    transform: scale(1.1);
+}
+
+.add-button svg {
+    height: 20px;
+    width: 20px;
+}
+
+/* Edit Container */
+.edit-container {
+    flex: 1;
+    position: relative;
+}
+
+/* Task Edit Input */
+.task-edit-input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #2d3748;
+    background: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.task-edit-input:focus {
+    border-color: #4299e1;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+}
+
+/* Edit Hint (if you want to add a hint for saving) */
+.edit-hint {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9rem;
+    color: #718096;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    pointer-events: none;
 }
