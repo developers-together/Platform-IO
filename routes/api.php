@@ -47,9 +47,6 @@ Route::middleware('guest')->group(function () {
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
-    Route::delete('users/destroy', [AuthenticatedSessionController::class, 'destroy'])
-        ->name('users.destroy');
-
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
@@ -84,3 +81,4 @@ Route::middleware('auth')->group(function () {
         ->name('logout');
 });
 
+Route::middleware('auth:sanctum')->post('/logout', [AuthenticatedSessionController::class, 'logout']);
