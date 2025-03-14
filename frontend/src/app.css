@@ -1,0 +1,23 @@
+/* resources/css/app.css */
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #f9fafc;
+    color: #333;
+}
+
+.app-container {
+    display: flex;
+    height: 100vh;
+}

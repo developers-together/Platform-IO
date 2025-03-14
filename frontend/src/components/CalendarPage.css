@@ -1,0 +1,259 @@
+/* CalendarPage.css */
+.calendar-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #f9fafc;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.calendar-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #2d3439;
+}
+
+.day-header-container {
+    display: grid;
+    grid-template-columns: 80px repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 2px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding-bottom: 10px;
+}
+
+.day-header {
+    position: relative;
+    font-weight: 500;
+    text-align: center;
+    padding: 12px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: #ddd;
+}
+
+.day-header.today {
+    background: #ffe08a;
+    font-weight: 600;
+}
+
+.day-header:hover {
+    background: #e9ecef;
+}
+
+.day-header-hover {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2d3439;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    width: 240px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+}
+
+.day-header-hover p {
+    margin: 0 0 8px;
+    font-size: 0.9rem;
+}
+
+.time-header-placeholder {
+    width: 80px;
+}
+
+.calendar-container {
+    flex: 1;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.calendar-grid {
+    position: relative;
+    min-width: 800px;
+    min-height: 1000px;
+}
+
+.time-column {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    padding: 0 8px;
+    background: #fff;
+    z-index: 10;
+}
+
+.time-slot {
+    height: 40px;
+    line-height: 40px;
+    font-size: 0.85rem;
+    color: #6c757d;
+    position: relative;
+    z-index: 2;
+    background: #fff;
+}
+
+.grid-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.vertical-line {
+    position: absolute;
+    width: 1px;
+    background: #e9ecef;
+    z-index: 1;
+}
+
+.horizontal-line {
+    position: absolute;
+    height: 1px;
+    background: #e9ecef;
+    z-index: 1;
+}
+
+.current-time-line {
+    position: absolute;
+    left: 80px;
+    right: 0;
+    height: 2px;
+    background: #ff6b6b;
+    z-index: 1000;
+    pointer-events: auto;
+    box-shadow: 0 0 8px rgba(255, 107, 107, 0.3);
+}
+
+.current-time-line::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    background: #ff6b6b;
+    border-radius: 50%;
+    transform: translateX(-50%);
+}
+
+.current-time-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #212529;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.event {
+    position: absolute;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    z-index: 20;
+    overflow: visible;
+    border-left: 4px solid transparent;
+}
+
+.event.past {
+    border-color: #adb5bd;
+    opacity: 0.8;
+}
+
+.event.today {
+    border-color: #4dabf7;
+}
+
+.event.future {
+    border-color: #69db7c;
+}
+
+.event:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+}
+
+.event-hover {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 0%;
+    transform: translateX(-25%);
+    background: #2d3439;
+    color: white;
+    padding: 16px;
+    border-radius: 8px;
+    width: 280px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.event-hover::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: #2d3439 transparent transparent transparent;
+}
+
+.event-hover h4 {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+}
+
+.event-description {
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin: 0 0 12px;
+}
+
+.event-time {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #a0a0a0;
+    font-size: 0.85rem;
+}
+
+.event-content span {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #2d3439;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
