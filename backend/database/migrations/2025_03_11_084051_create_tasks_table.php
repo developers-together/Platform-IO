@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->bool('stared')->default(false);
+            $table->boolean('stared')->default(false);
             $table->text('description')->nullable();
             $table->dateTime('end')->nullable();
             $table->dateTime('start')->nullable();
