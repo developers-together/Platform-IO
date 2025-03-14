@@ -53,24 +53,37 @@ class AuthenticatedSessionController extends Controller
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
-    $user = Auth::user();
+        $user = Auth::user();
 
-    if ($user) {
-        // Revoke all tokens of the authenticated user
-        $user->tokens()->delete();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401, ['Content-Type' => 'application/json']);
+        }
+
+        // Delete tokens (if using Sanctum)
+        if (method_exists($user, 'tokens')) {
+            $user->tokens()->delete();
+        }
+
+        // Logout from session
+        Auth::guard('web')->logout();
+
+        // Invalidate session
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return response()->json([
             'success' => true,
-            'message' => 'User delete successfully'
-        ]);
+            'message' => 'User logged out successfully'
+        ], 200, ['Content-Type' => 'application/json']);
     }
 
-    return response()->json([
-        'success' => false,
-        'message' => 'User not authenticated'
-    ], 401);
-    }
+
+
+
 
 }
