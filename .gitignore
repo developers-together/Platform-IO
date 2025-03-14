@@ -5,4 +5,7 @@ database/platformio.sqlite
 database/database.sqlite
 
 public/hot
+<<<<<<< Updated upstream
 node_modules/.vite/deps/axios.js
+=======
+>>>>>>> Stashed changes
