@@ -6,16 +6,20 @@ use App\Models\Task;
 use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 
 class TaskController extends Controller
 {
+    use AuthorizesRequests;
     // Display all tasks
-    // public function index(Task $task)
-    // {
-    //     Gate::authorize('view', $task);
+    public function index(Task $task)
+    {
+        // Gate::authorize('view', $task);
+        $task = Task::with('team')->paginate(10);
 
-    //     return response()->json($task);
-    // }
+        return response()->json($task);
+    }
 
     public function show(Task $task)
     {
@@ -28,7 +32,6 @@ class TaskController extends Controller
             'data' => $task,
         ]);
     }
-
 
      // Store a new task in the database
     public function store(Request $request)
@@ -47,8 +50,8 @@ class TaskController extends Controller
             'category' => 'nullable|string|max:255',
         ]);
 
-        
-        
+
+
 
       $task = Task::create([
       'title'=> $validated['title'],
@@ -110,15 +113,6 @@ class TaskController extends Controller
 
         $task->delete();
         return response()->json(['success' => true]);
-
-        // $validated = $request->validate(['team_id' => 'required']);
-
-        // $team = Team::findOrFail($validated['team_id']);
-
-        // // Gate::authorize('update', $team);
-
-        // $task->delete();
-        // return response()->json(['success' => true]);
     }
 
 

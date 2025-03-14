@@ -61,12 +61,6 @@ class TeamController extends Controller
 
         ]);
 
-        // TeamUser::create([
-        //     'user_id' => $user['id'],
-        //     'team_id' => $team['id'],
-        //     'role' => 'leader'
-        // ]);
-
         //Attach the authenticated user to the team with the role "leader"
         $team->users()->attach($userId, ['role' => 'leader']);
 
