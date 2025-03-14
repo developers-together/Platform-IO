@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ReactDOM from "react-dom/client";
-import "app.css";
+import "./app.css";
 import CalendarPage from "./components/CalendarPage";
 import ChatPage from "./components/ChatPage";
 import Dashboard from "./components/Dashboard";
@@ -35,3 +35,5 @@ const root = document.getElementById("app");
 if (root) {
   ReactDOM.createRoot(root).render(<App />);
 }
+
+

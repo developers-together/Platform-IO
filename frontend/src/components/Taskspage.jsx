@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { FiCheck, FiCheckCircle, FiChevronDown, FiChevronUp, FiCircle, FiEdit, FiPlus, FiStar, FiTrash2, FiX } from 'react-icons/fi';
-import './TasksPage.css';
+import './Taskspage.css';
 
 export default function TasksPage() {
     const [tasks, setTasks] = useState([]);
