@@ -1,11 +1,11 @@
 import { useState } from "react";
 import ReactDOM from "react-dom/client";
-import "app.css";
+import "./app.css";
 import CalendarPage from "./components/CalendarPage";
 import ChatPage from "./components/ChatPage";
 import Dashboard from "./components/Dashboard";
 import Sidebar from "./components/Sidebar";
-import TasksPage from "TasksPage";
+import TasksPage from "./components/Taskspage";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("dashboard");
@@ -35,3 +35,5 @@ const root = document.getElementById("app");
 if (root) {
   ReactDOM.createRoot(root).render(<App />);
 }
+
+
