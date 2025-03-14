@@ -10,18 +10,32 @@ use Illuminate\Support\Facades\Gate;
 class TaskController extends Controller
 {
     // Display all tasks
-    public function index(Team $team)
+    // public function index(Task $task)
+    // {
+    //     Gate::authorize('view', $task);
+
+    //     return response()->json($task);
+    // }
+
+    public function show(Task $task)
     {
+        // Authorize the action (ensure the user can view the task)
+        Gate::authorize('view', $task);
 
-        $task = Task::where('team_id',$team['id']);
-
-        return response()->json($task);
+        // Return the task details as a JSON response
+        return response()->json([
+            'message' => 'Task retrieved successfully',
+            'data' => $task,
+        ]);
     }
 
 
      // Store a new task in the database
     public function store(Request $request)
     {
+
+        Gate::authorize('create', Task::class);
+
        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -31,9 +45,8 @@ class TaskController extends Controller
             'category' => 'nullable|string|max:255',
         ]);
 
-        $team = Team::findOrFail($validated['team_id']);
-
-        Gate::authorize('update', $team);
+        
+        
 
       $task = Task::create([
       'title'=> $validated['title'],
@@ -49,6 +62,8 @@ class TaskController extends Controller
     // Update an existing task in the database
     public function update(Request $request , Task $task)
     {
+        Gate::authorize('update', $task);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -56,11 +71,6 @@ class TaskController extends Controller
             'deadline' => 'nullable|date',
             'category' => 'nullable|string|max:255',
         ]);
-
-
-        $team = Task::findOrFail(['team_id']);
-
-        Gate::authorize('update', $team);
 
         $task
         ->update([
@@ -78,11 +88,7 @@ class TaskController extends Controller
     // Delete a task from the database
     public function destroy(Task $task, Request $request)
     {
-
-
-        $team = Team::findOrFail($task['team_id']);
-
-        Gate::authorize('update', $team);
+        $this->authorize('delete', $task);
 
         $validated = $request->validate([
             'task_id' => 'required|exists:tasks,id',

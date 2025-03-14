@@ -13,5 +13,13 @@ class Team extends Model
                     ->withTimestamps();
     }
 
+
+
     protected $fillable = ['name','description','projectname'];
+
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Tasks::class);
+    }
+
 }

@@ -22,49 +22,38 @@ class TaskPolicy
      */
     public function view(User $user, Task $task): bool
     {
-        return true;
+        return $task->team->users()->where('user_id', $user->id)->exists();
+
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user, Team $team): bool
+    public function create(User $user): bool
     {
-        return $team->users()
-            ->where('user_id', $user->id)
-            ->where(function ($query) {
-                $query->wherePivot('role', 'leader')
-                      ->orWherePivot('role', 'member');
-            })
-            ->exists(); 
+        return $user->teams()->whereIn('role', ['leader', 'member'])->exists();
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Team $team): bool
+    public function update(User $user, Task $task): bool
     {
-        return $team->users()
-        ->where('user_id', $user->id)
-        ->where(function ($query) {
-            $query->wherePivot('role', 'leader')
-                  ->orWherePivot('role', 'member');
-        })
-        ->exists(); 
+        return $task->team->users()
+            ->where('user_id', $user->id)
+            ->whereIn('role', ['leader', 'member'])
+            ->exists();
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Team $team): bool
+    public function delete(User $user, Task $task): bool
     {
-        return $team->users()
-        ->where('user_id', $user->id)
-        ->where(function ($query) {
-            $query->wherePivot('role', 'leader')
-                  ->orWherePivot('role', 'member');
-        })
-        ->exists(); 
+        return $task->team->users()
+            ->where('user_id', $user->id)
+            ->where('role', 'leader')
+            ->exists();
     }
 
     /**

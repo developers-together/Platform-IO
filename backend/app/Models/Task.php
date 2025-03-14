@@ -15,4 +15,10 @@ class Task extends Model
     protected $casts = [
         'completed' => 'boolean',
     ];
+
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
+
 }
