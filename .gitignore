@@ -1,3 +1,4 @@
 backend/database/platformio.sqlite
 backend/vendor
+frontend/node_modules
 
