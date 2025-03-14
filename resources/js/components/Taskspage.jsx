@@ -1,15 +1,28 @@
 // resources/js/components/TasksPage.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FiCheckSquare, FiChevronDown, FiChevronUp, FiEdit2, FiPlus, FiStar, FiTrash2 } from 'react-icons/fi';
 import './TasksPage.css';
 import axios from 'axios';
 
 export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, setCurrentPage }) {
-    const [tasks, setTasks] = useState([
-        { id: 1, text: 'Build the initial UI', completed: false, starred: true, editing: false },
-        { id: 2, text: 'Fix the bugs', completed: false, starred: false, editing: false },
-        { id: 3, text: 'Refactor code', completed: false, starred: false, editing: false },
-    ]);
+    const [tasks, setTasks] = useState([]);
+    useEffect(() => {
+        axios.get("http://localhost:8000/api/tasks/index")
+            .then(response => {
+                const formattedTasks = response.data.map(task => ({
+                    id: task.id || Date.now(),  // Use backend ID or fallback to current timestamp
+                    text: task.title || "Untitled Task", // Use title or set default
+                    completed: task.completed ?? false, // Ensure boolean
+                    starred: false, // Not in DB, default to false
+                    editing: false, // Not in DB, default to false
+                }));
+                // console.log("Tasks fetched successfully:", response.data);
+                setTasks(formattedTasks);
+            })
+            .catch(error => {
+                console.error("Error fetching tasks:", error);
+            });
+    }, []); // Runs once when the component mounts
 
     const [completed, setCompleted] = useState([{ id: 101, text: 'Set up repo', completed: true, starred: false, editing: false }]);
 
@@ -19,6 +32,7 @@ export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, se
 
     // add new task
     const handleAddTask = () => {
+        console.log(tasks[0]);
         if (!newTask.trim()) return;
         const newObj = {
             id: Date.now(),
@@ -34,13 +48,13 @@ export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, se
         });
             axios.post(
                 "http://localhost:8000/api/tasks/store",
-                {id: newObj.id,
-                title: newObj.text,
-                description: newObj.text,
-                due_date:newObj.id,
-                completed: false,
-                created_at: newObj.id,
-                updated_at: newObj.id,
+                {title: newObj.text,
+                    description: newObj.text || null,
+                    due_date: new Date(Date.now()).toISOString().slice(0, 19).replace("T", " "), 
+                    date: new Date(Date.now()).toISOString().slice(0, 19).replace("T", " "), 
+                    colour: "red",
+                    completed: false,
+                    team_id: "1", // Ensure this is a string
                 
                 },
                 {
@@ -61,6 +75,18 @@ export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, se
         setTasks((prev) => prev.filter((t) => t.id !== id));
         setCompleted((prev) => prev.filter((t) => t.id !== id));
         setConfirmDeleteId(null);
+        axios.delete("http://localhost:8000/api/tasks/destroy", {
+            data: { task_id: id },
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        // .then(() => {
+        //     setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
+        // })
+        // .catch(error => {
+        //     console.error("Error deleting task:", error);
+        // });
     };
 
     // complete a task => move to completed
