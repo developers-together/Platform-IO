@@ -1,11 +1,3 @@
-/vendor
-platformio
-platformio.sqlite
-database/platformio.sqlite
-database/database.sqlite
+backend/database/platformio.sqlite
+backend/vendor
 
-public/hot
-<<<<<<< Updated upstream
-node_modules/.vite/deps/axios.js
-=======
->>>>>>> Stashed changes
