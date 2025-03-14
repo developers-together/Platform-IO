@@ -5,7 +5,7 @@ import CalendarPage from "./components/CalendarPage";
 import ChatPage from "./components/ChatPage";
 import Dashboard from "./components/Dashboard";
 import Sidebar from "./components/Sidebar";
-import TasksPage from "TasksPage";
+import TasksPage from "./components/Taskspage";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("dashboard");
