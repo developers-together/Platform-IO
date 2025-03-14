@@ -10,7 +10,7 @@ class Task extends Model
     use HasFactory;
 
     protected $fillable = ['title', 'description',
-    'deadline', 'completed','categroy','team_id'];
+    'end','start', 'completed','stared','categroy','team_id'];
 
     protected $casts = [
         'completed' => 'boolean',

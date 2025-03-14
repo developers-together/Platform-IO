@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
             $table->string('title');
+            $table->bool('stared')->default(false);
             $table->text('description')->nullable();
-            $table->dateTime('deadline')->nullable();
+            $table->dateTime('end')->nullable();
+            $table->dateTime('start')->nullable();
             $table->boolean('completed')->default(false);
             $table->string('team_id');
             $table->string("categroy")->nullable();

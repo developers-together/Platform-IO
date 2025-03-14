@@ -39,7 +39,9 @@ class TaskController extends Controller
        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'deadline' => 'nullable|date',
+            'stared'=> 'nullable|boolean',
+            'end' => 'nullable|date',
+            'start' => 'nullable|date',
             'completed' => 'nullable|boolean',
             'team_id' => 'required',
             'category' => 'nullable|string|max:255',
@@ -51,7 +53,9 @@ class TaskController extends Controller
       $task = Task::create([
       'title'=> $validated['title'],
       'description' => $validated['description'],
-      'deadline' => $validated['deadline'],
+      'stared' => $validated['stared']?? false,
+      'end' => $validated['end'],
+      'start' => $validated['start'],
       'category' => $validated['category'],
       'completed' => $validated['completed'],
       'team_id' => $validated['team_id']
@@ -68,7 +72,9 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'completed' => 'nullable|boolean',
-            'deadline' => 'nullable|date',
+            'stared'=> 'nullable|boolean',
+            'end' => 'nullable|date',
+            'start' => 'nullable|date',
             'category' => 'nullable|string|max:255',
         ]);
 
@@ -76,7 +82,9 @@ class TaskController extends Controller
         ->update([
             'title'=> $validated['title'],
             'description' => $validated['description'],
-            'deadline' => $validated['deadline'],
+            'stared' => $validated['stared']?? false,
+            'end' => $validated['end'],
+            'start' => $validated['start'],
             'category' => $validated['category'],
             'completed' => $validated['completed']
         ]);
