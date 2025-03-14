@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { FiCheckSquare, FiChevronDown, FiChevronUp, FiEdit2, FiPlus, FiStar, FiTrash2 } from 'react-icons/fi';
 import './TasksPage.css';
+import axios from 'axios';
 
 export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, setCurrentPage }) {
     const [tasks, setTasks] = useState([
@@ -31,6 +32,27 @@ export default function TasksPage({ sidebarOpen, setSidebarOpen, currentPage, se
             // starred tasks at front
             return updated.sort((a, b) => b.starred - a.starred);
         });
+            axios.post(
+                "http://localhost:8000/api/tasks/store",
+                {id: newObj.id,
+                title: newObj.text,
+                description: newObj.text,
+                due_date:newObj.id,
+                completed: false,
+                created_at: newObj.id,
+                updated_at: newObj.id,
+                
+                },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        // "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                    },
+                    // withCredentials: true, // If using Laravel Sanctum for authentication
+                }
+            );
+            // alert("Task added successfully!");
+
         setNewTask('');
     };
 
