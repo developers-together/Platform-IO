@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import '../css/app.css';
+import CalendarPage from './components/CalendarPage';
 import ChatPage from './components/ChatPage';
 import Dashboard from './components/Dashboard';
 import Sidebar from './components/Sidebar';
@@ -18,6 +19,7 @@ export default function App() {
                 {currentPage === 'dashboard' && <Dashboard />}
                 {currentPage === 'chat' && <ChatPage />}
                 {currentPage === 'Tasks' && <TasksPage />}
+                {currentPage === 'Calendar' && <CalendarPage />}
                 {/* Add other pages as needed */}
             </div>
         </div>
