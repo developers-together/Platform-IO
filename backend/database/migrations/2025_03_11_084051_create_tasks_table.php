@@ -15,11 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->dateTime('due_date')->nullable();
-            $table->dateTime('date')->nullable();
-            $table->string('colour')->nullable();
+            $table->dateTime('deadline')->nullable();
             $table->boolean('completed')->default(false);
             $table->string('team_id');
+            $table->string("categroy")->nullable();
             $table->timestamps();
         });
     }

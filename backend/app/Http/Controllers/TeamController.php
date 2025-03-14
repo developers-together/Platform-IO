@@ -46,7 +46,7 @@ class TeamController extends Controller
         'name'=>'string|required|max:255',
         'projectname'=>'string|required|max:255',
         'description'=>'string|nullable',
-        
+
         ]);
 
         // Get the authenticated user
@@ -128,6 +128,7 @@ class TeamController extends Controller
 
     }
 
+
     public function addMembers(Request $request, Team $team)
     {
         // Authorize the action (ensure the user can update the team)
@@ -165,25 +166,25 @@ class TeamController extends Controller
     {
         // Authorize the action (ensure the user can update the team)
         Gate::authorize('update', $team);
-    
+
         // Validate the request data
         $validated = $request->validate([
             'user_ids' => 'required|array', // Array of user IDs to remove
             'user_ids.*' => 'exists:users,id', // Ensure each user ID exists
         ]);
-    
+
         // Ensure the users to be removed are part of the team
         $usersInTeam = $team->users()->whereIn('user_id', $validated['user_ids'])->pluck('user_id');
-    
+
         if ($usersInTeam->isEmpty()) {
             return response()->json([
                 'message' => 'No valid users to remove from the team.',
             ], 404);
         }
-    
+
         // Remove the users from the team
         $team->users()->detach($usersInTeam);
-    
+
         // Return the updated team as a JSON response
         return response()->json([
             'message' => 'Members removed successfully',

@@ -10,9 +10,12 @@ use Illuminate\Support\Facades\Gate;
 class TaskController extends Controller
 {
     // Display all tasks
-    public function index()
+    public function index(Team $team)
     {
-        return response()->json(Task::all());
+
+        $task = Task::where('team_id',$team['id']);
+
+        return response()->json($task);
     }
 
 
@@ -22,23 +25,21 @@ class TaskController extends Controller
        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'due_date' => 'nullable|date',
-            'date' => 'nullable|date',
-            'colour' => 'nullable|string',
+            'deadline' => 'nullable|date',
             'completed' => 'nullable|boolean',
             'team_id' => 'required',
+            'category' => 'nullable|string|max:255',
         ]);
 
-        // $team = Team::findOrFail($validated['team_id']);
+        $team = Team::findOrFail($validated['team_id']);
 
-        // Gate::authorize('update', $team);
+        Gate::authorize('update', $team);
 
       $task = Task::create([
       'title'=> $validated['title'],
       'description' => $validated['description'],
-      'due_date' => $validated['due_date'],
-      'date' => $validated['date'],
-      'colour' => $validated['colour'],
+      'deadline' => $validated['deadline'],
+      'category' => $validated['category'],
       'completed' => $validated['completed'],
       'team_id' => $validated['team_id']
       ]);
@@ -46,41 +47,43 @@ class TaskController extends Controller
     }
 
     // Update an existing task in the database
-    public function update(Request $request)
+    public function update(Request $request , Task $task)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'due_date' => 'nullable|date',
             'completed' => 'nullable|boolean',
-            'task_id' => 'required|exists:tasks,id',
-            'team_id' => 'required',
-            'date' => 'nullable|date',
-            'colour' => 'nullable|string|max:255',
+            'deadline' => 'nullable|date',
+            'category' => 'nullable|string|max:255',
         ]);
 
 
-        // $team = Team::findOrFail($validated['team_id']);
+        $team = Task::findOrFail(['team_id']);
 
-        // Gate::authorize('update', $team);
+        Gate::authorize('update', $team);
 
-        $task = Task::where('id', $validated['task_id'])
+        $task
         ->update([
             'title'=> $validated['title'],
             'description' => $validated['description'],
-            'date' => $validated['date'],
-            'colour' => $validated['colour'],
-            'due_date' => $validated['due_date'],
+            'deadline' => $validated['deadline'],
+            'category' => $validated['category'],
             'completed' => $validated['completed']
         ]);
 
-        $task = Task::find($validated['task_id']);
+        // $task = Task::find($validated['task_id']);
         return response()->json(['success' => true, 'task' => $task]);
     }
 
     // Delete a task from the database
     public function destroy(Task $task, Request $request)
     {
+
+
+        $team = Team::findOrFail($task['team_id']);
+
+        Gate::authorize('update', $team);
+
         $validated = $request->validate([
             'task_id' => 'required|exists:tasks,id',
         ]);

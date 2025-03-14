@@ -14,7 +14,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all();
+        $users = User::all()->paginate(15);
         return response()->json($users);
     }
 
@@ -57,7 +57,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        
+
         return response()->json($user);
     }
 
@@ -74,7 +74,7 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-    
+
 
         $validatedData = $request->validate([
             'name' => 'sometimes|string|max:255',
@@ -96,10 +96,8 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-       
 
         $user->delete();
-
         return response()->json(null, 204);
     }
 }
