@@ -15,7 +15,7 @@ use App\Http\Controllers\MessageController;
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    Route::get('/user/{user}', [UserController::class, 'show']);
+    Route::get('/user/show', [UserController::class, 'show']);
     Route::put('/user/{user}', [UserController::class, 'update']);
     Route::patch('/user/{user}', [UserController::class, 'update']);
     Route::delete('/user/{user}', [UserController::class, 'destroy']);

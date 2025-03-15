@@ -55,11 +55,16 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show()
     {
+        $user = Auth::user();
 
-        return response()->json($user);
+        return response()->json([
+            'message' => 'User retrieved successfully',
+            'data' => $user,
+        ]);
     }
+
 
     /**
      * Show the form for editing the specified resource.
