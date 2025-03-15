@@ -13,7 +13,7 @@ class ChatController extends Controller
     use AuthorizesRequests;
 
     // Display all chats
-    public function index(Chat $chat)
+    public function index()
     {
         $chat = Chat::with('team')->paginate(10);
 
@@ -29,6 +29,7 @@ class ChatController extends Controller
             'name' => 'required|string|max:255',
             'team_id' => 'required'
         ]);
+        
 
       $chat = Chat::create([
       'name'=> $validated['name'],
