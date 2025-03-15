@@ -6,6 +6,7 @@ import ChatPage from "./components/ChatPage";
 import Dashboard from "./components/Dashboard";
 import Sidebar from "./components/Sidebar";
 import TasksPage from "./components/Taskspage";
+import AIPage from "./components/AI";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("dashboard");
@@ -25,6 +26,7 @@ export default function App() {
         {currentPage === "chat" && <ChatPage />}
         {currentPage === "Tasks" && <TasksPage />}
         {currentPage === "Calendar" && <CalendarPage />}
+        {currentPage === "AI" && <AIPage />}
         {/* Add other pages as needed */}
       </div>
     </div>
@@ -35,5 +37,3 @@ const root = document.getElementById("app");
 if (root) {
   ReactDOM.createRoot(root).render(<App />);
 }
-
-

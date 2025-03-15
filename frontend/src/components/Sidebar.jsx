@@ -25,7 +25,7 @@ export default function Sidebar({
     { icon: <FiMessageSquare />, label: "Chat", page: "chat" },
     { icon: <FiCheckSquare />, label: "Tasks", page: "Tasks" },
     { icon: <FiCalendar />, label: "Calendar", page: "Calendar" },
-    { icon: <FaFan />, label: "AI", page: "ai" },
+    { icon: <FaFan />, label: "AI", page: "AI" },
   ];
 
   const bottomMenu = [
@@ -44,19 +44,23 @@ export default function Sidebar({
     }
   };
 
-  // Always animate the AI icon's rotation
+  // State for the AI icon rotation (in degrees)
   const [aiRotation, setAiRotation] = useState(0);
   const animationRef = useRef();
   const prevTimeRef = useRef();
-  // Use a ref to always have the current page available without restarting the loop.
+  const [aiHovered, setAiHovered] = useState(false);
+  // Use a ref to hold the current page without restarting the animation loop
   const currentPageRef = useRef(currentPage);
   useEffect(() => {
     currentPageRef.current = currentPage;
   }, [currentPage]);
 
   useEffect(() => {
-    const highSpeed = 360 / 5000; // degrees per ms when active (360° in 5 sec)
-    const lowSpeed = 360 / 20000; // degrees per ms when not active (360° in 20 sec)
+    // Define speeds in degrees per millisecond:
+    const NOT_AI_NOT_HOVERED = 360 / 10000; // 360° in 20s
+    const NOT_AI_HOVERED = 360 / 5000; // 360° in 10s
+    const AI_NOT_HOVERED = 360 / 2500; // 360° in 5s
+    const AI_HOVERED = 360 / 1250; // 360° in 2.5s
 
     const animate = (time) => {
       if (prevTimeRef.current == null) {
@@ -64,15 +68,21 @@ export default function Sidebar({
       }
       const delta = time - prevTimeRef.current;
       prevTimeRef.current = time;
-      // Choose speed based on whether the current page is "ai"
-      const speed = currentPageRef.current === "ai" ? highSpeed : lowSpeed;
+
+      let speed;
+      if (currentPageRef.current === "AI") {
+        speed = aiHovered ? AI_HOVERED : AI_NOT_HOVERED;
+      } else {
+        speed = aiHovered ? NOT_AI_HOVERED : NOT_AI_NOT_HOVERED;
+      }
+
       setAiRotation((prev) => (prev + speed * delta) % 360);
       animationRef.current = requestAnimationFrame(animate);
     };
 
     animationRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationRef.current);
-  }, []);
+  }, [aiHovered]);
 
   return (
     <div className={`sidebar ${sidebarOpen ? "open" : "closed"}`}>
@@ -84,6 +94,12 @@ export default function Sidebar({
               currentPage === item.page ? "active" : ""
             } ${item.label === "AI" ? "ai" : ""}`}
             onClick={() => handleNav(item)}
+            onMouseEnter={() => {
+              if (item.label === "AI") setAiHovered(true);
+            }}
+            onMouseLeave={() => {
+              if (item.label === "AI") setAiHovered(false);
+            }}
           >
             <span
               className="icon"
