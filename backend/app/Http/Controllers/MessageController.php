@@ -53,6 +53,16 @@ class MessageController extends Controller
     
         // Retrieve paginated messages for the chat
         $messages = Message::where('chat_id', $chat->id)->paginate(15);
+
+        $messages->getCollection()->transform(function ($message) {
+            if ($message->image) {
+                $message->image = Storage::url($message->image); 
+            } else {
+                $message->image_url = null; // No image
+            }
+            return $message;
+        });
+
     
         // Return the paginated messages
         return response()->json($messages);
