@@ -18,7 +18,7 @@ export default function Register({ setCurrentPage }) {
         setIsLoading(true);
 
         try {
-            const response = await axios.post("http://localhost:8000/api/user", {
+            const response = await axios.post("http://localhost:8000/api/register", {
                 name,
                 email,
                 password,

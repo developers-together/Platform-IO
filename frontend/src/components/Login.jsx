@@ -18,6 +18,8 @@ export default function Login({ setCurrentPage }) {
                 email,
                 password,
             });
+            const token = response.data.token;
+            localStorage.setItem("token", token);
             setCurrentPage("dashboard");
         } catch (error) {
             console.log(error.response?.data?.message);
