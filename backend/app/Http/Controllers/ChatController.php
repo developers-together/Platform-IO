@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Chat;
+use App\Models\Team;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Gate;
 
@@ -13,9 +14,12 @@ class ChatController extends Controller
     use AuthorizesRequests;
 
     // Display all chats
-    public function index()
+    public function index(Team $team)
     {
-        $chat = Chat::with('team')->paginate(10);
+        Gate::authorize('viewAny', Chat::class);
+
+
+        $chat = Chat::where('team_id', $team-id)->get();
 
         return response()->json($chat);
     }
