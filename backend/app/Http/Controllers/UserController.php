@@ -108,6 +108,17 @@ class UserController extends Controller
         ]);
     }
 
+    public function teams()
+    {
+        $user = Auth::user()->load('teams'); // or ->load('team') if it's one team
+
+        return response()->json([
+            'message' => 'User retrieved successfully',
+            'data' => $user,
+        ]);
+    }
+
+
     /**
      * Remove the specified resource from storage.
      */

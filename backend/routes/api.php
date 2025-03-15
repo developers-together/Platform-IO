@@ -18,6 +18,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/show', [UserController::class, 'show']);
     Route::delete('/user/delete', [UserController::class, 'delete']);
     Route::post('user/logout', [UserController::class, 'logout']);
+    Route::get('/user/teams', [UserController::class, 'teams']);
 
     Route::get('/tasks/index', [TaskController::class, 'index']);
     Route::post('/tasks/{team}/store', [TaskController::class, 'store'])->name('tasks.store');
