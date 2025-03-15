@@ -19,7 +19,7 @@ class ChatController extends Controller
         Gate::authorize('viewAny', Chat::class);
 
 
-        $chat = Chat::where('team_id', $team-id)->get();
+        $chat = Chat::where('team_id', $team->id)->get();
 
         return response()->json($chat);
     }
