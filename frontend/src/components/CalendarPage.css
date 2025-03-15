@@ -48,6 +48,10 @@
   background: #e9ecef;
 }
 
+.day-header.today:hover {
+  background: #ffcd42;
+}
+
 /* Day Header Tooltip */
 .day-header-hover {
   position: absolute;
