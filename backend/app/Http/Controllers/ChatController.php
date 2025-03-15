@@ -7,6 +7,8 @@ use App\Models\Chat;
 use App\Models\Team;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
+
 
 
 class ChatController extends Controller
@@ -34,7 +36,7 @@ class ChatController extends Controller
         ]);
 
         $user = Auth::user();
-        
+
         if($team->users()->where('user_id', $user->id)){
 
             $chat = Chat::create([
@@ -43,7 +45,7 @@ class ChatController extends Controller
                 ]);
         }
 
-    
+
         return response()->json(['success' => true, 'chat' => $chat]);
     }
 
@@ -68,7 +70,7 @@ class ChatController extends Controller
         ]);
 
         $user = Auth::user();
-        
+
         if($chat->team->users()->where('user_id', $user->id)){
 
         $chat->update([
@@ -99,7 +101,7 @@ class ChatController extends Controller
 
         $chat->delete();
         }
-        
+
         return response()->json(['success' => true]);
     }
 
