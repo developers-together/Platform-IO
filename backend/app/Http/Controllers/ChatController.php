@@ -93,6 +93,8 @@ class ChatController extends Controller
             return response()->json(['success' => false, 'message' => 'Chat not found'], 404);
         }
 
+        $user = Auth::user();
+
         if($chat->team->users()->where('user_id', $user->id)){
 
         $chat->delete();

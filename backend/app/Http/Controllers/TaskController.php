@@ -34,7 +34,7 @@ class TaskController extends Controller
     }
 
      // Store a new task in the database
-    public function store(Request $request)
+    public function store(Request $request, Team $team)
     {
 
         Gate::authorize('create', Task::class);
@@ -50,8 +50,9 @@ class TaskController extends Controller
             'category' => 'nullable|string|max:255',
         ]);
 
+        $user = AUTH::user();
 
-
+        if($team->users()->where('user_id', $user->id)){
 
       $task = Task::create([
       'title'=> $validated['title'],
@@ -63,6 +64,7 @@ class TaskController extends Controller
       'completed' => $validated['completed'],
       'team_id' => $validated['team_id']
       ]);
+    }
         return response()->json(['success' => true, 'task' => $task]);
     }
 
@@ -70,6 +72,8 @@ class TaskController extends Controller
     public function update(Request $request , Task $task)
     {
         Gate::authorize('update', $task);
+
+        $user = AUTH::user();
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -81,6 +85,8 @@ class TaskController extends Controller
             'category' => 'nullable|string|max:255',
         ]);
 
+        if($task->team->users()->where('user_id', $user->id)){
+
         $task
         ->update([
             'title'=> $validated['title'],
@@ -91,6 +97,8 @@ class TaskController extends Controller
             'category' => $validated['category'],
             'completed' => $validated['completed']
         ]);
+
+    }
 
         // $task = Task::find($validated['task_id']);
         return response()->json(['success' => true, 'task' => $task]);
@@ -111,7 +119,14 @@ class TaskController extends Controller
             return response()->json(['success' => false, 'message' => 'Task not found'], 404);
         }
 
+        $user = AUTH::user();
+
+        if($task->team->users()->where('user_id', $user->id)){
+
         $task->delete();
+
+        }
+        
         return response()->json(['success' => true]);
     }
 
