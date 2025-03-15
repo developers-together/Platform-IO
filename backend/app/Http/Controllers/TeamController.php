@@ -46,8 +46,7 @@ class TeamController extends Controller
         'name'=>'string|required|max:255',
         'projectname'=>'string|required|max:255',
         'description'=>'string|nullable',
-        'code' => 'string|nullable|unique:teams,code'
-
+        'code' => 'required|string|size:6|unique:teams,code'
         ]);
 
         // Get the authenticated user
@@ -59,7 +58,7 @@ class TeamController extends Controller
         'name'=> $validated['name'],
         'projectname' =>$validated['projectname'],
         'description'=>$validated['description'] ?? null,
-        'code' => $validated['code'] ?? null
+        'code' => $validated['code']
 
         ]);
 
