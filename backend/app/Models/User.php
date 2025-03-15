@@ -47,10 +47,10 @@ class User extends Authenticatable
         ];
     }
 
-    public function Chats()
+    public function Messages(): HasMany
     {
-        return $this->belongsToMany(Chat::class,'messages')
-        ->withPivot('message')->withTimestamps();
+        return $this->HasMany(Message::class);
+       
     }
 
     // public function messages()

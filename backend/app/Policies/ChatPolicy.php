@@ -14,7 +14,7 @@ class ChatPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->teams()->exists();
     }
 
     /**
@@ -31,7 +31,7 @@ class ChatPolicy
      */
     public function create(User $user): bool
     {
-        return $user->teams()->whereIn('role', ['leader', 'member'])->exists();
+        return $user->teams()->exists();
     }
 
     /**
@@ -41,7 +41,6 @@ class ChatPolicy
     {
         return $chat->team->users()
             ->where('user_id', $user->id)
-            ->whereIn('role', ['leader', 'member'])
             ->exists();
     }
 
@@ -52,7 +51,6 @@ class ChatPolicy
     {
         return $chat->team->users()
             ->where('user_id', $user->id)
-            ->where('role', 'leader')
             ->exists();
     }
 

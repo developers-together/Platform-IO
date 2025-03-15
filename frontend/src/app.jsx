@@ -8,6 +8,8 @@ import Sidebar from "./components/Sidebar";
 import TasksPage from "./components/Taskspage";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import AIPage from "./components/AI";
+
 export default function App() {
   const [currentPage, setCurrentPage] = useState("login");
   // Toggle for the collapsible sidebar, if you’re using that
@@ -30,6 +32,7 @@ export default function App() {
         {currentPage === "Calendar" && <CalendarPage />}
         {currentPage === "login" && <Login setCurrentPage={setCurrentPage} />}
         {currentPage === "register" && <Register setCurrentPage={setCurrentPage} />}
+        {currentPage === "AI" && <AIPage />}
         {/* Add other pages as needed */}
       </div>
     </div>
@@ -40,5 +43,3 @@ const root = document.getElementById("app");
 if (root) {
   ReactDOM.createRoot(root).render(<App />);
 }
-
-

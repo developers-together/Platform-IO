@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Chat;
+use App\Models\Team;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
+
 
 
 class ChatController extends Controller
@@ -13,27 +16,37 @@ class ChatController extends Controller
     use AuthorizesRequests;
 
     // Display all chats
-    public function index(Chat $chat)
+    public function index(Team $team)
     {
-        $chat = Chat::with('team')->paginate(10);
+        Gate::authorize('viewAny', Chat::class);
+
+
+        $chat = Chat::where('team_id', $team->id)->get();
 
         return response()->json($chat);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, Team $team)
     {
 
         Gate::authorize('create', Chat::class);
 
        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'team_id' => 'required'
         ]);
 
-      $chat = Chat::create([
-      'name'=> $validated['name'],
-      'team_id' => $validated['team_id']
-      ]);
+        $user = Auth::user();
+
+        if($team->users()->where('user_id', $user->id)){
+
+            $chat = Chat::create([
+                'name'=> $validated['name'],
+                'team_id' => $team->id
+
+                ]);
+        }
+
+
         return response()->json(['success' => true, 'chat' => $chat]);
     }
 
@@ -57,9 +70,14 @@ class ChatController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
+        $user = Auth::user();
+
+        if($chat->team->users()->where('user_id', $user->id)){
+
         $chat->update([
             'name'=> $validated['name'],
         ]);
+    }
 
         return response()->json(['success' => true, 'chat' => $chat]);
     }
@@ -78,7 +96,13 @@ class ChatController extends Controller
             return response()->json(['success' => false, 'message' => 'Chat not found'], 404);
         }
 
+        $user = Auth::user();
+
+        if($chat->team->users()->where('user_id', $user->id)){
+
         $chat->delete();
+        }
+
         return response()->json(['success' => true]);
     }
 
