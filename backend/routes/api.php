@@ -30,8 +30,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/chats/{chat}', [ChatController::class, 'destroy']);
     Route::put('/chats/{chat}', [ChatController::class, 'update']);
 
+<<<<<<< HEAD
     Route::post('/chats/{chat}/sendMessages', [MessageController::class, 'sendMessage']);
     Route::get('/chats/{chat}/getMessages', [MessageController::class, 'getMessages']);
+=======
+    Route::post('/chats/{chat}/messages', [MessageController::class, 'sendMessage']);
+    Route::get('/chats/{chat}/messages', [MessageController::class, 'getMessages']);
+>>>>>>> bc8dcdc50cd4364c1dff52ca1ea525f17a17fd7b
 
     Route::post('/team/create',[TeamController::class,'store']);
     Route::get('/team/{team}/show',[TeamController::class,'show']);
