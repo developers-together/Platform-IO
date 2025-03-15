@@ -1,477 +1,473 @@
 /* resources/js/components/Dashboard.css */
 
 .dashboard-page {
-    padding: 20px;
-    background: #f9fafc;
-    height: 100%;
+  padding: 20px;
+  background: #f9fafc;
+  height: 100%;
 }
 
 .db-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .db-header h2 {
-    margin: 0;
-    font-size: 2rem;
+  margin: 0;
+  font-size: 2rem;
 }
 
 /* 3x2 card layout */
 .dashboard-grid {
-    display: grid;
-    gap: 20px;
-    grid-auto-rows: 300px;
-    grid-auto-flow: dense;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  display: grid;
+  gap: 20px;
+  grid-auto-rows: 300px;
+  grid-auto-flow: dense;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
 /* Card styling */
 .card {
-    background-color: rgba(255, 255, 255, 0.85);
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(8px);
-    transition:
-        transform 0.2s,
-        box-shadow 0.2s;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .card h3 {
-    margin: 0 0 15px;
-    font-size: 1.5rem;
+  margin: 0 0 15px;
+  font-size: 1.5rem;
 }
 
 .card ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    flex: 1;
-    overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .card li {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    font-size: 1rem;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 1rem;
 }
 
 /* Make sure the tasks-card list has no extra bullet/spacing */
 .tasks-card ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .tasks-card ul::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 /* Each row for a task item */
 .task-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #ebecec; /* same light background as your file rows */
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin-bottom: 10px;
-    color: black;
-    transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ebecec; /* same light background as your file rows */
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  color: black;
+  transition: background 0.2s;
 }
 
 .task-item:hover {
-    background: #e2e3e3;
+  background: #e2e3e3;
 }
 
 /* Left side: checkbox + task name */
 .task-left {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* space between checkbox & text */
+  display: flex;
+  align-items: center;
+  gap: 8px; /* space between checkbox & text */
 }
 
 .circular-checkbox {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    width: 16px;
-    height: 16px;
-    border: 2px solid #b9bbbe;
-    border-radius: 50%;
-    outline: none;
-    cursor: pointer;
-    display: inline-block;
-    position: relative;
-    transition: border-color 0.2s; /* Add transition for hover effect */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #b9bbbe;
+  border-radius: 50%;
+  outline: none;
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  transition: border-color 0.2s; /* Add transition for hover effect */
 }
 
 .circular-checkbox:hover {
-    border-color: #5a5b5c; /* Hover effect */
+  border-color: #5a5b5c; /* Hover effect */
 }
 
 .circular-checkbox:checked {
-    border-color: #29b31c; /* Change color when checked */
+  border-color: #29b31c; /* Change color when checked */
 }
 
 .circular-checkbox:checked::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 8px;
-    height: 8px;
-    background-color: #29b31c; /* Change color when checked */
-    border-radius: 50%;
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background-color: #29b31c; /* Change color when checked */
+  border-radius: 50%;
 }
 
 .circular-checkbox + .task-name {
-    transition:
-        text-decoration 0.3s ease,
-        color 0.3s ease;
+  transition: text-decoration 0.3s ease, color 0.3s ease;
 }
 
 .circular-checkbox:checked + .task-name {
-    text-decoration: line-through;
-    color: #888;
+  text-decoration: line-through;
+  color: #888;
 }
 
 /* Right side: the three-dot action */
 .task-options {
-    font-size: 1.2rem;
-    cursor: pointer;
-    color: #b9bbbe;
-    transition: 0.2s;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #b9bbbe;
+  transition: 0.2s;
 }
 
 .task-options:hover {
-    color: #5a5b5c;
+  color: #5a5b5c;
 }
 
 /* AI Card Styling */
 .ai-card {
-    background: linear-gradient(135deg, #0052d4, #4364f7);
-    color: white;
-    grid-row: span 2;
-    grid-column: -2; /* Positions card in the second last column */
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    position: relative;
-    overflow: hidden;
+  background: linear-gradient(135deg, #0052d4, #4364f7);
+  color: white;
+  grid-row: span 2;
+  grid-column: -2; /* Positions card in the second last column */
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  position: relative;
+  overflow: hidden;
 }
 
 .ai-card h3 {
-    color: white;
-    font-size: 1.8rem;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    position: relative;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  color: white;
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  position: relative;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .ai-card ::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 /* AI Icon styling */
 .ai-card h3::before {
-    content: '🤖';
-    font-size: 2rem;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  content: "🤖";
+  font-size: 2rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 /* AI List Items */
 .ai-item {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 16px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    margin-top: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
 }
 
 .ai-item:hover {
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
 /* Update action button styles */
 .ai-actions {
-    display: flex;
-    gap: 8px;
-    margin-left: 12px;
+  display: flex;
+  gap: 8px;
+  margin-left: 12px;
 }
 
 .action-btn {
-    padding: 6px;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-    background: transparent;
-    border: 1.5px solid currentColor;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  padding: 6px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: 1.5px solid currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .action-btn svg {
-    width: 18px;
-    height: 18px;
-    stroke-width: 2.5px;
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5px;
 }
 
 .action-btn.accept {
-    color: #34d399;
-    border-color: rgba(255, 255, 255, 0.3);
+  color: #34d399;
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .action-btn.accept:hover {
-    background: #34d399;
-    color: white;
-    border-color: transparent;
+  background: #34d399;
+  color: white;
+  border-color: transparent;
 }
 
 .action-btn.reject {
-    color: #f87171;
-    border-color: rgba(255, 255, 255, 0.3);
+  color: #f87171;
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .action-btn.reject:hover {
-    background: #f87171;
-    color: white;
-    border-color: transparent;
+  background: #f87171;
+  color: white;
+  border-color: transparent;
 }
 
 /* Make text more readable */
 .ai-item span {
-    font-weight: 500;
-    letter-spacing: 0.02em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 /* Calendar grid */
 .calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-    flex: 1;
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(7, 1fr);
+  min-width: fit-content;
+  min-height: fit-content;
+  width: 100%;
+  height: 100%;
 }
 
 .calendar-day {
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
-    padding: 10px;
-    text-align: center;
-    position: relative;
-    font-size: 0.8rem;
-    width: auto;
-    height: auto;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  position: relative;
+  font-size: 0.8rem;
+  width: 100%;
+  height: 100%;
 }
 
 .event-dot {
-    position: absolute;
-    bottom: 6px; /* slightly above the bottom edge */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 6px;
-    height: 6px;
-    background-color: #f13e3c;
-    border-radius: 50%;
-    pointer-events: none; /* ignore mouse events, optional */
+  position: absolute;
+  bottom: 6px; /* slightly above the bottom edge */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background-color: #f13e3c;
+  border-radius: 50%;
+  pointer-events: none; /* ignore mouse events, optional */
 }
 
 /* Ensure the <li> inside .chat-card is block-based */
 .chat-card ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .chat-card ul::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 .chat-card ul li {
-    display: block;
-    margin-bottom: 10px;
+  display: block;
+  margin-bottom: 10px;
 }
 
 /* Each group is one card with a gray header row */
 .chat-group-card {
-    background: #f1f2f2;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  background: #f1f2f2;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* Header row: group name + arrow */
 .chat-group-header {
-    background: #ebecec;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: left;
-    cursor: pointer;
-    transition: background 0.2s;
-    gap: 6px;
+  background: #ebecec;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  cursor: pointer;
+  transition: background 0.2s;
+  gap: 6px;
 }
 .chat-group-header:hover {
-    background: #e2e3e3;
+  background: #e2e3e3;
 }
 .chat-group-name {
-    font-weight: 500;
-    color: #333;
+  font-weight: 500;
+  color: #333;
 }
 .chat-group-arrow {
-    font-size: 1.2rem;
-    color: #7d7f81;
-    transition: color 0.2s;
-    margin-left: auto;
+  font-size: 1.2rem;
+  color: #7d7f81;
+  transition: color 0.2s;
+  margin-left: auto;
 }
 .chat-group-arrow:hover {
-    color: #555;
+  color: #555;
 }
 
 /* Collapsible messages area with transitions on max-height & opacity */
 .chat-group-body {
-    background: #f8f7f7;
-    padding: 0 14px; /* start with 0 padding so closed = min space */
-    max-height: 0; /* default closed */
-    opacity: 0;
-    overflow: hidden;
-    transition:
-        max-height 0.3s ease,
-        opacity 0.3s ease,
-        padding 0.3s ease;
+  background: #f8f7f7;
+  padding: 0 14px; /* start with 0 padding so closed = min space */
+  max-height: 0; /* default closed */
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
 }
 
 /* When open, expand with max-height & restore padding/opacity */
 .chat-group-body.open {
-    max-height: 300px; /* or a large enough value for your content */
-    opacity: 1;
-    padding: 10px 14px;
+  max-height: 300px; /* or a large enough value for your content */
+  opacity: 1;
+  padding: 10px 14px;
 }
 
 /* Spacing for each message row */
 .chat-group-message {
-    margin-bottom: 6px;
-    color: #333;
+  margin-bottom: 6px;
+  color: #333;
 }
 
 .events-card {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .events-card ::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 /* Title & subtitle styling */
 .events-title {
-    margin: 0;
-    font-size: 1.5rem;
+  margin: 0;
+  font-size: 1.5rem;
 }
 
 /* The list of events */
 .events-card ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 /* Each event is a "bubble" row */
 .event-item {
-    background: #ebecec;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-    transition: background 0.2s;
+  background: #ebecec;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  transition: background 0.2s;
 }
 
 .event-item:hover {
-    background: #e2e3e3;
+  background: #e2e3e3;
 }
 
 /* Left side: dot + time */
 .event-time-dot {
-    display: flex;
-    align-items: center;
-    margin-right: 12px;
-    width: 90px; /* fixed width for consistent alignment */
-    gap: 6px;
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+  width: 90px; /* fixed width for consistent alignment */
+  gap: 6px;
 }
 
 /* The colored bullet */
 .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #8e2de2; /* pick a color or random color per event */
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #8e2de2; /* pick a color or random color per event */
 }
 
 /* The event time text */
 .event-time {
-    font-size: 0.9rem;
-    color: #666;
+  font-size: 0.9rem;
+  color: #666;
 }
 
 /* Middle: event title & description */
 .event-info {
-    flex: 1; /* take up the remaining space */
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  flex: 1; /* take up the remaining space */
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .event-title {
-    font-weight: 600;
-    color: #333;
+  font-weight: 600;
+  color: #333;
 }
 
 .event-desc {
-    font-size: 0.85rem;
-    color: #888;
+  font-size: 0.85rem;
+  color: #888;
 }
 
 /* Right: 3-dot menu */
 .event-options {
-    font-size: 1.2rem;
-    color: #b9bbbe;
-    cursor: pointer;
-    transition: color 0.2s;
-    padding-left: 10px;
+  font-size: 1.2rem;
+  color: #b9bbbe;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding-left: 10px;
 }
 .event-options:hover {
-    color: #555;
+  color: #555;
 }
 
 .chat-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #29b31c;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #29b31c;
 }
