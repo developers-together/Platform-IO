@@ -42,17 +42,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/team/{team}/changeroles',[TeamController::class,'changeRoles']);
     Route::put('/team/{team}/changeleader',[TeamController::class,'changeLeader']);
     Route::delete('/team/{team}/removemembers',[TeamController::class,'removeMembers']);
+    Route::post('/team/joinTeam', [TeamController::class, 'joinTeam']);
+
 
 });
 
-
-
-
-Route::get('/user', [UserController::class, 'index']);
-
 Route::post('/user', [UserController::class, 'store']);
-
-Route::get('/team',[TeamController::class,'index']);
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 

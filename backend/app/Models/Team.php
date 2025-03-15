@@ -15,7 +15,7 @@ class Team extends Model
 
 
 
-    protected $fillable = ['name','description','projectname'];
+    protected $fillable = ['name','description','projectname','code'];
 
     public function tasks(): HasMany
     {

@@ -46,6 +46,7 @@ class TeamController extends Controller
         'name'=>'string|required|max:255',
         'projectname'=>'string|required|max:255',
         'description'=>'string|nullable',
+        'code' => 'string|nullable|unique:teams,code'
 
         ]);
 
@@ -57,7 +58,8 @@ class TeamController extends Controller
         $team = Team::create([
         'name'=> $validated['name'],
         'projectname' =>$validated['projectname'],
-        'description'=>$validated['description'] ?? null
+        'description'=>$validated['description'] ?? null,
+        'code' => $validated['code'] ?? null
 
         ]);
 
@@ -255,6 +257,38 @@ class TeamController extends Controller
         ], 200);
     }
 
+    public function joinTeam(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string'
+        ]);
+
+        $user = Auth::user();
+
+        // Find team by code
+        $team = Team::where('code', $request->code)->first();
+
+        if (!$team) {
+            return response()->json([
+                'message' => 'Invalid team code.'
+            ], 404);
+        }
+
+        // Check if user is already part of the team
+        if ($team->users()->where('user_id', $user->id)->exists()) {
+            return response()->json([
+                'message' => 'You are already a member of this team.'
+            ], 200);
+        }
+
+        // Attach user to the team
+        $team->users()->attach($user->id);
+
+        return response()->json([
+            'message' => 'Joined team successfully.',
+            'team' => $team
+        ], 200);
+    }
 
     /**
      * Remove the specified resource from storage.
