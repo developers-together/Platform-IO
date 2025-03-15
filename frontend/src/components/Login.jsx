@@ -75,7 +75,7 @@ export default function Login({ setCurrentPage }) {
                         )}
                     </button>
                 </form>
-
+                <button onClick={()=>setCurrentPage("dashboard")}>SKIP</button> {/*temp skip button for debugging*/} 
                 <p className="login-footer">
                     Don't have an account?{" "}
                     <span 
