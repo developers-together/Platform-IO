@@ -25,7 +25,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/tasks/{task}/destroy', [TaskController::class, 'destroy'])->name('tasks.destroy');
     Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
 
-    Route::get('/chats', [ChatController::class, 'index']);
+    Route::get('/chats/{team}', [ChatController::class, 'index']);
     Route::post('/chats/{team}/store', [ChatController::class, 'store']);
     Route::delete('/chats/{chat}', [ChatController::class, 'destroy']);
     Route::put('/chats/{chat}', [ChatController::class, 'update']);

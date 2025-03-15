@@ -17,4 +17,10 @@ class Chat extends Model
         return $this->belongsTo(Team::class);
     }
 
+    public function Messages(): HasMany
+    {
+        return $this->HasMany(Message::class);
+       
+    }
+
 }

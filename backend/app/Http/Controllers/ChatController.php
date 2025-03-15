@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
 
 
-
 class ChatController extends Controller
 {
     use AuthorizesRequests;
@@ -32,21 +31,20 @@ class ChatController extends Controller
         Gate::authorize('create', Chat::class);
 
        $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255'
         ]);
 
         $user = Auth::user();
-
+        
         if($team->users()->where('user_id', $user->id)){
 
             $chat = Chat::create([
                 'name'=> $validated['name'],
                 'team_id' => $team->id
-
                 ]);
         }
 
-
+    
         return response()->json(['success' => true, 'chat' => $chat]);
     }
 
@@ -71,7 +69,7 @@ class ChatController extends Controller
         ]);
 
         $user = Auth::user();
-
+        
         if($chat->team->users()->where('user_id', $user->id)){
 
         $chat->update([
@@ -102,7 +100,7 @@ class ChatController extends Controller
 
         $chat->delete();
         }
-
+        
         return response()->json(['success' => true]);
     }
 
