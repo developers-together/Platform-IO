@@ -6,6 +6,7 @@
   --accent-color: #ff00ff;
 }
 
+/* Sidebar container */
 .sidebar {
   text-align: center;
   height: 100vh;
@@ -18,6 +19,7 @@
   overflow: hidden;
 }
 
+/* Sidebar states */
 .sidebar.open {
   width: var(--sidebar-width-open);
 }
@@ -25,6 +27,7 @@
   width: var(--sidebar-width-closed);
 }
 
+/* Menu sections */
 .menu-section {
   display: flex;
   flex-direction: column;
@@ -60,6 +63,7 @@
   background-color: rgba(255, 255, 255, 0.25);
 }
 
+/* AI item specifics */
 .sidebar-item.ai .icon {
   display: inline-flex;
   align-items: center;
@@ -67,6 +71,7 @@
   transform-origin: center;
 }
 
+/* Outline the FaFan path in purple with a white stroke */
 .sidebar-item.ai .icon svg path {
   fill: #8e44ad !important;
   stroke: #fff !important;
@@ -77,20 +82,22 @@
   vector-effect: non-scaling-stroke;
 }
 
+/* Larger, bolder AI label */
 .sidebar-item.ai .label {
-  font-style: bold;
+  font-style: normal; /* or italic if you prefer */
   font-weight: 700;
   font-size: 1.1rem;
 }
 
+/* Subtle scale on hover */
 .sidebar-item.ai:hover .icon svg {
   transform: scale(1.1);
 }
-
 .sidebar-item.ai:hover .label {
   transform: scale(1.1);
 }
 
+/* Icon container */
 .icon {
   font-size: 1.5rem;
   display: flex;
@@ -100,6 +107,7 @@
   height: 24px;
 }
 
+/* Label text */
 .label {
   font-size: 1rem;
   font-weight: 500;

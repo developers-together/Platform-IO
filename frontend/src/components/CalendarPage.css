@@ -10,10 +10,10 @@
 }
 
 .calendar-title {
-  font-size: 1.8rem;
-  font-weight: 600;
+  margin: 0;
+  font-size: 2rem;
+  color: #2d3748;
   margin-bottom: 20px;
-  color: #2d3439;
 }
 
 /* Day Headers */
