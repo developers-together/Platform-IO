@@ -15,7 +15,7 @@ class MessageController extends Controller
     {
         // Authorize the action
         Gate::authorize('update', $chat);
-    
+
         // Validate the request
         $validated = $request->validate([
             'message' => 'required|string',
@@ -28,19 +28,19 @@ class MessageController extends Controller
         // Store the image (if provided)
         $path = null;
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('images', 'public'); 
+            $path = $request->file('image')->store('images', 'public');
         }
 
-    
+
         // Create the message
         $message = Message::create([
             'chat_id' => $chat->id, // Use the chat ID from the route model binding
             'user_id' => $id,
             'message' => $validated['message'],
             'path' => $path
-            
+
         ]);
-    
+
         // Return the created message with a 201 status code
         return response()->json($message, 201);
     }
@@ -50,20 +50,20 @@ class MessageController extends Controller
     {
         // Authorize the action
         Gate::authorize('update', $chat);
-    
+
         // Retrieve paginated messages for the chat
-        $messages = Message::where('chat_id', $chat->id)->paginate(15);
+        $messages = Message::where('chat_id', $chat->id)->paginate(5);
 
         $messages->getCollection()->transform(function ($message) {
             if ($message->image) {
-                $message->image = Storage::url($message->image); 
+                $message->image = Storage::url($message->image);
             } else {
                 $message->image_url = null; // No image
             }
             return $message;
         });
 
-    
+
         // Return the paginated messages
         return response()->json($messages);
     }

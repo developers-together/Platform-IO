@@ -16,9 +16,8 @@ use App\Http\Controllers\MessageController;
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/user/show', [UserController::class, 'show']);
-    Route::put('/user/{user}', [UserController::class, 'update']);
-    Route::patch('/user/{user}', [UserController::class, 'update']);
-    Route::delete('/user/{user}', [UserController::class, 'destroy']);
+    Route::delete('/user/delete', [UserController::class, 'delete']);
+    Route::post('user/logout', [UserController::class, 'logout']);
 
     Route::get('/tasks/index', [TaskController::class, 'index']);
     Route::post('/tasks/{team}/store', [TaskController::class, 'store'])->name('tasks.store');
@@ -30,8 +29,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/chats/{chat}', [ChatController::class, 'destroy']);
     Route::put('/chats/{chat}', [ChatController::class, 'update']);
 
-    Route::post('/chats/{chat}/messages', [MessageController::class, 'sendMessage']);
-    Route::get('/chats/{chat}/messages', [MessageController::class, 'getMessages']);
+    Route::post('/chats/{chat}/sendMessages', [MessageController::class, 'sendMessage']);
+    Route::get('/chats/{chat}/getMessages', [MessageController::class, 'getMessages']);
 
     Route::post('/team/create',[TeamController::class,'store']);
     Route::get('/team/{team}/show',[TeamController::class,'show']);
@@ -44,10 +43,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/team/{team}/removemembers',[TeamController::class,'removeMembers']);
     Route::post('/team/joinTeam', [TeamController::class, 'joinTeam']);
 
-
 });
 
-Route::post('/user', [UserController::class, 'store']);
+Route::post('/register', [UserController::class, 'store']);
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
-
