@@ -3,22 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 
 class Chat extends Model
 {
     // use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name','team_id'];
 
-    public function users()
+    public function team(): BelongsTo
     {
-        return $this->belongsToMany(User::class,'messages')
-                    ->withPivot('message')
-                    ->withTimestamps();
+        return $this->belongsTo(Team::class);
     }
 
-    // public function messages()
-    // {
-    //     return $this->hasMany(Message::class);
-    // }
 }

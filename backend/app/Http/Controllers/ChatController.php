@@ -4,47 +4,83 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Chat;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Gate;
+
 
 class ChatController extends Controller
 {
-    public function create(Request $request)
-    { 
-        $chat = Chat::create([
-            'name' => $request->name
-        ]);
+    use AuthorizesRequests;
+
+    // Display all chats
+    public function index(Chat $chat)
+    {
+        $chat = Chat::with('team')->paginate(10);
+
         return response()->json($chat);
     }
 
-//     public function joinChat(Request $request)
-//     {
-//         $chat = Chat::findOrFail($request->chat_id);
-//         $chat->users()->attach($request->user_id);
-//         return response()->json(['message' => 'User added to group']);
-//     }
-
-    public function destroy(Chat $chat)
+    public function store(Request $request)
     {
-        
 
-        try {
+        Gate::authorize('create', Chat::class);
 
-            $chat->delete();
-            
-            return response()->json([
-                'message' => 'chat deleted successfully',
-                'data' => [
-                    'deleted_chat_id' => $chat->id,
-                    'deleted_at' => now()->toDateTimeString()
-                ]
-            ], 200);
+       $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'team_id' => 'required'
+        ]);
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to delete chat',
-                'error' => $e->getMessage(),
-                'chat_id' => $chat->id
-            ], 500);
-        }
+      $chat = Chat::create([
+      'name'=> $validated['name'],
+      'team_id' => $validated['team_id']
+      ]);
+        return response()->json(['success' => true, 'chat' => $chat]);
     }
+
+    public function show(Chat $chat)
+    {
+        // Authorize the action
+        Gate::authorize('view', $chat);
+
+        // Return the chat details as a JSON response
+        return response()->json([
+            'message' => 'Chat retrieved successfully',
+            'data' => $chat,
+        ]);
+    }
+
+    public function update(Request $request , Chat $chat)
+    {
+        Gate::authorize('update', $chat);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $chat->update([
+            'name'=> $validated['name'],
+        ]);
+
+        return response()->json(['success' => true, 'chat' => $chat]);
+    }
+
+    public function destroy(Chat $chat, Request $request)
+    {
+        $this->authorize('delete', $chat);
+
+        $validated = $request->validate([
+            'chat_id' => 'required|exists:chats,id',
+        ]);
+
+        $chat = Chat::find($validated['chat_id']);
+
+        if (!$chat) {
+            return response()->json(['success' => false, 'message' => 'Chat not found'], 404);
+        }
+
+        $chat->delete();
+        return response()->json(['success' => true]);
+    }
+
 
 }
