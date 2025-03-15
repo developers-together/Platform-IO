@@ -41,7 +41,8 @@ class ChatController extends Controller
 
             $chat = Chat::create([
                 'name'=> $validated['name'],
-                'team_id' => $validated['team_id']
+                'team_id' => $team->id
+
                 ]);
         }
 
