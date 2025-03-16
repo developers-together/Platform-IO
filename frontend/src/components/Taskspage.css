@@ -343,6 +343,12 @@
   margin-bottom: -1rem;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: none;
+}
+
 .add-task-container input {
   flex: 1;
   padding: 0.8rem 1.2rem;

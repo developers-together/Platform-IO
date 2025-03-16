@@ -29,7 +29,7 @@ export default function Sidebar({
   ];
 
   const bottomMenu = [
-    { icon: <FiBell />, label: "Alerts", page: "alerts" },
+    { icon: <FiBell />, label: "Notifications", page: "Notifications" },
     { icon: <FiSettings />, label: "Settings", page: "settings" },
     { icon: <FiUser />, label: "Profile", page: "profile" },
   ];
