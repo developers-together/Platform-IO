@@ -36,7 +36,7 @@ class MessageController extends Controller
         $message = Message::create([
             'chat_id' => $chat->id,
             'user_id' => $user->id,
-            'text' => $validated['message'] ?? null,
+            'message' => $validated['message'] ?? null,
             'path' => $path,
             'replayTo' => $validated['replayTo'] ?? null,
         ]);
@@ -47,7 +47,7 @@ class MessageController extends Controller
             'chat_id' => $message->chat_id,
             'user_id' => $message->user_id,
             'user_name' => $user->name,
-            'text' => $message->text,
+            'message' => $message->message,
             'image_url' => $message->path ? Storage::url($message->path) : null,
             'replayTo' => $message->replayTo,
             'created_at' => $message->created_at->toDateTimeString(),
@@ -74,7 +74,7 @@ class MessageController extends Controller
                 'chat_id' => $message->chat_id,
                 'user_id' => $message->user_id,
                 'user_name' => $userName,
-                'text' => $message->text,
+                'message' => $message->message,
                 'image_url' => $message->path ? Storage::url($message->path) : null,
                 'replayTo' => $message->replayTo,
                 'created_at' => $message->created_at->toDateTimeString(),
