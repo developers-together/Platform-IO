@@ -107,7 +107,7 @@ useEffect(() => {
     setReplyingTo({
       id: msg.id,
       user: msg.user,
-      text: msg.text.length > 40 ? msg.text.slice(0, 40) + "..." : msg.text,
+      text: msg.message.length > 40 ? msg.message.slice(0, 40) + "..." : msg.message,
     });
   };
 
@@ -122,11 +122,13 @@ useEffect(() => {
     console.log(inputText, selectedImage);
 
     try {
+        console.log(inputText, selectedImage, replyingTo); 
         const response = await axios.post(
             `http://localhost:8000/api/chats/${selectedChatId}/sendMessages`,
             {
                 "message": inputText,
-                "image": selectedImage, // If needed
+                "path": selectedImage || null,
+                "replyTo": replyingTo?.id || null,
             },
             {
                 headers: {
@@ -137,16 +139,15 @@ useEffect(() => {
         );
 
         console.log("Message sent:", response.data);
-
         const newMessage = {
-            id: response.data.id, // Use actual ID from backend response
-            user: "You",
+            id: response.data.message.id, // Use actual ID from backend response
+            user: response.data.message.user_name,
             avatar: "",
-            time: new Date().toLocaleTimeString([], {
+            time: new Date(response.data.message.created_at).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
             }),
-            text: inputText,
+            message: inputText,
             image: selectedImage,
             replyTo: replyingTo,
         };
@@ -160,13 +161,32 @@ useEffect(() => {
     }
 };
 
-  const deleteMessage = (id) => {
-    setDeletingMessageIds((prev) => [...prev, id]);
-    setTimeout(() => {
+const deleteMessage = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this message?")) return;
+
+  setDeletingMessageIds((prev) => [...prev, id]);
+
+  try {
+      await axios.delete(`http://localhost:8000/api/messages/${id}`, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+          },
+      });
+
+      // Remove message from UI
       setMessages((prev) => prev.filter((msg) => msg.id !== id));
       setDeletingMessageIds((prev) => prev.filter((msgId) => msgId !== id));
-    }, 300);
-  };
+      
+      console.log(`Message ${id} deleted successfully.`);
+  } catch (error) {
+      console.error("Error deleting message:", error.response?.data || error.message);
+      
+      // Rollback deletion state if API call fails
+      setDeletingMessageIds((prev) => prev.filter((msgId) => msgId !== id));
+  }
+};
+
 
   const scrollToMessage = (replyingTo) => {
     if (replyingTo && messageIds.has(replyingTo.id)) {
@@ -186,20 +206,79 @@ useEffect(() => {
   const getChatMessages = async (chatId) => {
     console.log("Fetching messages for chat:", chatId);
     try {
-      setSelectedChatId(chatId); // Set the selected chat ID
-      const response = await axios.get(`http://localhost:8000/api/chats/${chatId}/getMessages`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+        setSelectedChatId(chatId); // Set the selected chat ID
+        const response = await axios.get(`http://localhost:8000/api/chats/${chatId}/getMessages`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: "application/json",
+            },
+        });
 
-      console.log("Messages:", response.data.data);
-      setMessages(response.data.data);
+        console.log("Messages:", response.data.data);
+
+        // Create a map of messages by ID for easy lookup
+        const messageMap = {};
+        response.data.data.forEach((msg) => {
+            messageMap[msg.id] = msg;
+        });
+
+        // Map the response data to match your frontend structure
+        const formattedMessages = response.data.data.map((msg) => ({
+            id: msg.id,
+            user: msg.user_name, // Adjust according to the response field
+            avatar: "", // Placeholder, modify if needed
+            time: new Date(msg.created_at).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+            }),
+            message: msg.message,
+            image: msg.image_url || null, // Ensure image is handled correctly
+            replyTo: msg.replyTo ? {
+                id: msg.replyTo,
+                user: messageMap[msg.replyTo]?.user_name || "Unknown",
+                text: messageMap[msg.replyTo]?.message
+                    ? messageMap[msg.replyTo].message.length > 40
+                        ? messageMap[msg.replyTo].message.slice(0, 40) + "..."
+                        : messageMap[msg.replyTo].message
+                    : "Message deleted",
+            } : null,
+        }));
+
+        setMessages(formattedMessages);
     } catch (error) {
-      console.error("Error fetching messages:", error.response?.data || error.message);
+        console.error("Error fetching messages:", error.response?.data || error.message);
     }
-  };
+};
+
+
+
+  const deleteChannel = async (chatId) => {
+    if (!window.confirm("Are you sure you want to delete this channel?")) return;
+
+    try {
+      await axios.delete(`http://localhost:8000/api/chats/${chatId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+        },
+        data: { chat_id: chatId }, // Ensure chat_id is sent in the request
+    });
+
+        console.log(`Channel ${chatId} deleted successfully.`);
+        
+        // Remove channel from UI
+        setChannels((prevChannels) => prevChannels.filter(chat => chat.id !== chatId));
+
+        // Clear messages if the deleted channel was selected
+        if (selectedChatId === chatId) {
+            setSelectedChatId(null);
+            setMessages([]);
+        }
+
+    } catch (error) {
+        console.error("Error deleting channel:", error.response?.data || error.message);
+    }
+};
 
   
   return (
@@ -219,12 +298,13 @@ useEffect(() => {
             </div>
           <div className="left-card-content">
           <ul>
-              {channels.map((chat) => (
-                <li key={chat.id} onClick={() => getChatMessages(chat.id)} className={selectedChatId === chat.id ? "active-chat" : ""}>
-                  {chat.name}
-                </li>
-              ))}
-            </ul>
+          {channels.map((chat) => (
+            <li key={chat.id} className={selectedChatId === chat.id ? "active-chat" : ""}>
+              <span onClick={() => getChatMessages(chat.id)}>{chat.name}</span>
+              <button onClick={() => deleteChannel(chat.id)} className="delete-channel-btn">❌</button>
+            </li>
+          ))}
+          </ul>
           </div>
         </div>
         <div className="left-card">

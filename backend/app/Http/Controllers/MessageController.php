@@ -63,7 +63,7 @@ class MessageController extends Controller
     {
         Gate::authorize('update', $chat);
 
-        $messages = Message::where('chat_id', $chat->id)->paginate(5);
+        $messages = Message::where('chat_id', $chat->id)->paginate(1000);
 
         $messages->getCollection()->transform(function ($message) {
             // Get the user's name manually without defining a user() relationship
