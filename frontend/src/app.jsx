@@ -42,7 +42,9 @@ export default function App() {
         {currentPage === "File" && <FilePage />}
         {currentPage === "AI" && <AIPage />}
         {currentPage === "teams" && <Teams setCurrentPage={setCurrentPage} />}
-        {currentPage === "Profile" && <Profile />}
+        {currentPage === "Profile" && (
+          <Profile setCurrentPage={setCurrentPage} />
+        )}
         {/* Add other pages as needed */}
       </div>
     </div>

@@ -87,7 +87,7 @@ export default function Teams({ setCurrentPage }) {
           Accept: "application/json",
         },
       });
-      return response.data.teams;
+      return response.data;
     } catch (error) {
       console.error("Error fetching teams:", error);
       return [];
@@ -323,7 +323,7 @@ export default function Teams({ setCurrentPage }) {
       {/* The "Add" dialog with Join + Create options */}
       {showAddDialog && (
         <div className="add-dialog-overlay">
-          <div className="add-dialog-content">
+          <div className="add-dialog-content2">
             <button className="close-dialog-btn" onClick={closeAddDialog}>
               &times;
             </button>

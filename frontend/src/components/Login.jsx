@@ -9,25 +9,28 @@ export default function Login({ setCurrentPage }) {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setError("");
-        setIsLoading(true);
-        try {
-            const response = await axios.post("http://localhost:8000/api/login", {
-                email,
-                password,
-            });
-            const token = response.data.token;
-            localStorage.setItem("token", token);
-            setCurrentPage("teams");
-        } catch (error) {
-            console.log(error.response?.data?.message);
-            setError(error.response?.data?.message || "Invalid email or password. Please try again.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+    try {
+      const response = await axios.post("http://localhost:8000/api/login", {
+        email,
+        password,
+      });
+      const token = response.data.token;
+      localStorage.setItem("token", token);
+      setCurrentPage("teams");
+    } catch (error) {
+      console.log(error.response?.data?.message);
+      setError(
+        error.response?.data?.message ||
+          "Invalid email or password. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="login-container">
@@ -75,9 +78,14 @@ export default function Login({ setCurrentPage }) {
           className="skip-button"
           onClick={() => setCurrentPage("dashboard")}
         >
-          SKIP
-        </button>{" "}
-        {/*temp skip button for debugging*/}
+          SKIP to dashboard
+        </button>
+        <button
+          className="skip-button2"
+          onClick={() => setCurrentPage("teams")}
+        >
+          SKIP to teams
+        </button>
         <p className="login-footer">
           Don't have an account?{" "}
           <span

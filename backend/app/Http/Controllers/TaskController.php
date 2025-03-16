@@ -107,11 +107,14 @@ class TaskController extends Controller
     {
         $this->authorize('delete', $task);
 
-        $user = Auth::user();
+        // $validated = $request->validate([
+        //     'task_id' => 'required|exists:tasks,id',
+        // ]);
 
-        // Make sure the user belongs to the team that owns the task
-        if (!$task->team || !$task->team->users()->where('user_id', $user->id)->exists()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        // $task = Task::find($validated['task_id']);
+
+        if (!$task) {
+            return response()->json(['success' => false, 'message' => 'Task not found'], 404);
         }
 
         $task->delete();
