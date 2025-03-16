@@ -100,8 +100,10 @@ class TaskController extends Controller
 
     }
 
+    $task = $task->ToJson();
+
         // $task = Task::find($validated['task_id']);
-        return response()->json(['success' => true, 'task' => $task]);
+        return response($task);
     }
 
     // Delete a task from the database

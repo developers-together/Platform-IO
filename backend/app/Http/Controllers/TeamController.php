@@ -218,6 +218,31 @@ class TeamController extends Controller
         ], 200);
     }
 
+    public function leaveTeam(Team $team){
+
+        $validated = $request->validate(['team_id' => 'required']);
+
+        Gate::authorize('update', $team);
+
+        if (!$team->users()->where('user_id', $validated['user_id'])->exists()) {
+            return response()->json([
+                'message' => 'The user is not part of this team.',
+            ], 404);
+        }
+
+        $user = AUTH::user();
+
+        
+        $usersInTeam = $team->users()
+        ->where('user_id', $user->id) // Check for a specific user ID
+        ->whereIn('role', ['member', 'viewer']) // Check if role is either 'member' or 'viewer'
+        ->pluck('user_id'); // Retrieve only the user_id column
+
+
+
+
+    }
+
     public function changeLeader(Request $request, Team $team)
     {
         // Authorize the action (ensure the user can update the team)
