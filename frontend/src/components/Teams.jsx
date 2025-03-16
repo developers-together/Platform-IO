@@ -87,7 +87,7 @@ export default function Teams({ setCurrentPage }) {
           Accept: "application/json",
         },
       });
-      return response.data.teams;
+      return response.data;
     } catch (error) {
       console.error("Error fetching teams:", error);
       return [];

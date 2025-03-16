@@ -22,4 +22,9 @@ class Team extends Model
         return $this->hasMany(Tasks::class);
     }
 
+    public function ai_chats(): HasMany
+    {
+        return $this->hasMany(ai_chats::class);
+    }
+
 }
