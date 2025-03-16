@@ -11,6 +11,7 @@ import Register from "./components/Register";
 import AIPage from "./components/AI";
 import Teams from "./components/Teams";
 import Profile from "./components/Profile";
+import FilePage from "./components/File";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("login");
@@ -30,14 +31,15 @@ export default function App() {
           />
         )}
       <div style={{ flex: 1 }}>
-        {currentPage === "dashboard" && <Dashboard />}
-        {currentPage === "chat" && <ChatPage />}
-        {currentPage === "Tasks" && <TasksPage />}
-        {currentPage === "Calendar" && <CalendarPage />}
         {currentPage === "login" && <Login setCurrentPage={setCurrentPage} />}
         {currentPage === "register" && (
           <Register setCurrentPage={setCurrentPage} />
         )}
+        {currentPage === "dashboard" && <Dashboard />}
+        {currentPage === "chat" && <ChatPage />}
+        {currentPage === "Tasks" && <TasksPage />}
+        {currentPage === "Calendar" && <CalendarPage />}
+        {currentPage === "File" && <FilePage />}
         {currentPage === "AI" && <AIPage />}
         {currentPage === "teams" && <Teams setCurrentPage={setCurrentPage} />}
         {currentPage === "Profile" && <Profile />}
