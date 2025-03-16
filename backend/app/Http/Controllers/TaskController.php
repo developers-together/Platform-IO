@@ -19,18 +19,14 @@ class TaskController extends Controller
         $tasks = Task::where('team_id', $team->id)
                     ->paginate(10);
 
-        $tasks = $tasks->ToJson();
-        return response($tasks);
+        return $task->toJson();
     }
 
 
     public function show(Task $task)
     {
 
-        $task = $task->ToJson();
-
-        // Return the task details as a JSON response
-        return response($task);
+        return $task->toJson();
     }
 
      // Store a new task in the database
@@ -67,9 +63,7 @@ class TaskController extends Controller
              'team_id' => $team->id, // ← from route!
          ]);
 
-         $task = $task->ToJson();
-
-         return response($task);
+         return $task->toJson();
      }
 
 
@@ -105,10 +99,7 @@ class TaskController extends Controller
 
     }
 
-        $task = $task->ToJson();
-
-        // $task = Task::find($validated['task_id']);
-        return response($task);
+        return $task->toJson();
     }
 
     // Delete a task from the database
