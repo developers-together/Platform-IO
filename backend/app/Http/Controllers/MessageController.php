@@ -84,9 +84,7 @@ class MessageController extends Controller
         return response()->json($messages);
     }
 
-    use Illuminate\Support\Facades\Auth;
-
-public function deleteMessage(Message $message)
+    public function deleteMessage(Message $message)
         {
         // Optional: authorize the user (if you're using Laravel Policies)
         $this->authorize('delete', $message);
