@@ -220,7 +220,7 @@ class TeamController extends Controller
     public function leaveTeam(Team $team){
 
 
-        Gate::authorize('update', $team);
+        
 
         if (!$team->users()->where('user_id', $validated['user_id'])->exists()) {
             return response()->json([
@@ -235,9 +235,6 @@ class TeamController extends Controller
         ->where('user_id', $user->id) // Check for a specific user ID
         ->whereIn('role', ['member', 'viewer']) // Check if role is either 'member' or 'viewer'
         ->pluck('user_id'); // Retrieve only the user_id column
-
-
-
 
     }
 

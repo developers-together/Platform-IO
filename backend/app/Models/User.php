@@ -53,6 +53,11 @@ class User extends Authenticatable
        
     }
 
+    public function ai_chats(): HasMany
+    {
+        return $this->hasMany(Ai_chats::class);
+    }
+
     // public function messages()
     // {
     //     return $this->hasMany(Message::class);

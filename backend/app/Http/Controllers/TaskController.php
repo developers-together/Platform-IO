@@ -109,15 +109,15 @@ class TaskController extends Controller
     }
 
     // Delete a task from the database
-    public function destroy(Task $task, Request $request)
+    public function destroy(Task $task)
     {
         $this->authorize('delete', $task);
 
-        $validated = $request->validate([
-            'task_id' => 'required|exists:tasks,id',
-        ]);
+        // $validated = $request->validate([
+        //     'task_id' => 'required|exists:tasks,id',
+        // ]);
 
-        $task = Task::find($validated['task_id']);
+        // $task = Task::find($validated['task_id']);
 
         if (!$task) {
             return response()->json(['success' => false, 'message' => 'Task not found'], 404);
