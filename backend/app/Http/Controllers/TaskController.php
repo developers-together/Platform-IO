@@ -7,18 +7,16 @@ use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Auth;
 
 
 class TaskController extends Controller
 {
     use AuthorizesRequests;
     // Display all team tasks
-    public function index(Request $request)
+    public function index(Team $team)
     {
-        $teamId = $request->input('team_id');
-
-        $tasks = Task::with('team')
-                    ->where('team_id', $teamId)
+        $tasks = Task::where('team_id', $team->id)
                     ->paginate(10);
 
         $tasks = $tasks->ToJson();
@@ -28,8 +26,6 @@ class TaskController extends Controller
 
     public function show(Task $task)
     {
-        // Authorize the action (ensure the user can view the task)
-        Gate::authorize('view', $task);
 
         $task = $task->ToJson();
 
@@ -71,7 +67,9 @@ class TaskController extends Controller
              'team_id' => $team->id, // ← from route!
          ]);
 
-         return response()->json($task, 201);
+         $task = $task->ToJson();
+
+         return response($task);
      }
 
 
@@ -107,37 +105,29 @@ class TaskController extends Controller
 
     }
 
-    $task = $task->ToJson();
+        $task = $task->ToJson();
 
         // $task = Task::find($validated['task_id']);
         return response($task);
     }
 
     // Delete a task from the database
-    public function destroy(Task $task, Request $request)
+    public function destroy(Task $task)
     {
         $this->authorize('delete', $task);
 
-        $validated = $request->validate([
-            'task_id' => 'required|exists:tasks,id',
-        ]);
+        $user = Auth::user();
 
-        $task = Task::find($validated['task_id']);
-
-        if (!$task) {
-            return response()->json(['success' => false, 'message' => 'Task not found'], 404);
+        // Make sure the user belongs to the team that owns the task
+        if (!$task->team || !$task->team->users()->where('user_id', $user->id)->exists()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
-
-        $user = AUTH::user();
-
-        if($task->team->users()->where('user_id', $user->id)){
 
         $task->delete();
 
-        }
-
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true, 'message' => 'Task deleted successfully']);
     }
+
 
 
 }
