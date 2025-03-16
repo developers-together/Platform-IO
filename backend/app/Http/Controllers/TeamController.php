@@ -217,29 +217,36 @@ class TeamController extends Controller
         ], 200);
     }
 
-    public function leaveTeam(Team $team){
+    public function leaveTeam(Team $team)
+    {
 
+        // Get the currently authenticated user
+        $user = Auth::user();
 
-        Gate::authorize('update', $team);
-
-        if (!$team->users()->where('user_id', $validated['user_id'])->exists()) {
+        // Check if the user is part of the team
+        if (!$team->users()->where('user_id', $user->id)->exists()) {
             return response()->json([
-                'message' => 'The user is not part of this team.',
+                'message' => 'You are not part of this team.',
             ], 404);
         }
 
-        $user = AUTH::user();
+        // Optional: Check if user has a role that is allowed to leave
+        $userRole = $team->users()->where('user_id', $user->id)->first()->pivot->role;
 
-        
-        $usersInTeam = $team->users()
-        ->where('user_id', $user->id) // Check for a specific user ID
-        ->whereIn('role', ['member', 'viewer']) // Check if role is either 'member' or 'viewer'
-        ->pluck('user_id'); // Retrieve only the user_id column
+        if (!in_array($userRole, ['member', 'viewer'])) {
+            return response()->json([
+                'message' => 'Only members or viewers can leave the team.',
+            ], 403);
+        }
 
+        // Detach the user from the team
+        $team->users()->detach($user->id);
 
-
-
+        return response()->json([
+            'message' => 'You have left the team successfully.',
+        ]);
     }
+
 
     public function changeLeader(Request $request, Team $team)
     {
