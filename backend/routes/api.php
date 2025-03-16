@@ -37,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/team/{team}/show',[TeamController::class,'show']);
     Route::put('/team/{team}/update',[TeamController::class,'update']);
     Route::delete('/team/{team}/delete',[TeamController::class,'destroy']);
+    Route::delete('/team/{team}/leave', [TeamController::class,'leaveTeam']);
 
     Route::post('/team/{team}/addmembers',[TeamController::class,'addMembers']);
     Route::put('/team/{team}/changeroles',[TeamController::class,'changeRoles']);
