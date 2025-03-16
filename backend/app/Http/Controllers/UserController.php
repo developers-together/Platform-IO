@@ -110,13 +110,16 @@ class UserController extends Controller
 
     public function teams()
     {
-        $user = Auth::user()->load('teams'); // or ->load('team') if it's one team
+        $user = Auth::user()->load('teams');
+
+        $teamNames = $user->teams->pluck('name'); // returns array of names
 
         return response()->json([
             'message' => 'User retrieved successfully',
-            'data' => $user,
+            'team_names' => $teamNames,
         ]);
     }
+
 
 
     /**
