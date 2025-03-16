@@ -93,19 +93,19 @@ export default function Teams({ setCurrentPage }) {
       return [];
     }
   };
-
+  const fetchTeams = async () => {
+    const t = await getTeams();
+    const formatted = t.map((team) => ({
+      id: team.id,
+      name: team.name,
+      projectname: team.projectname,
+      description: team.description,
+      code: team.code,
+    }));
+    setTeams(formatted);
+  };
   useEffect(() => {
-    const fetchTeams = async () => {
-      const t = await getTeams();
-      const formatted = t.map((team) => ({
-        id: team.id,
-        name: team.name,
-        projectname: team.projectname,
-        description: team.description,
-        code: team.code,
-      }));
-      setTeams(formatted);
-    };
+    
     fetchTeams();
   }, []);
 
@@ -167,6 +167,7 @@ export default function Teams({ setCurrentPage }) {
         }
       );
       // Optionally refresh teams
+      fetchTeams();
     } catch (error) {
       console.error(
         "Error joining team:",

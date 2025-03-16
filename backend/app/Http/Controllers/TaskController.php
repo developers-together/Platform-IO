@@ -19,7 +19,7 @@ class TaskController extends Controller
         $tasks = Task::where('team_id', $team->id)
                     ->paginate(10);
 
-        return $task->toJson();
+        return response()->json($tasks);
     }
 
 
