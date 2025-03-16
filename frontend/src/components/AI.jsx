@@ -1,20 +1,71 @@
-// AI.jsx
-import { useState } from "react";
-import Avatar from "./Avatar";
+import { useState, useRef, useEffect } from "react";
+import { FaFan } from "react-icons/fa";
+import { FiClock } from "react-icons/fi";
+import { IoSearch } from "react-icons/io5";
+import { FiPlus } from "react-icons/fi";
+import { FiCommand } from "react-icons/fi";
 import "./AI.css";
+
+/**
+ * RotatingAIIcon component:
+ * - Continuously rotates.
+ * - Speeds up when hovered.
+ */
+function RotatingAIIcon({ size = 128 }) {
+  const [rotation, setRotation] = useState(0);
+  const animationRef = useRef();
+  const prevTimeRef = useRef();
+  const [hovered, setHovered] = useState(false);
+
+  useEffect(() => {
+    const speedNotHovered = 360 / 5000; // 360° in 5s
+    const speedHovered = 360 / 2500; // 360° in 2.5s
+
+    const animate = (time) => {
+      if (prevTimeRef.current == null) {
+        prevTimeRef.current = time;
+      }
+      const delta = time - prevTimeRef.current;
+      prevTimeRef.current = time;
+      const speed = hovered ? speedHovered : speedNotHovered;
+      setRotation((prev) => (prev + speed * delta) % 360);
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationRef.current);
+  }, [hovered]);
+
+  return (
+    <div
+      className="rotating-ai-icon"
+      style={{ width: size, height: size }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <FaFan
+        style={{
+          transform: `rotate(${rotation}deg)`,
+          width: "100%",
+          height: "100%",
+        }}
+      />
+    </div>
+  );
+}
 
 export default function AIChatPage() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const fileInputRef = useRef();
 
   const handleSend = () => {
     if (!input.trim()) return;
-
     const newMessage = { sender: "user", text: input.trim() };
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
 
-    // Simulate AI response
+    // Simulate an AI response
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
@@ -26,13 +77,34 @@ export default function AIChatPage() {
     }, 600);
   };
 
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "user",
+          text: `Uploaded image: ${file.name}`,
+          file: URL.createObjectURL(file),
+        },
+      ]);
+      e.target.value = "";
+    }
+  };
+
   const handleAction = (action) => {
     switch (action) {
       case "ask":
         document.querySelector(".input-row input")?.focus();
         break;
       case "search":
-        setInput("Search for...");
+        setInput("Search for: ");
+        break;
+      case "actions":
+        setInput("# ");
+        break;
+      case "upload":
+        fileInputRef.current.click();
         break;
       default:
         break;
@@ -49,17 +121,7 @@ export default function AIChatPage() {
         {messages.length === 0 ? (
           <div className="starter-page">
             <div className="starter-content">
-              <Avatar
-                name="AI Assistant"
-                options={{
-                  size: "128",
-                  background: "10a37f",
-                  color: "fff",
-                  rounded: true,
-                  bold: true,
-                }}
-                className="starter-avatar"
-              />
+              <RotatingAIIcon size={128} />
               <h1>What can I help with?</h1>
               <p className="subtitle">Ask anything</p>
             </div>
@@ -74,34 +136,33 @@ export default function AIChatPage() {
                 }`}
               >
                 {msg.sender === "ai" ? (
-                  <Avatar
-                    name="AI Assistant"
-                    options={{
-                      size: "40",
-                      background: "10a37f",
-                      color: "fff",
-                      rounded: true,
-                    }}
-                    className="chat-avatar"
-                  />
+                  <RotatingAIIcon size={40} />
                 ) : (
-                  <Avatar
-                    name="You"
-                    options={{
-                      size: "40",
-                      background: "4dabf7",
-                      color: "fff",
-                      rounded: true,
-                    }}
-                    className="chat-avatar"
-                  />
+                  <div className="user-avatar">
+                    <div
+                      className="avatar-circle"
+                      style={{ background: "#4dabf7" }}
+                    >
+                      <span style={{ color: "#fff", fontSize: "0.8rem" }}>
+                        You
+                      </span>
+                    </div>
+                  </div>
                 )}
                 <div
                   className={`chat-message ${
                     msg.sender === "ai" ? "ai-message" : "user-message"
                   }`}
                 >
-                  {msg.text}
+                  {msg.file ? (
+                    <img
+                      src={msg.file}
+                      alt="Uploaded content"
+                      className="uploaded-image"
+                    />
+                  ) : (
+                    msg.text
+                  )}
                 </div>
               </div>
             ))}
@@ -111,8 +172,18 @@ export default function AIChatPage() {
 
       <footer className="chat-footer">
         <div className="action-buttons">
-          <button onClick={() => handleAction("ask")}>Ask anything</button>
-          <button onClick={() => handleAction("search")}>Search</button>
+          <button onClick={() => handleAction("upload")}>
+            <FiPlus className="plus-icon" />
+            Upload Image
+          </button>
+          <button onClick={() => handleAction("search")}>
+            <IoSearch className="search-icon" />
+            Search
+          </button>
+          <button onClick={() => handleAction("actions")}>
+            <FiCommand className="action-icon" />
+            Make Actions
+          </button>
         </div>
         <div className="input-row">
           <input
@@ -140,6 +211,14 @@ export default function AIChatPage() {
           </button>
         </div>
       </footer>
+
+      <input
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        ref={fileInputRef}
+        onChange={handleFileUpload}
+      />
     </div>
   );
 }
