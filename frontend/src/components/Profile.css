@@ -1,0 +1,390 @@
+/* 
+  Merged "Generate" and "Change Color" into one button: "Magic Avatar"
+  Enhanced UI + animations
+  Contains scrolling in .profile-content
+*/
+
+/* Layout: No full-page scroll, content scrolls internally */
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden; /* no entire page scrolling */
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background: #f8fafc;
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.profile-header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #2d3748;
+}
+
+.edit-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.edit-toggle:hover {
+  background: #e2e8f0;
+}
+
+/* The main content can scroll */
+.profile-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 2rem;
+}
+
+/* Profile Card */
+.profile-card {
+  animation: fadeIn 0.3s ease-out;
+  background: #fff;
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  max-width: 800px;
+  width: 90%;
+  margin: 2rem auto;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 2rem;
+}
+
+/* Avatar Section */
+.avatar-section {
+  position: relative;
+}
+.avatar-container {
+  text-align: center;
+}
+.profile-avatar {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 3px solid #e2e3e5;
+  object-fit: cover;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Single button that does color + generate */
+.avatar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.avatar-btn:hover {
+  background: #e2e8f0;
+  transform: scale(1.02);
+}
+.magic-btn {
+  background: #ede9fe; /* a slight purple tint */
+}
+.magic-btn:hover {
+  background: #ddd6fe; /* deeper purple tint on hover */
+}
+
+/* Profile Details */
+.profile-details {
+  padding: 1rem;
+}
+.profile-fields {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.form-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+input,
+select {
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #4dabf7;
+  box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.1);
+}
+.field-value {
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  color: #0f172a;
+  font-weight: 500;
+}
+.error {
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* Teams Section */
+.teams-section {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 2rem;
+}
+.teams-section h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: #0f172a;
+}
+.teams-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.team-chip {
+  animation: fadeIn 0.2s ease-out;
+  background: #f1f5f9;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #475569;
+  transition: all 0.2s ease;
+}
+.team-chip:hover {
+  background: #e2e8f0;
+}
+
+/* Add Team (inline approach) */
+.add-team-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  background: #4dabf7;
+  color: #fff;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.add-team-btn:hover {
+  background: #339af0;
+  transform: scale(1.1);
+}
+.add-team-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.add-team-inline input {
+  width: 120px;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+.inline-confirm,
+.inline-cancel {
+  padding: 0.4rem 0.7rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.2s ease;
+}
+.inline-confirm {
+  background: #4dabf7;
+  color: #fff;
+}
+.inline-confirm:hover {
+  background: #339af0;
+}
+.inline-cancel {
+  background: #f1f5f9;
+  color: #475569;
+}
+.inline-cancel:hover {
+  background: #e2e8f0;
+}
+
+/* Footer */
+.profile-footer {
+  padding: 1.5rem 2rem;
+  background: #fff;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.save-btn {
+  background: #4dabf7;
+  color: #fff;
+}
+.save-btn:hover {
+  background: #339af0;
+}
+.cancel-btn {
+  background: #f1f5f9;
+  color: #64748b;
+}
+.cancel-btn:hover {
+  background: #e2e8f0;
+}
+.logout-btn {
+  background: #f1f5f9;
+  color: #475569;
+}
+.logout-btn:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+.delete-btn {
+  background: #fff1f2 !important;
+  color: #dc2626 !important;
+}
+.delete-btn:hover {
+  background: #ffe4e6 !important;
+  color: #dc2626 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-card {
+    grid-template-columns: 1fr;
+  }
+  .profile-fields {
+    grid-template-columns: 1fr;
+  }
+  .profile-footer {
+    flex-direction: column;
+    align-items: center;
+  }
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+.modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 320px;
+  max-width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.modal-content h3 {
+  margin-top: 0;
+  color: #2d3748;
+}
+.modal-content p {
+  margin: 1rem 0;
+  color: #475569;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.confirm-btn {
+  background: #4dabf7;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.confirm-btn:hover {
+  background: #339af0;
+}
+.cancel-btn {
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.cancel-btn:hover {
+  background: #e2e8f0;
+  color: #334155;
+}

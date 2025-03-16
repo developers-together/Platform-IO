@@ -1,160 +1,203 @@
-/* Enhanced Login Page Styling */
 .login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f9fafc, #eef2ff, #f0f4ff);
-    background-size: 400% 400%;
-    animation: gradientAnimation 15s ease infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-size: 400% 400%;
+  animation: gradientAnimation 15s ease infinite;
+  align-self: center;
+  justify-self: end;
+  margin-right: 10%;
 }
 
 @keyframes gradientAnimation {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .login-card {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
-    padding: 40px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(16px);
-    width: 100%;
-    max-width: 440px;
-    transform: translateY(0);
-    animation: cardEnter 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(16px);
+  width: 100%;
+  max-width: 440px;
+  transform: translateY(0);
+  animation: cardEnter 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 @keyframes cardEnter {
-    0% { transform: translateY(20px); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .login-header {
-    margin-bottom: 30px;
-    text-align: center;
+  margin-bottom: 30px;
+  text-align: center;
 }
 
 .login-title {
-    font-size: 2.2rem;
-    color: #1a1a1a;
-    margin-bottom: 8px;
-    font-weight: 700;
+  font-size: 2.2rem;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+  font-weight: 700;
 }
 
 .login-subtitle {
-    color: #666;
-    font-size: 0.95rem;
+  color: #666;
+  font-size: 0.95rem;
 }
 
 .input-group {
-    position: relative;
-    margin-bottom: 15px;
-    width: 100%;
+  position: relative;
+  margin-bottom: 15px;
+  width: 100%;
 }
 
 .input-icon {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #777;
-    width: 20px;
-    height: 20px;
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #777;
+  width: 20px;
+  height: 20px;
 }
 
 .login-input {
-    padding: 14px 14px 14px 40px;
-    border-radius: 10px;
-    border: 2px solid #e0e0e0;
-    font-size: 1rem;
-    background: rgba(255, 255, 255, 0.9);
-    transition: all 0.2s ease;
-    width: 100%;
+  padding: 14px 14px 14px 40px;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s ease-in-out;
+  width: 100%;
 }
 
 .login-input:focus {
-    border-color: #0052d4;
-    box-shadow: 0 4px 12px rgba(0, 82, 212, 0.1);
+  border-color: #0052d4;
+  box-shadow: 0 6px 20px rgba(0, 82, 212, 0.2);
 }
 
-.error-message {
-    background: #fff0f0;
-    color: #dc2626;
-    padding: 12px;
-    border-radius: 8px;
-    margin: 15px 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.9rem;
-    animation: slideDown 0.3s ease;
-    width: 100%;
-    justify-content: center;
+.error-message2 {
+  background: #fff0f0;
+  color: #dc2626;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  animation: slideDown 0.3s ease;
+  width: 68%;
+  justify-content: center;
 }
 
-.error-icon {
-    min-width: 20px;
+.error-icon2 {
+  min-width: 20px;
 }
 
 @keyframes slideDown {
-    0% { opacity: 0; transform: translateY(-10px); }
-    100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .login-button {
-    background: linear-gradient(135deg, #0052d4, #4364f7);
-    color: white;
-    padding: 16px;
-    border-radius: 10px;
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    transition: all 0.2s ease;
-    margin-top: 10px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  background: linear-gradient(135deg, #0052d4, #4364f7);
+  color: white;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease-in-out;
+  margin-top: 10px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
 }
 
 .login-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(0, 82, 212, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 82, 212, 0.2);
 }
 
 .login-footer {
-    margin-top: 25px;
-    text-align: center;
-    width: 100%;
+  margin-top: 25px;
+  text-align: center;
+  width: 100%;
+  transition: all 0.2s ease-in-out;
 }
 
 .register-link {
-    transition: all 0.2s ease;
-    color: #0052d4;
-    cursor: pointer;
-    font-weight: 600;
+  transition: all 0.2s ease;
+  color: #0052d4;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
 }
 
 .register-link:hover {
-    color: #003a9b;
-    text-decoration: underline;
+  color: #003a9b;
+  text-decoration: underline;
 }
 
 .spinner {
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: white;
-    animation: spin 0.8s linear infinite;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.skip-button {
+  background-color: #ff4747;
+  color: white;
+  font-size: 0.7rem;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 10px;
+  cursor: pointer;
+  transition: 0.3s ease-in-out;
+  position: absolute;
+  bottom: 23.5%;
+  right: 5%;
+}
+
+.skip-button:hover {
+  background-color: #ff6b6b;
+  transform: translateY(-1px);
 }

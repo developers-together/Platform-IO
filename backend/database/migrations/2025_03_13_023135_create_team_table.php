@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('projectname');
             $table->text('description')->nullable();
-            $table->string('code')->unique();
+            $table->string('code', 6)->unique();
             $table->timestamps();
         });
     }

@@ -96,13 +96,57 @@ class UserController extends Controller
         return response()->json($user);
     }
 
+    public function logout(Request $request)
+    {
+        $user = Auth::user();
+
+        // Revoke the current access token
+        $user->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Logged out successfully'
+        ]);
+    }
+
+    public function teams()
+    {
+        $user = Auth::user()->load('teams');
+
+        $teams = $user->teams->map(function ($team) {
+            return [
+                'id' => $team->id,
+                'name' => $team->name,
+                'description' => $team->description,
+                'code' => $team->code,
+            ];
+        });
+
+        return response()->json([
+            'message' => 'User retrieved successfully',
+            'teams' => $teams,
+        ]);
+    }
+
+
+
+
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function delete(Request $request)
     {
+        $user = Auth::user();
 
-        $user->delete();
-        return response()->json(null, 204);
+        if ($user) {
+            $user->delete();
+
+            return response()->json([
+                'message' => 'Your account has been deleted successfully.'
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'User not authenticated.'
+        ], 401);
     }
 }

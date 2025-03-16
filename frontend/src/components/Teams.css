@@ -1,0 +1,152 @@
+/* General container styling */
+.teams-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
+}
+
+/* Title */
+.teams-container h2 {
+    text-align: center;
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Teams list */
+.teams-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.team-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f9f9f9;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: background 0.3s ease-in-out;
+}
+
+.team-item:hover {
+    background: #eaeaea;
+}
+
+/* Team details */
+.team-name {
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    color: #007bff;
+    transition: color 0.2s;
+}
+
+.team-name:hover {
+    color: #0056b3;
+}
+
+.team-project,
+.team-description {
+    font-size: 14px;
+    color: #555;
+}
+
+.team-code {
+    font-weight: bold;
+    background: #222;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+/* Buttons */
+button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-size: 14px;
+}
+
+.toggle-btn {
+    background: #007bff;
+    color: white;
+}
+
+.toggle-btn:hover {
+    background: #0056b3;
+}
+
+.leave-btn {
+    background: #ff4d4d;
+    color: white;
+    margin-left: 10px;
+}
+
+.leave-btn:hover {
+    background: #cc0000;
+}
+
+/* Input fields */
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.join-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.join-btn {
+    background: #28a745;
+    color: white;
+}
+
+.join-btn:hover {
+    background: #218838;
+}
+
+.create-btn {
+    background: #ff8c00;
+    color: white;
+}
+
+.create-btn:hover {
+    background: #cc6a00;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+    .teams-container {
+        max-width: 95%;
+        padding: 15px;
+    }
+
+    .team-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px;
+    }
+
+    .leave-btn {
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    button {
+        width: 100%;
+    }
+}
