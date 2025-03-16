@@ -22,6 +22,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'age',
+        'job',
+        'location',
+        'phone',
+        'gender',
     ];
 
     /**
@@ -50,7 +55,7 @@ class User extends Authenticatable
     public function Messages(): HasMany
     {
         return $this->HasMany(Message::class);
-       
+
     }
 
     // public function messages()
