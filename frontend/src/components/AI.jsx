@@ -172,10 +172,6 @@ export default function AIChatPage() {
 
       <footer className="chat-footer">
         <div className="action-buttons">
-          <button onClick={() => handleAction("upload")}>
-            <FiPlus className="plus-icon" />
-            Upload Image
-          </button>
           <button onClick={() => handleAction("search")}>
             <IoSearch className="search-icon" />
             Search
@@ -186,6 +182,13 @@ export default function AIChatPage() {
           </button>
         </div>
         <div className="input-row">
+          <button
+            className="upload-button"
+            onClick={() => handleAction("upload")}
+            type="button"
+          >
+            <FiPlus />
+          </button>
           <input
             type="text"
             placeholder="Message AI..."

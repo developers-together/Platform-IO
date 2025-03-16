@@ -40,7 +40,7 @@
 }
 
 .day-header.today {
-  background: #ffe08a;
+  background: #ffcd42;
   font-weight: 600;
 }
 
@@ -49,7 +49,7 @@
 }
 
 .day-header.today:hover {
-  background: #ffcd42;
+  background: #ffe08a;
 }
 
 /* Day Header Tooltip */

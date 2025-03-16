@@ -144,6 +144,8 @@
   gap: 20px;
   margin-bottom: 1rem;
   justify-content: center;
+  justify-content: center;
+  gap: 20px;
 }
 
 .action-buttons button {
@@ -184,6 +186,7 @@
   background: #ffffff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
   transition: all 0.2s;
+  padding-left: 4rem !important;
 }
 
 .input-row input:focus {
@@ -274,4 +277,32 @@
   stroke-linecap: round !important;
   paint-order: fill stroke !important;
   vector-effect: non-scaling-stroke;
+}
+
+/* Upload button styling */
+.upload-button {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #0052d4;
+  color: white;
+  border: none;
+  padding: 0.6rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+}
+
+.upload-button:hover {
+  background: #0041ac;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.upload-button svg {
+  height: 18px;
+  width: 18px;
 }
