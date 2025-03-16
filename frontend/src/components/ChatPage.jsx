@@ -99,7 +99,10 @@ export default function ChatPage() {
 useEffect(() => {
     getTeamChats().then((chats) => {
         setChannels(chats.map((chat) => ({ id: chat.id, name: chat.name })));
-        // setMessages(chats[0].messages);
+        if (chats.length > 0) {
+          setSelectedChatId(chats[0].id); // Select the first chat
+          getChatMessages(chats[0].id);  // Load its messages
+      }
     });
 }, []);
 
@@ -162,30 +165,25 @@ useEffect(() => {
 };
 
 const deleteMessage = async (id) => {
-  if (!window.confirm("Are you sure you want to delete this message?")) return;
-
   setDeletingMessageIds((prev) => [...prev, id]);
 
   try {
-      await axios.delete(`http://localhost:8000/api/messages/${id}`, {
+      await axios.delete(`http://localhost:8000/api/chats/${id}/deleteMessage`, {
           headers: {
               Authorization: `Bearer ${token}`,
               Accept: "application/json",
           },
       });
 
-      // Remove message from UI
+      // Remove the deleted message from state
       setMessages((prev) => prev.filter((msg) => msg.id !== id));
-      setDeletingMessageIds((prev) => prev.filter((msgId) => msgId !== id));
-      
-      console.log(`Message ${id} deleted successfully.`);
   } catch (error) {
       console.error("Error deleting message:", error.response?.data || error.message);
-      
-      // Rollback deletion state if API call fails
+  } finally {
       setDeletingMessageIds((prev) => prev.filter((msgId) => msgId !== id));
   }
 };
+
 
 
   const scrollToMessage = (replyingTo) => {
