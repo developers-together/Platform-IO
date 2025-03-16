@@ -219,7 +219,6 @@ class TeamController extends Controller
 
     public function leaveTeam(Team $team){
 
-        $validated = $request->validate(['team_id' => 'required']);
 
         Gate::authorize('update', $team);
 
