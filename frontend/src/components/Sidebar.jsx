@@ -2,13 +2,14 @@ import {
   FiBell,
   FiCalendar,
   FiCheckSquare,
-  FiCpu,
   FiHome,
   FiMenu,
   FiMessageSquare,
   FiSettings,
   FiUser,
 } from "react-icons/fi";
+import { IoFolderOutline } from "react-icons/io5";
+
 import { FaFan } from "react-icons/fa";
 import { useEffect, useRef, useState } from "react";
 import "./Sidebar.css";
@@ -25,6 +26,7 @@ export default function Sidebar({
     { icon: <FiMessageSquare />, label: "Chat", page: "chat" },
     { icon: <FiCheckSquare />, label: "Tasks", page: "Tasks" },
     { icon: <FiCalendar />, label: "Calendar", page: "Calendar" },
+    { icon: <IoFolderOutline />, label: "Shared File System", page: "File" },
     { icon: <FaFan />, label: "AI", page: "AI" },
   ];
 

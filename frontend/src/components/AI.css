@@ -163,11 +163,12 @@
   color: #374151;
   font-size: 0.9rem;
   cursor: pointer;
-  border: 1.5px solid #e5e7eb;
+  border: 0.5px solid #4dabf7;
   transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
 .action-buttons button:hover {
+  border: 0px solid #4dabf7;
   background: #e5e7eb;
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(0, 82, 212, 0.2);

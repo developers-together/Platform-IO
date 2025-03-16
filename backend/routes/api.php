@@ -20,12 +20,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('user/logout', [UserController::class, 'logout']);
     Route::get('/user/teams', [UserController::class, 'teams']);
 
-    Route::get('/tasks/index', [TaskController::class, 'index']);
+    Route::get('/tasks/{team}/index', [TaskController::class, 'index']);
+    Route::get('/tasks/{task}/show', [TaskController::class, 'show']);
     Route::post('/tasks/{team}/store', [TaskController::class, 'store'])->name('tasks.store');
-    Route::delete('/tasks/{task}/destroy', [TaskController::class, 'destroy'])->name('tasks.destroy');
-    Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
+    Route::delete('/tasks/{task}/delete',[TaskController::class, 'destroy'])->name('tasks.destroy');
+    Route::put('/tasks/{task}/update', [TaskController::class, 'update'])->name('tasks.update');
 
-    Route::get('/chats/{team}', [ChatController::class, 'index']);
+    Route::get('/chats/{team}/index', [ChatController::class, 'index']);
+    Route::get('/chats/{chat}/show', [ChatController::class, 'show']);
     Route::post('/chats/{team}/store', [ChatController::class, 'store']);
     Route::delete('/chats/{chat}', [ChatController::class, 'destroy']);
     Route::put('/chats/{chat}', [ChatController::class, 'update']);

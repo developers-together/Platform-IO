@@ -41,8 +41,7 @@ class MessageController extends Controller
 
         ]);
 
-        // Return the created message with a 201 status code
-        return response()->json($message, 201);
+        return $message->tojson();
     }
 
 
@@ -63,8 +62,7 @@ class MessageController extends Controller
             return $message;
         });
 
-
         // Return the paginated messages
-        return response()->json($messages);
+        return $message->tojson();
     }
 }

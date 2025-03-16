@@ -19,11 +19,11 @@ class ChatController extends Controller
     {
         Gate::authorize('viewAny', Chat::class);
 
+        $chats = Chat::where('team_id', $team->id)->get();
 
-        $chat = Chat::where('team_id', $team->id)->get();
-
-        return response()->json($chat);
+        return $chats->toJson();
     }
+
 
     public function store(Request $request, Team $team)
     {
@@ -35,7 +35,7 @@ class ChatController extends Controller
         ]);
 
         $user = Auth::user();
-        
+
         if($team->users()->where('user_id', $user->id)){
 
             $chat = Chat::create([
@@ -44,8 +44,7 @@ class ChatController extends Controller
                 ]);
         }
 
-    
-        return response()->json($chat);
+        return $chat->toJson();
     }
 
     public function show(Chat $chat)
@@ -54,10 +53,7 @@ class ChatController extends Controller
         Gate::authorize('view', $chat);
 
         // Return the chat details as a JSON response
-        return response()->json([
-            'message' => 'Chat retrieved successfully',
-            'data' => $chat,
-        ]);
+        return $chat->toJson();
     }
 
     public function update(Request $request , Chat $chat)
@@ -69,7 +65,7 @@ class ChatController extends Controller
         ]);
 
         $user = Auth::user();
-        
+
         if($chat->team->users()->where('user_id', $user->id)){
 
         $chat->update([
@@ -77,7 +73,7 @@ class ChatController extends Controller
         ]);
     }
 
-        return response()->json($chat);
+        return $chat->toJson();
     }
 
     public function destroy(Chat $chat, Request $request)
@@ -100,7 +96,7 @@ class ChatController extends Controller
 
         $chat->delete();
         }
-        
+
         return response()->json(['success' => true]);
     }
 
