@@ -130,12 +130,10 @@ export default function Teams({ setCurrentPage }) {
   };
 
   // Remove team
-  const handleRemoveTeam = async (id, e) => {
-    e.stopPropagation();
+  const handleRemoveTeam = async (id) => {
     try {
-      await axios.post(
-        `http://localhost:8000/api/team/${id}/leave`,
-        {},
+      await axios.delete(
+        `http://localhost:8000/api/team/${id}/delete`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -331,6 +329,7 @@ export default function Teams({ setCurrentPage }) {
               <div className="join-team-box">
                 <h3>Join Team</h3>
                 <input
+                  maxLength={6}
                   type="text"
                   placeholder="Team Code"
                   value={joinCode}

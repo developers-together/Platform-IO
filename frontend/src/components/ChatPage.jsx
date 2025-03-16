@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { use, useEffect, useMemo, useRef, useState } from "react";
 import {
   FiCornerUpLeft,
   FiImage,
@@ -12,11 +12,15 @@ import {
 } from "react-icons/fi";
 import Avatar from "./Avatar";
 import "./ChatPage.css";
+import axios from "axios";
 
 export default function ChatPage() {
-  const channels = ["General", "Project X", "Design"];
   const dms = ["Alice", "Bob", "Charlie"];
+  
+  const token = localStorage.getItem("token");
+  const teamId = localStorage.getItem("teamId");
 
+  const [channels, setChannels] = useState([]);
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
@@ -29,10 +33,40 @@ export default function ChatPage() {
   const messageRefs = useRef({});
   const [highlightedMessage, setHighlightedMessage] = useState(null);
 
+  const [newChannel, setNewChannel] = useState("");
+  const [showChannelInput, setShowChannelInput] = useState(false);
+
+  const [selectedChatId, setSelectedChatId] = useState(null);
+
+  const createChannel = async () => {
+    if (!newChannel.trim()) return;
+
+    try {
+        const response = await axios.post(`http://localhost:8000/api/chats/${teamId}/store`, 
+        { name: newChannel
+
+        }, 
+        {
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/json",
+            },
+        });
+        const newChat = { id: response.data.id, name: response.data.name };
+        console.log("New Channel Created:", response.data);
+        setChannels((prevChannels) => [...prevChannels, newChat]); // Update UI
+        setNewChannel(""); // Reset input
+        setShowChannelInput(false); // Hide input
+    } catch (error) {
+        console.error("Error creating channel:", error.response?.data || error.message);
+    }
+};
+
   const messageIds = useMemo(
     () => new Set(messages.map((msg) => msg.id)),
     [messages]
   );
+
 
   const imageUpload = (event) => {
     const file = event.target.files[0];
@@ -45,6 +79,30 @@ export default function ChatPage() {
     fileInputRef.current.value = "";
   };
 
+  const getTeamChats = async () => {
+    try {
+        const response = await axios.get(`http://localhost:8000/api/chats/${teamId}/index`, {
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/json",
+            },
+        });
+
+        // console.log("Chats for team:", response.data);
+        return response.data;  // Assuming chats are inside 'chats' key
+    } catch (error) {
+        console.error("Error fetching chats:", error.response?.data || error.message);
+        return [];
+    }
+};
+
+useEffect(() => {
+    getTeamChats().then((chats) => {
+        setChannels(chats.map((chat) => ({ id: chat.id, name: chat.name })));
+        // setMessages(chats[0].messages);
+    });
+}, []);
+
   const handleReply = (msg) => {
     setReplyingTo({
       id: msg.id,
@@ -53,34 +111,54 @@ export default function ChatPage() {
     });
   };
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
+    console.log("chat id", selectedChatId);
     if (!inputText.trim() && !selectedImage) return;
 
-    const messageId = Date.now();
-    const newMessage = {
-      id: messageId,
-      user: "You",
-      avatar: "",
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      text: inputText,
-      image: selectedImage,
-      replyTo: replyingTo,
-    };
+    if (!selectedChatId) {
+        console.error("No chat selected!");
+        return;
+    }
+    console.log(inputText, selectedImage);
 
-    setNewMessageId(messageId);
-    setMessages((prev) => [...prev, newMessage]);
+    try {
+        const response = await axios.post(
+            `http://localhost:8000/api/chats/${selectedChatId}/sendMessages`,
+            {
+                "message": inputText,
+                "image": selectedImage, // If needed
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/json",
+                },
+            }
+        );
 
-    setTimeout(() => {
-      setNewMessageId(null);
-    }, 500);
+        console.log("Message sent:", response.data);
 
-    setInputText("");
-    setSelectedImage(null);
-    setReplyingTo(null);
-  };
+        const newMessage = {
+            id: response.data.id, // Use actual ID from backend response
+            user: "You",
+            avatar: "",
+            time: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+            }),
+            text: inputText,
+            image: selectedImage,
+            replyTo: replyingTo,
+        };
+
+        setMessages((prev) => [...prev, newMessage]);
+        setInputText("");
+        setSelectedImage(null);
+        setReplyingTo(null);
+    } catch (error) {
+        console.error("Error sending message:", error.response?.data || error.message);
+    }
+};
 
   const deleteMessage = (id) => {
     setDeletingMessageIds((prev) => [...prev, id]);
@@ -105,16 +183,46 @@ export default function ChatPage() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const getChatMessages = async (chatId) => {
+    console.log("Fetching messages for chat:", chatId);
+    try {
+      setSelectedChatId(chatId); // Set the selected chat ID
+      const response = await axios.get(`http://localhost:8000/api/chats/${chatId}/getMessages`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      console.log("Messages:", response.data.data);
+      setMessages(response.data.data);
+    } catch (error) {
+      console.error("Error fetching messages:", error.response?.data || error.message);
+    }
+  };
+
+  
   return (
     <div className="chat-page-container">
       {/* Left Panel */}
       <div className="left-panel">
         <div className="left-card">
           <h4 className="panel-heading">Channels</h4>
+          <div className="channel-input">
+                <input 
+                    type="text" 
+                    placeholder="Enter channel name..."
+                    value={newChannel}
+                    onChange={(e) => setNewChannel(e.target.value)}
+                />
+                <button onClick={createChannel}>Create Channel</button>
+            </div>
           <div className="left-card-content">
-            <ul>
-              {channels.map((c, i) => (
-                <li key={i}>{c}</li>
+          <ul>
+              {channels.map((chat) => (
+                <li key={chat.id} onClick={() => getChatMessages(chat.id)} className={selectedChatId === chat.id ? "active-chat" : ""}>
+                  {chat.name}
+                </li>
               ))}
             </ul>
           </div>
@@ -194,7 +302,7 @@ export default function ChatPage() {
                     className="uploaded-image"
                   />
                 )}
-                <div className="msg-text">{msg.text}</div>
+                <div className="msg-text">{msg.message}</div>
                 <div className="msg-actions">
                   <button onClick={() => handleReply(msg)}>
                     <FiCornerUpLeft />
