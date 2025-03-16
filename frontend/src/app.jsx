@@ -9,6 +9,7 @@ import TasksPage from "./components/Taskspage";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import AIPage from "./components/AI";
+import Teams from "./components/Teams";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("login");
@@ -17,7 +18,7 @@ export default function App() {
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
-      {currentPage !== "login" && currentPage !== "register" && (
+      {currentPage!=="teams" && currentPage !== "login" && currentPage !== "register" && (
       <Sidebar
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
@@ -33,6 +34,7 @@ export default function App() {
         {currentPage === "login" && <Login setCurrentPage={setCurrentPage} />}
         {currentPage === "register" && <Register setCurrentPage={setCurrentPage} />}
         {currentPage === "AI" && <AIPage />}
+        {currentPage === "teams" && <Teams />}
         {/* Add other pages as needed */}
       </div>
     </div>

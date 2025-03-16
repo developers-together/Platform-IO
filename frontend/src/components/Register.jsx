@@ -23,21 +23,12 @@ export default function Register({ setCurrentPage }) {
     setSuccess("");
     setIsLoading(true);
 
-<<<<<<< HEAD
         try {
             const response = await axios.post("http://localhost:8000/api/register", {
                 name,
                 email,
                 password,
             });
-=======
-    try {
-      const response = await axios.post("http://localhost:8000/api/user", {
-        name,
-        email,
-        password,
-      });
->>>>>>> f2d3920b5a86ee26e29e55a0be216418d474ccd2
 
       console.log("Registration Success:", response.data);
       setSuccess("Registration successful! Redirecting to login...");

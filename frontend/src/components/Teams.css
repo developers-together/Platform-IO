@@ -1,0 +1,85 @@
+.teams-container {
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    text-align: center;
+}
+
+.teams-list {
+    list-style: none;
+    padding: 0;
+}
+
+.team-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.team-name {
+    font-weight: bold;
+}
+
+.team-code {
+    font-family: monospace;
+    background: #f0f0f0;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+.toggle-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.toggle-btn:hover {
+    background: #0056b3;
+}
+
+.actions {
+    margin-top: 20px;
+}
+
+.join-input {
+    padding: 8px;
+    width: 70%;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.join-btn, .create-btn {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.join-btn {
+    background: #28a745;
+    color: white;
+}
+
+.join-btn:hover {
+    background: #218838;
+}
+
+.create-btn {
+    background: #17a2b8;
+    color: white;
+}
+
+.create-btn:hover {
+    background: #138496;
+}
