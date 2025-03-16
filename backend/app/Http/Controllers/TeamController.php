@@ -217,26 +217,48 @@ class TeamController extends Controller
         ], 200);
     }
 
-    public function leaveTeam(Team $team){
+    public function leaveTeam(Team $team)
+    {
+        $user = Auth::user();
 
+        // Check if user is part of the team
+        $userInTeam = $team->users()->where('user_id', $user->id)->first();
 
-
-
-        if (!$team->users()->where('user_id', $validated['user_id'])->exists()) {
+        if (!$userInTeam) {
             return response()->json([
                 'message' => 'The user is not part of this team.',
             ], 404);
         }
 
-        $user = AUTH::user();
+        // Get the user's role
+        $role = $userInTeam->pivot->role;
 
+        // If user is a leader, promote someone else before leaving
+        if ($role === 'leader') {
+            // Try to find another member or viewer to promote
+            $newLeader = $team->users()
+                ->where('user_id', '!=', $user->id)
+                ->whereIn('role', ['member', 'viewer'])
+                ->first();
 
-        $usersInTeam = $team->users()
-        ->where('user_id', $user->id) // Check for a specific user ID
-        ->whereIn('role', ['member', 'viewer']) // Check if role is either 'member' or 'viewer'
-        ->pluck('user_id'); // Retrieve only the user_id column
+            if (!$newLeader) {
+                return response()->json([
+                    'message' => 'You are the only member in the team. Cannot leave without assigning a new leader.',
+                ], 403);
+            }
 
+            // Promote the new leader
+            $team->users()->updateExistingPivot($newLeader->id, ['role' => 'leader']);
+        }
+
+        // Now detach the current user (whether leader/member/viewer)
+        $team->users()->detach($user->id);
+
+        return response()->json([
+            'message' => 'You have left the team successfully.',
+        ], 200);
     }
+
 
     public function changeLeader(Request $request, Team $team)
     {
