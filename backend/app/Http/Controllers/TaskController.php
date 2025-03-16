@@ -89,12 +89,12 @@ class TaskController extends Controller
         $task
         ->update([
             'title'=> $validated['title'],
-            'description' => $validated['description'],
+            'description' => $validated['description'] ?? null,
             'stared' => $validated['stared']?? false,
-            'end' => $validated['end'],
-            'start' => $validated['start'],
-            'category' => $validated['category'],
-            'completed' => $validated['completed']
+            'end' => $validated['end'] ?? null,
+            'start' => $validated['start'] ?? null,
+            'category' => $validated['category'] ?? null,
+            'completed' => $validated['completed'] ?? false
         ]);
 
     }

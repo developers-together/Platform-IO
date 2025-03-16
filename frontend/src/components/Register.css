@@ -1,22 +1,21 @@
 /* Register.css */
+
+/* Container: align card to the right and use WelcomeOnboard.png as background */
 .register-container {
   display: flex;
-  justify-content: center;
+  /* align the register card to the right */
   align-items: center;
   min-height: 100vh;
-  background-size: 400% 400%;
-  animation: gradientAnimation 15s ease infinite;
-  align-self: center;
-  justify-self: baseline;
-  margin-left: 10%;
+  background-image: url("./WelcomeOnboard.png"); /* adjust path if needed */
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-color: #2c5ce7;
 }
 
+/* Register Card */
 .register-card {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
   padding: 40px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(16px);
   width: 100%;
   max-width: 440px;
   transform: translateY(0);
@@ -24,8 +23,29 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-left: 10%;
+  justify-content: baseline;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
+/* Card Enter Animation */
+@keyframes cardEnter {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Header */
 .register-header {
   margin-bottom: 30px;
   text-align: center;
@@ -33,16 +53,17 @@
 
 .register-title {
   font-size: 2.2rem;
-  color: #1a1a1a;
+  color: white;
   margin-bottom: 8px;
   font-weight: 700;
 }
 
 .register-subtitle {
-  color: #666;
+  color: #cdcdcd;
   font-size: 0.95rem;
 }
 
+/* Input Groups */
 .input-group {
   position: relative;
   margin-bottom: 15px;
@@ -55,7 +76,7 @@
   left: 15px;
   top: 50%;
   transform: translateY(-50%);
-  color: #777;
+  color: #cdcdcd;
   width: 20px;
   height: 20px;
 }
@@ -75,6 +96,7 @@
   box-shadow: 0 6px 20px rgba(0, 82, 212, 0.2);
 }
 
+/* Error & Success Messages */
 .error-message {
   background: #fff0f0;
   color: #dc2626;
@@ -86,7 +108,7 @@
   gap: 10px;
   font-size: 0.9rem;
   animation: slideDown 0.3s ease;
-  width: 63%;
+  width: 68%;
   justify-content: center;
 }
 
@@ -105,6 +127,19 @@
   justify-content: center;
 }
 
+/* Slide Down Animation */
+@keyframes slideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Register Button */
 .register-button {
   background: linear-gradient(135deg, #0052d4, #4364f7);
   color: white;
@@ -127,14 +162,17 @@
   box-shadow: 0 6px 20px rgba(0, 82, 212, 0.2);
 }
 
+/* Footer Links */
 .register-footer {
   margin-top: 25px;
   text-align: center;
   width: 100%;
   transition: all 0.2s ease-in-out;
+  color: #f0fff4;
 }
 
 .login-link {
+  margin-left: 5px;
   transition: all 0.2s ease-in-out;
   color: #0052d4;
   cursor: pointer;
@@ -146,41 +184,7 @@
   text-decoration: underline;
 }
 
-/* Reuse animations from Login.css */
-@keyframes gradientAnimation {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-@keyframes cardEnter {
-  0% {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideDown {
-  0% {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+/* Spinner */
 .spinner {
   width: 20px;
   height: 20px;

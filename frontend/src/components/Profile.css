@@ -1,74 +1,83 @@
-/* 
-  Merged "Generate" and "Change Color" into one button: "Magic Avatar"
-  Enhanced UI + animations
-  Contains scrolling in .profile-content
-*/
+/* Root Variables */
+:root {
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
+  --secondary-color: #f1f5f9;
+  --text-color: #1e293b;
+  --error-color: #ef4444;
+  --background-color: #f8fafc;
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-/* Layout: No full-page scroll, content scrolls internally */
+/* Base Layout */
 .profile-page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  overflow: hidden; /* no entire page scrolling */
+  overflow: hidden;
   font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background: #f8fafc;
+  background: var(--background-color);
+  color: var(--text-color);
 }
 
+/* Header */
 .profile-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding: 1.5rem 2rem;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid #e2e8f0;
+  background: none;
+  box-shadow: none;
 }
-
 .profile-header h2 {
   margin: 0;
   font-size: 1.8rem;
-  color: #2d3748;
+  font-weight: 700;
 }
 
-.edit-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  background: #f1f5f9;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.edit-toggle:hover {
-  background: #e2e8f0;
-}
-
-/* The main content can scroll */
+/* Main Content */
 .profile-content {
   flex: 1;
+  padding: 2rem;
   overflow-y: auto;
-  padding-bottom: 2rem;
 }
 
-/* Profile Card */
+/* Grid Layout: 2/3 and 1/3 */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: stretch;
+}
+
+/* Profile Card (Left Card) */
 .profile-card {
   animation: fadeIn 0.3s ease-out;
-  background: #fff;
-  border-radius: 1.5rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  background: white;
+  border-radius: var(--radius-lg);
   padding: 2rem;
-  max-width: 800px;
-  width: 90%;
-  margin: 2rem auto;
   display: grid;
   grid-template-columns: 200px 1fr;
   gap: 2rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid #f1f5f9;
+  transition: var(--transition);
+}
+.profile-card.editing {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* Avatar Section */
+/* Avatar Section (Left Column) */
 .avatar-section {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
 }
 .avatar-container {
   text-align: center;
@@ -77,50 +86,38 @@
   width: 160px;
   height: 160px;
   border-radius: 50%;
-  border: 3px solid #e2e3e5;
-  object-fit: cover;
-  margin-bottom: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 3px solid white;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
 }
 
-.avatar-controls {
+/* Mini-info under avatar: User ID, Full Name, Job */
+.mini-info {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  width: 100%;
 }
-
-/* Single button that does color + generate */
-.avatar-btn {
-  display: inline-flex;
+.mini-line {
+  display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem;
-  background: #f1f5f9;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-.avatar-btn:hover {
-  background: #e2e8f0;
-  transform: scale(1.02);
-}
-.magic-btn {
-  background: #ede9fe; /* a slight purple tint */
-}
-.magic-btn:hover {
-  background: #ddd6fe; /* deeper purple tint on hover */
+  background: var(--secondary-color);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
 }
 
-/* Profile Details */
+/* Profile Details (Right Column) */
 .profile-details {
-  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 .profile-fields {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
-  margin-bottom: 2rem;
 }
 .form-group {
   display: flex;
@@ -128,51 +125,49 @@
   gap: 0.5rem;
 }
 .form-group label {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #64748b;
-  font-size: 0.875rem;
   font-weight: 500;
+  color: #64748b;
 }
-input,
-select {
-  padding: 0.75rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+.form-group input,
+.form-group select {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius-md);
   font-size: 1rem;
-  transition: all 0.2s ease;
+  transition: var(--transition);
 }
 input:focus,
 select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   outline: none;
-  border-color: #4dabf7;
-  box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.1);
 }
 .field-value {
   padding: 0.75rem;
-  background: #f8fafc;
-  border-radius: 8px;
-  color: #0f172a;
+  background: var(--secondary-color);
+  border-radius: var(--radius-md);
   font-weight: 500;
 }
 .error {
-  color: #dc2626;
-  font-size: 0.75rem;
+  color: var(--error-color);
+  font-size: 0.8rem;
   margin-top: 0.25rem;
 }
 
-/* Teams Section */
-.teams-section {
-  border-top: 1px solid #f1f5f9;
-  padding-top: 2rem;
+/* Teams Section in Right Column */
+.teams-section2 {
+  margin-top: 1rem;
 }
-.teams-section h3 {
-  display: inline-flex;
+.teams-section2 h3 {
+  display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 1rem;
-  color: #0f172a;
+  color: var(--text-color);
+  font-size: 1.1rem;
 }
 .teams-list {
   display: flex;
@@ -180,144 +175,195 @@ select:focus {
   gap: 0.5rem;
 }
 .team-chip {
-  animation: fadeIn 0.2s ease-out;
-  background: #f1f5f9;
-  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
   padding: 0.5rem 1rem;
+  background: var(--secondary-color);
+  border-radius: 20px;
   font-size: 0.875rem;
   color: #475569;
-  transition: all 0.2s ease;
+  transition: var(--transition);
 }
 .team-chip:hover {
   background: #e2e8f0;
 }
-
-/* Add Team (inline approach) */
-.add-team-btn {
+.delete-team-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
-  background: #4dabf7;
-  color: #fff;
+  width: 20px;
+  height: 20px;
+  margin-left: 0.5rem;
   border: none;
-  width: 32px;
-  height: 32px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+.delete-team-btn:hover {
+  background: #f8fafc;
+  color: var(--error-color);
+}
+.add-team-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: var(--primary-color);
+  color: white;
   border-radius: 50%;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition);
 }
 .add-team-btn:hover {
-  background: #339af0;
+  background: var(--primary-hover);
   transform: scale(1.1);
 }
 .add-team-inline {
   display: flex;
-  align-items: center;
   gap: 0.5rem;
+  align-items: center;
 }
 .add-team-inline input {
-  width: 120px;
   padding: 0.5rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 0.85rem;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius-md);
 }
 .inline-confirm,
 .inline-cancel {
-  padding: 0.4rem 0.7rem;
+  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  font-size: 0.8rem;
-  transition: background 0.2s ease;
+  transition: var(--transition);
 }
 .inline-confirm {
-  background: #4dabf7;
-  color: #fff;
+  background: var(--primary-color);
+  color: white;
 }
 .inline-confirm:hover {
-  background: #339af0;
+  background: var(--primary-hover);
 }
 .inline-cancel {
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--secondary-color);
+  color: var(--text-color);
 }
 .inline-cancel:hover {
   background: #e2e8f0;
 }
 
-/* Footer */
-.profile-footer {
-  padding: 1.5rem 2rem;
-  background: #fff;
-  border-top: 1px solid #f1f5f9;
+/* Options Card (Right Card) */
+.options-card {
+  animation: fadeIn 0.3s ease-out;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 2rem;
   display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
+  flex-direction: column;
+  justify-content: space-between;
 }
-.btn {
-  display: inline-flex;
+.options-card h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+}
+.separator {
+  border: none;
+  border-top: 1px solid #e2e3e5;
+  margin: 1rem 0;
+}
+.option-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--secondary-color);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-color);
+  transition: var(--transition);
+  margin-bottom: 0.5rem;
+}
+.option-btn:hover {
+  background: #e2e8f0;
+  transform: translateY(-1px);
+}
+.red-btn {
+  background: #ffe4e6;
+  color: var(--error-color);
+}
+.red-btn:hover {
+  background: #fecaca;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
 }
-.save-btn {
-  background: #4dabf7;
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+.modal-content h3 {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+  color: var(--text-color);
+}
+.modal-content p {
+  margin: 1rem 0;
+  color: #475569;
+}
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+.confirm-btn {
+  background: var(--error-color);
   color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
 }
-.save-btn:hover {
-  background: #339af0;
+.confirm-btn:hover {
+  background: #b91c1c;
 }
 .cancel-btn {
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--secondary-color);
+  color: var(--text-color);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
 }
 .cancel-btn:hover {
   background: #e2e8f0;
-}
-.logout-btn {
-  background: #f1f5f9;
-  color: #475569;
-}
-.logout-btn:hover {
-  background: #e2e8f0;
   color: #334155;
 }
-.delete-btn {
-  background: #fff1f2 !important;
-  color: #dc2626 !important;
-}
-.delete-btn:hover {
-  background: #ffe4e6 !important;
-  color: #dc2626 !important;
-}
 
-/* Responsive */
-@media (max-width: 768px) {
-  .profile-card {
-    grid-template-columns: 1fr;
-  }
-  .profile-fields {
-    grid-template-columns: 1fr;
-  }
-  .profile-footer {
-    flex-direction: column;
-    align-items: center;
-  }
-  .btn {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-/* Animations */
+/* FadeIn Animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -329,62 +375,21 @@ select:focus {
   }
 }
 
-/* Modals */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  animation: fadeIn 0.2s ease-out;
-}
-.modal-content {
-  background: #fff;
-  padding: 2rem;
-  border-radius: 12px;
-  width: 320px;
-  max-width: 90%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-.modal-content h3 {
-  margin-top: 0;
-  color: #2d3748;
-}
-.modal-content p {
-  margin: 1rem 0;
-  color: #475569;
-}
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-.confirm-btn {
-  background: #4dabf7;
-  color: #fff;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.confirm-btn:hover {
-  background: #339af0;
-}
-.cancel-btn {
-  background: #f1f5f9;
-  color: #475569;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.cancel-btn:hover {
-  background: #e2e8f0;
-  color: #334155;
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-card {
+    grid-template-columns: 1fr;
+    padding: 1.5rem;
+  }
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+  }
+  .modal-content {
+    width: 90%;
+    padding: 1.5rem;
+  }
 }

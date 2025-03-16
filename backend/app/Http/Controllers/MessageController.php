@@ -65,4 +65,5 @@ class MessageController extends Controller
         // Return the paginated messages
         return response()->json($messages);
     }
+
 }

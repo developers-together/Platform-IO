@@ -11,7 +11,7 @@ function TasksCard() {
         {/* Each list item is now a "task-item" row */}
         <li className="task-item">
           <div className="task-left">
-            <input type="checkbox" className="circular-checkbox" />
+            <input type="checkbox" className="circular-checkbox2" />
             <span className="task-name">Finalize project architecture</span>
           </div>
           <span className="task-options">•••</span>
@@ -19,7 +19,7 @@ function TasksCard() {
 
         <li className="task-item">
           <div className="task-left">
-            <input type="checkbox" className="circular-checkbox" />
+            <input type="checkbox" className="circular-checkbox2" />
             <span className="task-name">Develop UI prototypes</span>
           </div>
           <span className="task-options">•••</span>
@@ -27,7 +27,7 @@ function TasksCard() {
 
         <li className="task-item">
           <div className="task-left">
-            <input type="checkbox" className="circular-checkbox" />
+            <input type="checkbox" className="circular-checkbox2" />
             <span className="task-name">Optimize code performance</span>
           </div>
           <span className="task-options">•••</span>
@@ -35,7 +35,7 @@ function TasksCard() {
 
         <li className="task-item">
           <div className="task-left">
-            <input type="checkbox" className="circular-checkbox" />
+            <input type="checkbox" className="circular-checkbox2" />
             <span className="task-name">Update technical docs</span>
           </div>
           <span className="task-options">•••</span>
@@ -43,7 +43,7 @@ function TasksCard() {
 
         <li className="task-item">
           <div className="task-left">
-            <input type="checkbox" className="circular-checkbox" />
+            <input type="checkbox" className="circular-checkbox2" />
             <span className="task-name">Update technical docs</span>
           </div>
           <span className="task-options">•••</span>

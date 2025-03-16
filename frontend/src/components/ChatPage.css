@@ -71,13 +71,13 @@
 }
 
 /* Chat Center Styles */
-.chat-center {
+.chat-center2 {
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.chat-header {
+.chat-header3 {
   background: #e2e3e3;
   padding: 12px 18px;
   display: flex;
@@ -89,7 +89,7 @@
   border-radius: 20px;
 }
 
-.chat-header h3 {
+.chat-header3 h3 {
   margin: 0;
   flex: 1;
 }
@@ -115,7 +115,7 @@
 }
 
 /* Messages Container */
-.chat-messages {
+.chat-messages2 {
   flex: 1;
   padding: 16px;
   overflow-y: auto;
@@ -157,18 +157,18 @@
   }
 }
 
-.chat-message.adding {
+.chat-message2.adding {
   animation: messageAppear 0.4s cubic-bezier(0.2, 0, 0.1, 1);
   transform-origin: bottom center;
 }
 
-.chat-message.deleting {
+.chat-message2.deleting {
   animation: messageDelete 0.3s ease-out forwards;
   overflow: hidden;
 }
 
 /* Message Styling */
-.chat-message {
+.chat-message2 {
   display: flex;
   gap: 14px;
   align-items: flex-start;
@@ -185,6 +185,7 @@
   background: #fff;
   border-radius: 10px;
   padding: 10px 14px;
+  width: max-content;
   flex: 1;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   position: relative;
