@@ -9,9 +9,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class MessageController extends Controller
 {
+    use AuthorizesRequests;
     public function sendMessage(Request $request, Chat $chat)
     {
         // Authorize the action
@@ -84,30 +86,20 @@ class MessageController extends Controller
         return response()->json($messages);
     }
 
-    public function deleteMessage(Message $message)
-        {
-        // Optional: authorize the user (if you're using Laravel Policies)
-        $this->authorize('delete', $message);
+    public function destroy(Message $message)
+    {
+        $this->authorize('delete', $message); // Assuming your policy handles user ownership
 
+        // Extra fallback check (if no policy or just to double secure it)
         $user = Auth::user();
 
-        // Optional: check if the user belongs to the team of the chat
-        if (!$message->chat || !$message->chat->team || !$message->chat->team->users()->where('user_id', $user->id)->exists()) {
+        if ($message->user_id !== $user->id) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
-        // Delete image from storage if it exists
-        if ($message->path && Storage::disk('public')->exists($message->path)) {
-            Storage::disk('public')->delete($message->path);
-        }
-
-        // Delete the message
         $message->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Message deleted successfully.'
-        ]);
+        return response()->json(['success' => true]);
     }
 
 

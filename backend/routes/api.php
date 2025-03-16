@@ -34,7 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/chats/{chat}/sendMessages', [MessageController::class, 'sendMessage']);
     Route::get('/chats/{chat}/getMessages', [MessageController::class, 'getMessages']);
-    Route::delete('/messages/{message}', [MessageController::class, 'deleteMessage']);
+    Route::delete('chats/{message}/deleteMessage', [MessageController::class, 'destroy']);
 
 
     Route::post('/team/create',[TeamController::class,'store']);

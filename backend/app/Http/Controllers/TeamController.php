@@ -220,7 +220,7 @@ class TeamController extends Controller
     public function leaveTeam(Team $team){
 
 
-        
+
 
         if (!$team->users()->where('user_id', $validated['user_id'])->exists()) {
             return response()->json([
@@ -230,7 +230,7 @@ class TeamController extends Controller
 
         $user = AUTH::user();
 
-        
+
         $usersInTeam = $team->users()
         ->where('user_id', $user->id) // Check for a specific user ID
         ->whereIn('role', ['member', 'viewer']) // Check if role is either 'member' or 'viewer'

@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Policies\MessagePolicy;
+use App\Models\Message;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,4 +23,10 @@ class AppServiceProvider extends ServiceProvider
     {
         //
     }
+
+    protected $policies = [
+        Message::class => MessagePolicy::class,
+    ];
+
+
 }
