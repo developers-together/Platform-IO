@@ -21,7 +21,7 @@ class MessageController extends Controller
         $validated = $request->validate([
             'message' => 'nullable|string',
             'image' => 'nullable|image',
-            'replayTo' => 'nullable|string'
+            'replyTo' => 'nullable|integer'
         ]);
 
         $user = Auth::user(); // Get the user object
@@ -38,7 +38,7 @@ class MessageController extends Controller
             'user_id' => $user->id,
             'message' => $validated['message'] ?? null,
             'path' => $path,
-            'replayTo' => $validated['replayTo'] ?? null,
+            'replyTo' => $validated['replyTo'] ?? null,
         ]);
 
         // Build a custom response array
@@ -49,7 +49,7 @@ class MessageController extends Controller
             'user_name' => $user->name,
             'message' => $message->message,
             'image_url' => $message->path ? Storage::url($message->path) : null,
-            'replayTo' => $message->replayTo,
+            'replyTo' => $message->replyTo,
             'created_at' => $message->created_at->toDateTimeString(),
         ];
 
@@ -76,7 +76,7 @@ class MessageController extends Controller
                 'user_name' => $userName,
                 'message' => $message->message,
                 'image_url' => $message->path ? Storage::url($message->path) : null,
-                'replayTo' => $message->replayTo,
+                'replyTo' => $message->replyTo,
                 'created_at' => $message->created_at->toDateTimeString(),
             ];
         });
