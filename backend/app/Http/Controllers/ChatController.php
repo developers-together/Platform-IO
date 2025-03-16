@@ -45,7 +45,7 @@ class ChatController extends Controller
         }
 
     
-        return response()->json(['success' => true, 'chat' => $chat]);
+        return response()->json($chat);
     }
 
     public function show(Chat $chat)
@@ -77,7 +77,7 @@ class ChatController extends Controller
         ]);
     }
 
-        return response()->json(['success' => true, 'chat' => $chat]);
+        return response()->json($chat);
     }
 
     public function destroy(Chat $chat, Request $request)

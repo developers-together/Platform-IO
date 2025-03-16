@@ -59,10 +59,7 @@ class UserController extends Controller
     {
         $user = Auth::user();
 
-        return response()->json([
-            'message' => 'User retrieved successfully',
-            'data' => $user,
-        ]);
+        return response()->json($user);
     }
 
 
@@ -121,10 +118,7 @@ class UserController extends Controller
             ];
         });
 
-        return response()->json([
-            'message' => 'User retrieved successfully',
-            'teams' => $teams,
-        ]);
+        return response()->json($teams);
     }
 
 

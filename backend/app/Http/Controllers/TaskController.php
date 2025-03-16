@@ -26,11 +26,10 @@ class TaskController extends Controller
         // Authorize the action (ensure the user can view the task)
         Gate::authorize('view', $task);
 
+        $task = $task->ToJson();
+
         // Return the task details as a JSON response
-        return response()->json([
-            'message' => 'Task retrieved successfully',
-            'data' => $task,
-        ]);
+        return response($task);
     }
 
      // Store a new task in the database
@@ -65,7 +64,10 @@ class TaskController extends Controller
       'team_id' => $validated['team_id']
       ]);
     }
-        return response()->json(['success' => true, 'task' => $task]);
+
+        $task = $task->ToJson();
+
+        return response($task);
     }
 
     // Update an existing task in the database
