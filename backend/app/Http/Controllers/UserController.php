@@ -112,13 +112,21 @@ class UserController extends Controller
     {
         $user = Auth::user()->load('teams');
 
-        $teamNames = $user->teams->pluck('name'); // returns array of names
+        $teams = $user->teams->map(function ($team) {
+            return [
+                'id' => $team->id,
+                'name' => $team->name,
+                'description' => $team->description,
+                'code' => $team->code,
+            ];
+        });
 
         return response()->json([
             'message' => 'User retrieved successfully',
-            'team_names' => $teamNames,
+            'teams' => $teams,
         ]);
     }
+
 
 
 
