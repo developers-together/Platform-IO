@@ -310,6 +310,24 @@ class TeamController extends Controller
         ], 200);
     }
 
+    public function getTeamById($id)
+    {
+        $team = Team::with('users')->find($id);
+
+        if (!$team) {
+            return response()->json([
+                'message' => 'Team not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Team retrieved successfully',
+            'data' => $team
+        ]);
+    }
+
+
+
     /**
      * Remove the specified resource from storage.
      */
