@@ -23,13 +23,12 @@ export default function Register({ setCurrentPage }) {
     setSuccess("");
     setIsLoading(true);
 
-        try {
-            const response = await axios.post("http://localhost:8000/api/register", {
-                name,
-                email,
-                password,
-            });
-
+    try {
+      const response = await axios.post("http://localhost:8000/api/register", {
+        name,
+        email,
+        password,
+      });
       console.log("Registration Success:", response.data);
       setSuccess("Registration successful! Redirecting to login...");
       setTimeout(() => setCurrentPage("login"), 2000);

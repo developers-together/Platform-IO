@@ -132,8 +132,8 @@ export default function ChatPage() {
       </div>
 
       {/* Chat Center */}
-      <div className="chat-center">
-        <div className="chat-header">
+      <div className="chat-center2">
+        <div className="chat-header3">
           <h3>General Chat</h3>
           <div className="header-actions">
             <button>
@@ -148,12 +148,12 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <div className="chat-messages">
+        <div className="chat-messages2">
           {messages.map((msg) => (
             <div
               key={msg.id}
               ref={(el) => (messageRefs.current[msg.id] = el)}
-              className={`chat-message ${
+              className={`chat-message2 ${
                 highlightedMessage === msg.id ? "highlight" : ""
               } ${deletingMessageIds.includes(msg.id) ? "deleting" : ""} ${
                 msg.id === newMessageId ? "adding" : ""
@@ -198,9 +198,6 @@ export default function ChatPage() {
                 <div className="msg-actions">
                   <button onClick={() => handleReply(msg)}>
                     <FiCornerUpLeft />
-                  </button>
-                  <button>
-                    <FiSmile />
                   </button>
                   <button onClick={() => deleteMessage(msg.id)}>
                     <FiTrash2 />

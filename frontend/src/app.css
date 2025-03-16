@@ -2,22 +2,22 @@
 
 html,
 body {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 *,
 *::before,
 *::after {
-    box-sizing: inherit;
+  box-sizing: inherit;
 }
 body {
-    font-family: 'Poppins', sans-serif;
-    background: #f9fafc;
-    color: #333;
+  font-family: "Poppins", sans-serif;
+  background: #f9fafc;
+  color: #333;
 }
 
 .app-container {
-    display: flex;
-    height: 100vh;
+  display: flex;
+  height: 100vh;
 }
