@@ -1,69 +1,113 @@
+/* General container styling */
 .teams-container {
-    max-width: 400px;
-    margin: 20px auto;
+    max-width: 800px;
+    margin: 40px auto;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    background-color: #fff;
-    text-align: center;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
 }
 
+/* Title */
+.teams-container h2 {
+    text-align: center;
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Teams list */
 .teams-list {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
 .team-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
+    justify-content: space-between;
+    background: #f9f9f9;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: background 0.3s ease-in-out;
 }
 
+.team-item:hover {
+    background: #eaeaea;
+}
+
+/* Team details */
 .team-name {
     font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    color: #007bff;
+    transition: color 0.2s;
+}
+
+.team-name:hover {
+    color: #0056b3;
+}
+
+.team-project,
+.team-description {
+    font-size: 14px;
+    color: #555;
 }
 
 .team-code {
-    font-family: monospace;
-    background: #f0f0f0;
-    padding: 5px 10px;
+    font-weight: bold;
+    background: #222;
+    color: white;
+    padding: 4px 8px;
     border-radius: 4px;
+}
+
+/* Buttons */
+button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-size: 14px;
 }
 
 .toggle-btn {
     background: #007bff;
     color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
 }
 
 .toggle-btn:hover {
     background: #0056b3;
 }
 
+.leave-btn {
+    background: #ff4d4d;
+    color: white;
+    margin-left: 10px;
+}
+
+.leave-btn:hover {
+    background: #cc0000;
+}
+
+/* Input fields */
 .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     margin-top: 20px;
 }
 
 .join-input {
-    padding: 8px;
-    width: 70%;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.join-btn, .create-btn {
-    width: 100%;
     padding: 10px;
-    margin: 5px 0;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
 }
 
 .join-btn {
@@ -76,10 +120,33 @@
 }
 
 .create-btn {
-    background: #17a2b8;
+    background: #ff8c00;
     color: white;
 }
 
 .create-btn:hover {
-    background: #138496;
+    background: #cc6a00;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+    .teams-container {
+        max-width: 95%;
+        padding: 15px;
+    }
+
+    .team-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px;
+    }
+
+    .leave-btn {
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    button {
+        width: 100%;
+    }
 }

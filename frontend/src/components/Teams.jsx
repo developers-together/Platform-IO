@@ -1,47 +1,45 @@
-import { use, useEffect, useState } from "react";
-import "./Teams.css";
+import { useEffect, useState } from "react";
 import axios from "axios";
+import "./Teams.css";
 
-export default function Teams() {
+export default function Teams({ setCurrentPage }) {
     const token = localStorage.getItem("token");
-    const [teams, setTeams] = useState([{ id: 1, name: "Team Alpha", code: "A1B2C3", visible: false,description:"Team Alpha is a team of developers working on a project"},
-        { id: 2, name: "Team Beta", code: "D4E5F6", visible: false, description:"hi"},]);
+    const [teams, setTeams] = useState([]);
     const [joinCode, setJoinCode] = useState("");
     const [teamName, setTeamName] = useState("");
+    const [projectName, setProjectName] = useState("");
+    const [teamDescription, setTeamDescription] = useState("");
 
-    const getTeams = async (token) => {
+    const getTeams = async () => {
         try {
-            const response = await axios.get(`http://localhost:8000/api/user/teams`, {
+            const response = await axios.get("http://localhost:8000/api/user/teams", {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                     "Accept": "application/json",
                 },
             });
-            return response.data.teams;  // Properly return the data
+            return response.data.teams;
         } catch (error) {
-            console.error("Error:", error);
-            return [];  // Return an empty array to prevent errors in `.map()`
+            console.error("Error fetching teams:", error);
+            return [];
         }
     };
 
-useEffect(() => {
-    const fetchTeams = async () => {
-        const t = await getTeams(token);  // Wait for the async function to resolve
-         const formattedTeams = t.map(
-            (team) => ({
+    useEffect(() => {
+        const fetchTeams = async () => {
+            const t = await getTeams();
+            const formattedTeams = t.map(team => ({
                 id: team.id,
                 name: team.name,
+                projectname: team.projectname,
                 description: team.description,
                 code: team.code,
                 visible: false 
-            })
-        );
-        setTeams(formattedTeams);
-    };
-    fetchTeams();
-    // console.log(t);
-}, [token]);
-    
+            }));
+            setTeams(formattedTeams);
+        };
+        fetchTeams();
+    }, []);
 
     const toggleVisibility = (id) => {
         setTeams(teams.map(team => 
@@ -49,33 +47,70 @@ useEffect(() => {
         ));
     };
 
-    const joinTeam = () => {
-        if (!joinCode.trim()) return;
-        alert(`Joining team with code: ${joinCode}`);
-        setJoinCode("");
+    const joinTeam = async () => {
+        try {
+            const response = await axios.post(
+                "http://localhost:8000/api/team/joinTeam",
+                { "code": joinCode.toUpperCase() },
+                {
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Accept": "application/json",
+                    },
+                }
+            );
+            console.log("Joined team:", response.data);
+        } catch (error) {
+            console.error("Error joining team:", error.response?.data || error.message);
+        }
     };
 
     const createTeam = async () => {
+        if (!teamName.trim() || !projectName.trim() || !teamDescription.trim()) return;
+        
         const newCode = Math.random().toString(36).substring(2, 8).toUpperCase(); 
-        const newTeam = { id: teams.length + 1, name: teamName, code: newCode, visible: false };
-        try{
-            const response = await axios.post("http://localhost:8000/api/team/create", {
-                "name": teamName,
-                "projectname": teamName,
-                "description": "New Team",
-                "code": newCode
-            },
-            {
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Accept": "application/json",
+        try {
+            const response = await axios.post(
+                "http://localhost:8000/api/team/create",
+                {
+                    "name": teamName,
+                    "projectname": projectName,
+                    "description": teamDescription,
+                    "code": newCode
+                },
+                {
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Accept": "application/json",
+                    },
                 }
-            });
+            );
         } catch (error) {
             console.error("Error creating team:", error.response?.data || error.message);
             return;
         }
-        setTeams([...teams, newTeam]);
+        
+        setTeams([...teams, { id: teams.length + 1, name: teamName, projectname: projectName, code: newCode, visible: false }]);
+    };
+
+    const leaveTeam = async (id) => {
+        try {
+            await axios.post(`http://localhost:8000/api/team/${id}/leave`, {}, {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Accept": "application/json",
+                },
+            });
+
+            setTeams(teams.filter(team => team.id !== id));
+        } catch (error) {
+            console.error("Error leaving team:", error.response?.data || error.message);
+        }
+    };
+
+    const goToDashboard = (id) => {
+        localStorage.setItem("teamId", id); // Save team ID to local storage
+        setCurrentPage("dashboard")// Redirect manually
     };
 
     return (
@@ -84,12 +119,16 @@ useEffect(() => {
             <ul className="teams-list">
                 {teams.map((team) => (
                     <li key={team.id} className="team-item">
-                        <span className="team-name">{team.name}</span>
-                        <span className="team-desciption">{team.description}</span>
+                        <span className="team-name" onClick={() => goToDashboard(team.id)} style={{ cursor: "pointer", textDecoration: "underline" }}>
+                            {team.name}
+                        </span>
+                        <span className="team-project">{team.projectname}</span>
+                        <span className="team-description">{team.description}</span>
                         <span className="team-code">{team.visible ? team.code : "******"}</span>
                         <button className="toggle-btn" onClick={() => toggleVisibility(team.id)}>
                             {team.visible ? "Hide" : "Show"}
                         </button>
+                        <button className="leave-btn" onClick={() => leaveTeam(team.id)}>Leave Team</button>
                     </li>
                 ))}
             </ul>
@@ -103,11 +142,26 @@ useEffect(() => {
                     className="join-input"
                 />
                 <button className="join-btn" onClick={joinTeam}>Join Team</button>
+
                 <input 
-                    type = "test" 
+                    type="text" 
                     placeholder="Enter Team Name"
                     value={teamName} 
                     onChange={(e) => setTeamName(e.target.value)}
+                    className="join-input" 
+                />
+                <input 
+                    type="text" 
+                    placeholder="Enter Project Name"
+                    value={projectName} 
+                    onChange={(e) => setProjectName(e.target.value)}
+                    className="join-input" 
+                />
+                <input 
+                    type="text" 
+                    placeholder="Enter Team Description"
+                    value={teamDescription} 
+                    onChange={(e) => setTeamDescription(e.target.value)}
                     className="join-input" 
                 />
                 <button className="create-btn" onClick={createTeam}>Create Team</button>

@@ -39,7 +39,7 @@ export default function App() {
           <Register setCurrentPage={setCurrentPage} />
         )}
         {currentPage === "AI" && <AIPage />}
-        {currentPage === "teams" && <Teams />}
+        {currentPage === "teams" && <Teams setCurrentPage={setCurrentPage} />}
         {currentPage === "Profile" && <Profile />}
         {/* Add other pages as needed */}
       </div>

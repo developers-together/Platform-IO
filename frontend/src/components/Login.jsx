@@ -20,7 +20,7 @@ export default function Login({ setCurrentPage }) {
             });
             const token = response.data.token;
             localStorage.setItem("token", token);
-            setCurrentPage("dashboard");
+            setCurrentPage("teams");
         } catch (error) {
             console.log(error.response?.data?.message);
             setError(error.response?.data?.message || "Invalid email or password. Please try again.");
