@@ -219,16 +219,17 @@
   z-index: 1000;
   animation: fadeIn 0.2s ease-out;
 }
+
 .event-hover::after {
   content: "";
   position: absolute;
   top: 100%;
   left: 50%;
-  transform: translateX(-50%);
   border-width: 6px;
   border-style: solid;
   border-color: #2d3439 transparent transparent transparent;
 }
+
 .event-hover h4 {
   margin: 0 0 8px;
   font-size: 1.1rem;

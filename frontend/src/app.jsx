@@ -10,6 +10,7 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import AIPage from "./components/AI";
 import Teams from "./components/Teams";
+import Profile from "./components/Profile";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("login");
@@ -39,6 +40,7 @@ export default function App() {
         )}
         {currentPage === "AI" && <AIPage />}
         {currentPage === "teams" && <Teams />}
+        {currentPage === "Profile" && <Profile />}
         {/* Add other pages as needed */}
       </div>
     </div>
