@@ -8,7 +8,7 @@ class Message extends Model
 {
     // use HasFactory;
 
-    protected $fillable = ['user_id', 'chat_id', 'message'];
+    protected $fillable = ['user_id', 'chat_id', 'text', 'path', 'replayTo'];
 
 
     public function users(): BelongsTo

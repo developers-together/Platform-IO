@@ -8,6 +8,7 @@ use App\Models\Chat;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class MessageController extends Controller
 {
@@ -18,51 +19,68 @@ class MessageController extends Controller
 
         // Validate the request
         $validated = $request->validate([
-            'message' => 'required|string',
-            'image' => 'nullable|image'
+            'message' => 'nullable|string',
+            'image' => 'nullable|image',
+            'replayTo' => 'nullable|string'
         ]);
 
-        // Get the authenticated user's ID
-        $id = Auth::id();
+        $user = Auth::user(); // Get the user object
 
-        // Store the image (if provided)
+        // Store the image if provided
         $path = null;
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('images', 'public');
         }
 
-
         // Create the message
         $message = Message::create([
-            'chat_id' => $chat->id, // Use the chat ID from the route model binding
-            'user_id' => $id,
-            'message' => $validated['message'],
-            'path' => $path
-
+            'chat_id' => $chat->id,
+            'user_id' => $user->id,
+            'text' => $validated['message'] ?? null,
+            'path' => $path,
+            'replayTo' => $validated['replayTo'] ?? null,
         ]);
 
-        return $message->tojson();
-    }
+        // Build a custom response array
+        $response = [
+            'id' => $message->id,
+            'chat_id' => $message->chat_id,
+            'user_id' => $message->user_id,
+            'user_name' => $user->name,
+            'text' => $message->text,
+            'image_url' => $message->path ? Storage::url($message->path) : null,
+            'replayTo' => $message->replayTo,
+            'created_at' => $message->created_at->toDateTimeString(),
+        ];
 
+        return response()->json([
+            'success' => true,
+            'message' => $response,
+        ]);
+    }
 
     public function getMessages(Chat $chat)
     {
-        // Authorize the action
         Gate::authorize('update', $chat);
 
-        // Retrieve paginated messages for the chat
         $messages = Message::where('chat_id', $chat->id)->paginate(5);
 
         $messages->getCollection()->transform(function ($message) {
-            if ($message->image) {
-                $message->image = Storage::url($message->image);
-            } else {
-                $message->image_url = null; // No image
-            }
-            return $message;
+            // Get the user's name manually without defining a user() relationship
+            $userName = DB::table('users')->where('id', $message->user_id)->value('name');
+
+            return [
+                'id' => $message->id,
+                'chat_id' => $message->chat_id,
+                'user_id' => $message->user_id,
+                'user_name' => $userName,
+                'text' => $message->text,
+                'image_url' => $message->path ? Storage::url($message->path) : null,
+                'replayTo' => $message->replayTo,
+                'created_at' => $message->created_at->toDateTimeString(),
+            ];
         });
 
-        // Return the paginated messages
         return response()->json($messages);
     }
 
