@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Ai_chat;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
+use Gemini\Laravel\Facades\Gemini;
 
 class Ai_chatPolicy
 {

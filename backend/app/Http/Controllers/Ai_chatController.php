@@ -8,9 +8,27 @@ use Illuminate\Support\Facades\Gate;
 use App\Models\Team;
 use Gemini\Laravel\Facades\Gemini;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class Ai_chatController extends Controller
 {
+    public function sendPrompt(Request $request)
+    {
+        $prompt = $request->input('prompt');
+
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+        ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' . env('GEMINI_API_KEY'), [
+            'contents' => [
+                [
+                    'parts' => [
+                        ['text' => $prompt]
+                    ]
+                ]
+            ]
+        ]);
+        return response()->json($response->json());
+    }
     /**
      * Display a listing of the resource.
      */
@@ -50,7 +68,7 @@ class Ai_chatController extends Controller
         return response()->streamJson($response->text());
     }
 
-     $ai_Response =   $stream->text(); 
+     $ai_Response =   $stream->text();
 
 
         $Ai_chat = Ai_chat::create([
@@ -63,7 +81,7 @@ class Ai_chatController extends Controller
         ]);
 
     }
-    
+
 
     /**
      * Display the specified resource.

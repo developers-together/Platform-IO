@@ -8,6 +8,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\Ai_chatController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -57,3 +58,5 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/register', [UserController::class, 'store']);
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/ai/send-prompt', [\App\Http\Controllers\Ai_chatController::class, 'sendPrompt']);
+
