@@ -148,15 +148,21 @@ export default function ChatPage() {
         data: { chat_id: chatId }, 
       });
       setChannels((prev) => prev.filter((chat) => chat.id !== chatId));
-      if(channels.length > 0) {
+      if(channels.length > 1) {
+        
         if(channels[0].id === chatId) {
-          setSelectedChatId(channels[1].id);
-          getChatMessages(channels[1].id);
+          setSelectedChatId(channels[1]?.id);
+          getChatMessages(channels[1]?.id);
         }
         else {
-        setSelectedChatId(channels[0].id);
-        getChatMessages(channels[0].id);
+        setSelectedChatId(channels[0]?.id);
+        getChatMessages(channels[0]?.id);
         }
+      }
+      else{
+        console.log("else");
+        setMessages([]);
+        setSelectedChatId(null);
       }
     } catch (error) {
       console.error("Error deleting channel:", error);
