@@ -2,123 +2,74 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ai_chat;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
+use App\Models\Ai_Chat;
 use App\Models\Team;
-use Gemini\Laravel\Facades\Gemini;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
+
 
 class Ai_chatController extends Controller
 {
-    public function sendPrompt(Request $request)
-    {
-        $prompt = $request->input('prompt');
+    use AuthorizesRequests;
 
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-        ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' . env('GEMINI_API_KEY'), [
-            'contents' => [
-                [
-                    'parts' => [
-                        ['text' => $prompt]
-                    ]
-                ]
-            ]
-        ]);
-        return response()->json($response->json());
-    }
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // Display all ai chats
+    public function index(Team $team)
     {
-        //
+        Gate::authorize('viewAny', Ai_Chat::class);
+
+        $ai_chats = Ai_Chat::where('team_id', $team->id)->get();
+
+        return response()->json($ai_chats);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
+
     public function store(Request $request, Team $team)
     {
-        Gate::authorize('create',Ai_chat::class);
 
-        $validated = $request->validate([
-            'prompt' => 'string|required',
-            'name' => 'string|required',
-            'ai' => 'string|Required|in:response,action'
+        Gate::authorize('create', Ai_Chat::class);
+
+       $validated = $request->validate([
+            'name' => 'required|string|max:255'
         ]);
 
-        $user = AUTH::user();
+        $user = Auth::user();
 
-        $result = generativeModel(model: 'models/gemini-1.5-flash-001')->generateContent($validated['prompt']);
+        if($team->users()->where('user_id', $user->id)){
 
-        $ai_Response =  $result->text();
+            $ai_chat = Ai_Chat::create([
+                'name'=> $validated['name'],
+                'team_id' => $team->id
+                ]);
+        }
 
-    //     $stream = Gemini::geminiPro()->generateContent($validated['prompt']);
-
-
-    // foreach ($stream as $response) {
-
-    //     return response()->streamJson($response->text());
-    // }
-
-
-     $ai_Response =   $stream->text();
-     $ai_Response =   $stream->text();
-
-
-
-        $Ai_chat = Ai_chat::create([
-            'prompt' => $validated['prompt'],
-            'response' => $ai_Response,
-            'team_id' => $team->id,
-            'user_Id' => $user->id,
-            'ai' => validated['ai'],
-            'name' => validated['name']
-        ]);
-
+        return $ai_chat->toJson();
     }
 
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Ai_chat $ai_chat)
+    public function show(Ai_Chat $ai_chat)
     {
-        //
+        // Authorize the action
+        Gate::authorize('view', $ai_chat);
+
+        // Return the chat details as a JSON response
+        return $ai_chat->toJson();
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Ai_chat $ai_chat)
+    public function destroy(Chat $ai_chat)
     {
-        //
-    }
+        $this->authorize('delete', $ai_chat);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Ai_chat $ai_chat)
-    {
-        //
-    }
+        $user = Auth::user();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Ai_chat $ai_chat)
-    {
-        //
+        if (!$ai_chat->team || !$ai_chat->team->users()->where('user_id', $user->id)->exists()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized or team not found'], 403);
+        }
+
+        $ai_chat->delete();
+
+        return response()->json(['success' => true, 'message' => 'Chat deleted successfully']);
     }
 }

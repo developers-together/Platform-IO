@@ -11,14 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ai_chat', function (Blueprint $table) {
+        Schema::create('ai_chats', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('ai',['response','action','agents'])->default('response');
-            $table->text('prompt');
-            $table->text('response');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('team_id')->constrained()->onDelete('cascade');
+            $table->string('team_id');
             $table->timestamps();
         });
     }
@@ -28,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ai_chat');
+        Schema::dropIfExists('ai_chats');
     }
 };
