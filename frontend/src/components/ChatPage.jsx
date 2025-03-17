@@ -59,6 +59,8 @@ export default function ChatPage() {
         }
       );
       const newChat = { id: response.data.id, name: response.data.name };
+      setSelectedChatId(newChat.id);
+      getChatMessages(newChat.id);
       setChannels((prev) => [...prev, newChat]);
       setNewChannel("");
       setShowCreateDialog(false);
@@ -97,7 +99,10 @@ export default function ChatPage() {
           },
         }
       );
-
+      if(response.data.data.length === 0) {
+        setMessages([]);
+        return;
+      }
       const messageMap = {};
       response.data.data.forEach((msg) => {
         messageMap[msg.id] = msg;
@@ -128,22 +133,30 @@ export default function ChatPage() {
       }));
       setMessages(formattedMessages);
     } catch (error) {
-      console.error("Error fetching messages:", error);
+      // console.error("Error fetching messages:", error);
     }
   };
 
   const deleteChannel = async (chatId) => {
     try {
-      await axios.delete(`http://localhost:8000/api/chats/${chatId}`, {
+      await axios.delete(`http://localhost:8000/api/chats/${chatId}`,
+        {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
+        data: { chat_id: chatId }, 
       });
       setChannels((prev) => prev.filter((chat) => chat.id !== chatId));
-      if (selectedChatId === chatId) {
-        setSelectedChatId(null);
-        setMessages([]);
+      if(channels.length > 0) {
+        if(channels[0].id === chatId) {
+          setSelectedChatId(channels[1].id);
+          getChatMessages(channels[1].id);
+        }
+        else {
+        setSelectedChatId(channels[0].id);
+        getChatMessages(channels[0].id);
+        }
       }
     } catch (error) {
       console.error("Error deleting channel:", error);
@@ -154,8 +167,8 @@ export default function ChatPage() {
   const handleEditChannel = async () => {
     if (!editChannelName.trim()) return;
     try {
-      await axios.patch(
-        `http://localhost:8000/api/chats/${editingChannel}/update`,
+      await axios.put(
+        `http://localhost:8000/api/chats/${editingChannel}`,
         { name: editChannelName },
         {
           headers: {
