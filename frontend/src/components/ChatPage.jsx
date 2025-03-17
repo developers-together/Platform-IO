@@ -1,22 +1,21 @@
-import { use, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   FiCornerUpLeft,
   FiImage,
   FiMoreHorizontal,
   FiPhone,
   FiSend,
-  FiSmile,
   FiTrash2,
   FiVideo,
   FiXCircle,
+  FiPlus,
+  FiEdit2,
 } from "react-icons/fi";
 import Avatar from "./Avatar";
 import "./ChatPage.css";
 import axios from "axios";
 
 export default function ChatPage() {
-  const dms = ["Alice", "Bob", "Charlie"];
-  
   const token = localStorage.getItem("token");
   const teamId = localStorage.getItem("teamId");
 
@@ -25,56 +24,267 @@ export default function ChatPage() {
   const [inputText, setInputText] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
-
   const [replyingTo, setReplyingTo] = useState(null);
   const [deletingMessageIds, setDeletingMessageIds] = useState([]);
   const [newMessageId, setNewMessageId] = useState(null);
+
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newChannel, setNewChannel] = useState("");
+  const [selectedChatId, setSelectedChatId] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(null);
+  const [editingChannel, setEditingChannel] = useState(null);
+  const [editChannelName, setEditChannelName] = useState("");
 
   const fileInputRef = useRef(null);
   const chatEndRef = useRef(null);
   const messageRefs = useRef({});
   const [highlightedMessage, setHighlightedMessage] = useState(null);
 
-  const [newChannel, setNewChannel] = useState("");
-  const [showChannelInput, setShowChannelInput] = useState(false);
-
-  const [selectedChatId, setSelectedChatId] = useState(null);
-
-  const createChannel = async () => {
-    if (!newChannel.trim()) return;
-
-    try {
-        const response = await axios.post(`http://localhost:8000/api/chats/${teamId}/store`, 
-        { name: newChannel
-
-        }, 
-        {
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Accept": "application/json",
-            },
-        });
-        const newChat = { id: response.data.id, name: response.data.name };
-        console.log("New Channel Created:", response.data);
-        setChannels((prevChannels) => [...prevChannels, newChat]); // Update UI
-        setNewChannel(""); // Reset input
-        setShowChannelInput(false); // Hide input
-    } catch (error) {
-        console.error("Error creating channel:", error.response?.data || error.message);
-    }
-};
-
   const messageIds = useMemo(
     () => new Set(messages.map((msg) => msg.id)),
     [messages]
   );
 
+  const createChannel = async () => {
+    if (!newChannel.trim()) return;
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/chats/${teamId}/store`,
+        { name: newChannel },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+      const newChat = { id: response.data.id, name: response.data.name };
+      setChannels((prev) => [...prev, newChat]);
+      setNewChannel("");
+      setShowCreateDialog(false);
+    } catch (error) {
+      console.error("Error creating channel:", error);
+    }
+  };
+
+  const getTeamChats = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/chats/${teamId}/index`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching chats:", error);
+      return [];
+    }
+  };
+
+  const getChatMessages = async (chatId) => {
+    try {
+      setSelectedChatId(chatId);
+      const response = await axios.get(
+        `http://localhost:8000/api/chats/${chatId}/getMessages`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      const messageMap = {};
+      response.data.data.forEach((msg) => {
+        messageMap[msg.id] = msg;
+      });
+
+      const formattedMessages = response.data.data.map((msg) => ({
+        id: msg.id,
+        user: msg.user_name,
+        avatar: "",
+        time: new Date(msg.created_at).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        message: msg.message,
+        image: msg.image_url || null,
+        replyTo: msg.replyTo
+          ? {
+              id: msg.replyTo,
+              user: messageMap[msg.replyTo]?.user_name || "Unknown",
+              text:
+                messageMap[msg.replyTo] && messageMap[msg.replyTo].message
+                  ? messageMap[msg.replyTo].message.length > 40
+                    ? messageMap[msg.replyTo].message.slice(0, 40) + "..."
+                    : messageMap[msg.replyTo].message
+                  : "Message deleted",
+            }
+          : null,
+      }));
+      setMessages(formattedMessages);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
+  };
+
+  const deleteChannel = async (chatId) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/chats/${chatId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+      setChannels((prev) => prev.filter((chat) => chat.id !== chatId));
+      if (selectedChatId === chatId) {
+        setSelectedChatId(null);
+        setMessages([]);
+      }
+    } catch (error) {
+      console.error("Error deleting channel:", error);
+    }
+  };
+
+  // Save changes only when the Save button is clicked.
+  const handleEditChannel = async () => {
+    if (!editChannelName.trim()) return;
+    try {
+      await axios.patch(
+        `http://localhost:8000/api/chats/${editingChannel}/update`,
+        { name: editChannelName },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+      setChannels(
+        channels.map((channel) =>
+          channel.id === editingChannel
+            ? { ...channel, name: editChannelName }
+            : channel
+        )
+      );
+      setEditingChannel(null);
+      setEditChannelName("");
+    } catch (error) {
+      console.error("Error updating channel:", error);
+    }
+  };
+
+  // Discard changes if focus leaves the edit container.
+  const cancelEditChannel = () => {
+    setEditingChannel(null);
+    setEditChannelName("");
+  };
+
+  const handleReply = (msg) => {
+    setReplyingTo({
+      id: msg.id,
+      user: msg.user,
+      text:
+        msg.message && msg.message.length > 40
+          ? msg.message.slice(0, 40) + "..."
+          : msg.message,
+    });
+  };
+
+  const sendMessage = async () => {
+    if (!inputText.trim() && !selectedImage) return;
+    if (!selectedChatId) {
+      console.error("No chat selected!");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("message", inputText);
+    if (imageUrl) {
+      formData.append("image", imageUrl || null);
+    }
+    if (replyingTo) {
+      formData.append("replyTo", replyingTo?.id || null);
+    }
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/chats/${selectedChatId}/sendMessages`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+      const newMessage = {
+        id: response.data.message.id,
+        user: response.data.message.user_name,
+        avatar: "",
+        time: new Date(response.data.message.created_at).toLocaleTimeString(
+          [],
+          {
+            hour: "2-digit",
+            minute: "2-digit",
+          }
+        ),
+        message: inputText,
+        image: selectedImage || null,
+        replyTo: replyingTo,
+      };
+      setMessages((prev) => [...prev, newMessage]);
+      setInputText("");
+      setSelectedImage(null);
+      setReplyingTo(null);
+    } catch (error) {
+      console.error(
+        "Error sending message:",
+        error.response?.data || error.message
+      );
+    }
+  };
+
+  const deleteMessage = async (id) => {
+    setDeletingMessageIds((prev) => [...prev, id]);
+    try {
+      await axios.delete(
+        `http://localhost:8000/api/chats/${id}/deleteMessage`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+      setMessages((prev) => prev.filter((msg) => msg.id !== id));
+    } catch (error) {
+      console.error(
+        "Error deleting message:",
+        error.response?.data || error.message
+      );
+    } finally {
+      setDeletingMessageIds((prev) => prev.filter((msgId) => msgId !== id));
+    }
+  };
+
+  const scrollToMessage = (reply) => {
+    if (reply && messageIds.has(reply.id)) {
+      messageRefs.current[reply.id]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      setHighlightedMessage(reply.id);
+      setTimeout(() => setHighlightedMessage(null), 1000);
+    }
+  };
 
   const imageUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
     setImageUrl(file);
-
     const reader = new FileReader();
     reader.onload = () => {
       setSelectedImage(reader.result);
@@ -83,254 +293,140 @@ export default function ChatPage() {
     fileInputRef.current.value = "";
   };
 
-  const getTeamChats = async () => {
-    try {
-        const response = await axios.get(`http://localhost:8000/api/chats/${teamId}/index`, {
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Accept": "application/json",
-            },
-        });
-
-        // console.log("Chats for team:", response.data);
-        return response.data;  // Assuming chats are inside 'chats' key
-    } catch (error) {
-        console.error("Error fetching chats:", error.response?.data || error.message);
-        return [];
-    }
-};
-
-useEffect(() => {
-    getTeamChats().then((chats) => {
-        setChannels(chats.map((chat) => ({ id: chat.id, name: chat.name })));
-        if (chats.length > 0) {
-          setSelectedChatId(chats[0].id); // Select the first chat
-          getChatMessages(chats[0].id);  // Load its messages
-      }
-    });
-}, []);
-
-  const handleReply = (msg) => {
-    setReplyingTo({
-      id: msg.id,
-      user: msg.user,
-      text: msg.message?.length > 40 ? msg.message.slice(0, 40) + "..." : msg.message,
-    });
-  };
-
-  const sendMessage = async () => {
-    console.log("chat id", selectedChatId);
-    if (!inputText.trim() && !selectedImage) return;
-
-    if (!selectedChatId) {
-        console.error("No chat selected!");
-        return;
-    }
-    console.log(inputText, selectedImage);
-    const formData = new FormData();
-    formData.append("message", inputText);
-    if (imageUrl) {
-      console.log("image url: ", imageUrl);
-      formData.append("image", imageUrl || null);
-    }
-    if (replyingTo) {
-      formData.append("replyTo", replyingTo?.id || null);
-    }
-
-    try {
-        const response = await axios.post(
-            `http://localhost:8000/api/chats/${selectedChatId}/sendMessages`,
-            formData,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: "application/json",
-                },
-            }
-        );
-
-        // console.log("Message sent:", response.data);
-        const newMessage = {
-            id: response.data.message.id, // Use actual ID from backend response
-            user: response.data.message.user_name,
-            avatar: "",
-            time: new Date(response.data.message.created_at).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-            }),
-            message: inputText,
-            image: selectedImage || null,
-            replyTo: replyingTo,
-        };
-        
-
-        setMessages((prev) => [...prev, newMessage]);
-        setInputText("");
-        setSelectedImage(null);
-        setImageUrl("");
-        setReplyingTo(null);
-    } catch (error) {
-        console.error("Error sending message:", error.response?.data || error.message);
-    }
-};
-
-const deleteMessage = async (id) => {
-  setDeletingMessageIds((prev) => [...prev, id]);
-
-  try {
-      await axios.delete(`http://localhost:8000/api/chats/${id}/deleteMessage`, {
-          headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: "application/json",
-          },
-      });
-
-      // Remove the deleted message from state
-      setMessages((prev) => prev.filter((msg) => msg.id !== id));
-  } catch (error) {
-      console.error("Error deleting message:", error.response?.data || error.message);
-  } finally {
-      setDeletingMessageIds((prev) => prev.filter((msgId) => msgId !== id));
-  }
-};
-
-
-
-  const scrollToMessage = (replyingTo) => {
-    if (replyingTo && messageIds.has(replyingTo.id)) {
-      messageRefs.current[replyingTo.id]?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-      setHighlightedMessage(replyingTo.id);
-      setTimeout(() => setHighlightedMessage(null), 1000);
-    }
-  };
-
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const getChatMessages = async (chatId) => {
-    // console.log("Fetching messages for chat:", chatId);
-    try {
-        setSelectedChatId(chatId); // Set the selected chat ID
-        const response = await axios.get(`http://localhost:8000/api/chats/${chatId}/getMessages`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: "application/json",
-            },
-        });
-
-        console.log("Messages:", response.data.data);
-
-        // Create a map of messages by ID for easy lookup
-        const messageMap = {};
-        response.data.data.forEach((msg) => {
-            messageMap[msg.id] = msg;
-        });
-
-        // Map the response data to match your frontend structure
-        const formattedMessages = response.data.data.map((msg) => ({
-            id: msg.id,
-            user: msg.user_name, // Adjust according to the response field
-            avatar: "", // Placeholder, modify if needed
-            time: new Date(msg.created_at).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-            }),
-            message: msg.message,
-            image: msg.image_url || null, // Ensure image is handled correctly
-            replyTo: msg.replyTo ? {
-              id: msg.replyTo,
-              user: messageMap[msg.replyTo]?.user_name || "Unknown",
-              text: messageMap[msg.replyTo]
-                  ? messageMap[msg.replyTo].message
-                      ? messageMap[msg.replyTo].message.length > 40
-                          ? messageMap[msg.replyTo].message.slice(0, 40) + "..."
-                          : messageMap[msg.replyTo].message
-                      : messageMap[msg.replyTo].image_url
-                          ? "Replied to an image"
-                          : "Message deleted"
-                  : "Message deleted",
-          } : null,
-          
-        }));
-        setMessages(formattedMessages);
-    } catch (error) {
-        console.error("Error fetching messages:", error.response?.data || error.message);
-    }
-};
-
-
-
-  const deleteChannel = async (chatId) => {
-    if (!window.confirm("Are you sure you want to delete this channel?")) return;
-
-    try {
-      await axios.delete(`http://localhost:8000/api/chats/${chatId}`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-        },
-        data: { chat_id: chatId }, // Ensure chat_id is sent in the request
+  useEffect(() => {
+    getTeamChats().then((chats) => {
+      setChannels(chats.map((chat) => ({ id: chat.id, name: chat.name })));
+      if (chats.length > 0) {
+        setSelectedChatId(chats[0].id);
+        getChatMessages(chats[0].id);
+      }
     });
-
-        console.log(`Channel ${chatId} deleted successfully.`);
-        
-        // Remove channel from UI
-        setChannels((prevChannels) => prevChannels.filter(chat => chat.id !== chatId));
-
-        // Clear messages if the deleted channel was selected
-        if (selectedChatId === chatId) {
-            setSelectedChatId(null);
-            setMessages([]);
-        }
-
-    } catch (error) {
-        console.error("Error deleting channel:", error.response?.data || error.message);
-    }
-};
+  }, []);
 
   return (
     <div className="chat-page-container">
-      {/* Left Panel */}
       <div className="left-panel">
         <div className="left-card">
-          <h4 className="panel-heading">Channels</h4>
-          <div className="channel-input">
-                <input 
-                    type="text" 
-                    placeholder="Enter channel name..."
-                    value={newChannel}
-                    onChange={(e) => setNewChannel(e.target.value)}
-                />
-                <button onClick={createChannel}>Create Channel</button>
-            </div>
-          <div className="left-card-content">
-          <ul>
-          {channels.map((chat) => (
-            <li key={chat.id} className={selectedChatId === chat.id ? "active-chat" : ""}>
-              <span onClick={() => getChatMessages(chat.id)}>{chat.name}</span>
-              <button onClick={() => deleteChannel(chat.id)} className="delete-channel-btn">❌</button>
-            </li>
-          ))}
-          </ul>
+          <div className="panel-heading-container">
+            <h4 className="panel-heading">Channels</h4>
+            <button
+              className="add-channel-btn"
+              onClick={() => setShowCreateDialog(true)}
+            >
+              <FiPlus />
+            </button>
           </div>
-        </div>
-        <div className="left-card">
-          <h4 className="panel-heading">Direct Messages</h4>
+
+          {showCreateDialog && (
+            <div className="create-channel-dialog">
+              <input
+                type="text"
+                placeholder="Channel name..."
+                value={newChannel}
+                onChange={(e) => setNewChannel(e.target.value)}
+                autoFocus
+              />
+              <div className="dialog-actions">
+                <button onClick={createChannel}>Create</button>
+                <button onClick={() => setShowCreateDialog(false)}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="left-card-content">
-            <ul>
-              {dms.map((d, i) => (
-                <li key={i}>{d}</li>
-              ))}
-            </ul>
+            {channels.length === 0 ? (
+              <div className="no-channels">No channels created yet</div>
+            ) : (
+              <ul>
+                {channels.map((chat) => (
+                  <li
+                    key={chat.id}
+                    onClick={() => getChatMessages(chat.id)}
+                    className={selectedChatId === chat.id ? "active-chat" : ""}
+                  >
+                    <div className="channel-item">
+                      {editingChannel === chat.id ? (
+                        <div
+                          className="channel-edit-container"
+                          tabIndex={0}
+                          onBlur={(e) => {
+                            if (!e.currentTarget.contains(e.relatedTarget)) {
+                              cancelEditChannel();
+                            }
+                          }}
+                        >
+                          <input
+                            type="text"
+                            className="task-edit-input"
+                            value={editChannelName}
+                            onChange={(e) => setEditChannelName(e.target.value)}
+                            autoFocus
+                          />
+                          <button onClick={handleEditChannel}>Save</button>
+                        </div>
+                      ) : (
+                        <>
+                          <span>{chat.name}</span>
+                          <div
+                            className="channel-actions"
+                            onMouseLeave={() => setMenuOpen(null)}
+                          >
+                            <button
+                              className="channel-menu-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setMenuOpen(
+                                  menuOpen === chat.id ? null : chat.id
+                                );
+                              }}
+                            >
+                              <FiMoreHorizontal />
+                            </button>
+                            {menuOpen === chat.id && (
+                              <div className="channel-menu">
+                                <button
+                                  onClick={() => {
+                                    setEditingChannel(chat.id);
+                                    setEditChannelName(chat.name);
+                                    setMenuOpen(null);
+                                  }}
+                                >
+                                  <FiEdit2 /> Edit
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (
+                                      window.confirm(
+                                        "Are you sure you want to delete this channel?"
+                                      )
+                                    ) {
+                                      deleteChannel(chat.id);
+                                    }
+                                    setMenuOpen(null);
+                                  }}
+                                >
+                                  <FiTrash2 /> Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Chat Center */}
       <div className="chat-center2">
         <div className="chat-header3">
           <h3>General Chat</h3>
@@ -388,10 +484,12 @@ const deleteMessage = async (id) => {
                 </div>
                 {msg.image && (
                   <img
-                  src={msg.image}
-                  alt="Uploaded"
-                  className="uploaded-image"
-                  onError={(e) => (e.target.src = `http://localhost:8000${msg.image}`)}
+                    src={msg.image}
+                    alt="Uploaded"
+                    className="uploaded-image"
+                    onError={(e) =>
+                      (e.target.src = `http://localhost:8000${msg.image}`)
+                    }
                   />
                 )}
                 <div className="msg-text">{msg.message}</div>
@@ -409,7 +507,6 @@ const deleteMessage = async (id) => {
           <div ref={chatEndRef}></div>
         </div>
 
-        {/* Chat Input */}
         <div className="chat-input">
           {replyingTo && (
             <div className="reply-preview">

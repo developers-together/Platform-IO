@@ -190,7 +190,7 @@
   position: absolute;
   bottom: 2%;
   right: 5%;
-  display: none;
+  /* display: none; */
 }
 
 .skip-button:hover {
@@ -210,7 +210,7 @@
   position: absolute;
   bottom: 2%;
   left: 5%;
-  display: none;
+  /* display: none; */
 }
 
 .skip-button2:hover {
