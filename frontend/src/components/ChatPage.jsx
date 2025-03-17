@@ -24,6 +24,8 @@ export default function ChatPage() {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
+
   const [replyingTo, setReplyingTo] = useState(null);
   const [deletingMessageIds, setDeletingMessageIds] = useState([]);
   const [newMessageId, setNewMessageId] = useState(null);
@@ -71,6 +73,8 @@ export default function ChatPage() {
   const imageUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
+    setImageUrl(file);
+
     const reader = new FileReader();
     reader.onload = () => {
       setSelectedImage(reader.result);
@@ -123,16 +127,20 @@ useEffect(() => {
         return;
     }
     console.log(inputText, selectedImage);
+    const formData = new FormData();
+    formData.append("message", inputText);
+    if (selectedImage) {
+      console.log("image url: ", imageUrl);
+      formData.append("image", selectedImage || null);
+    }
+    if (replyingTo) {
+      formData.append("replyTo", replyingTo?.id || null);
+    }
 
     try {
-        console.log(inputText, selectedImage, replyingTo); 
         const response = await axios.post(
             `http://localhost:8000/api/chats/${selectedChatId}/sendMessages`,
-            {
-                "message": inputText,
-                "path": selectedImage || null,
-                "replyTo": replyingTo?.id || null,
-            },
+            formData,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -141,7 +149,7 @@ useEffect(() => {
             }
         );
 
-        console.log("Message sent:", response.data);
+        // console.log("Message sent:", response.data);
         const newMessage = {
             id: response.data.message.id, // Use actual ID from backend response
             user: response.data.message.user_name,
@@ -151,9 +159,10 @@ useEffect(() => {
                 minute: "2-digit",
             }),
             message: inputText,
-            image: selectedImage,
+            image: selectedImage || null,
             replyTo: replyingTo,
         };
+        
 
         setMessages((prev) => [...prev, newMessage]);
         setInputText("");
@@ -202,7 +211,7 @@ const deleteMessage = async (id) => {
   }, [messages]);
 
   const getChatMessages = async (chatId) => {
-    console.log("Fetching messages for chat:", chatId);
+    // console.log("Fetching messages for chat:", chatId);
     try {
         setSelectedChatId(chatId); // Set the selected chat ID
         const response = await axios.get(`http://localhost:8000/api/chats/${chatId}/getMessages`, {
@@ -232,16 +241,20 @@ const deleteMessage = async (id) => {
             message: msg.message,
             image: msg.image_url || null, // Ensure image is handled correctly
             replyTo: msg.replyTo ? {
-                id: msg.replyTo,
-                user: messageMap[msg.replyTo]?.user_name || "Unknown",
-                text: messageMap[msg.replyTo]?.message
-                    ? messageMap[msg.replyTo].message.length > 40
-                        ? messageMap[msg.replyTo].message.slice(0, 40) + "..."
-                        : messageMap[msg.replyTo].message
-                    : "Message deleted",
-            } : null,
+              id: msg.replyTo,
+              user: messageMap[msg.replyTo]?.user_name || "Unknown",
+              text: messageMap[msg.replyTo]
+                  ? messageMap[msg.replyTo].message
+                      ? messageMap[msg.replyTo].message.length > 40
+                          ? messageMap[msg.replyTo].message.slice(0, 40) + "..."
+                          : messageMap[msg.replyTo].message
+                      : messageMap[msg.replyTo].image_url
+                          ? "Replied to an image"
+                          : "Message deleted"
+                  : "Message deleted",
+          } : null,
+          
         }));
-
         setMessages(formattedMessages);
     } catch (error) {
         console.error("Error fetching messages:", error.response?.data || error.message);
@@ -278,7 +291,6 @@ const deleteMessage = async (id) => {
     }
 };
 
-  
   return (
     <div className="chat-page-container">
       {/* Left Panel */}
@@ -375,9 +387,10 @@ const deleteMessage = async (id) => {
                 </div>
                 {msg.image && (
                   <img
-                    src={msg.image}
-                    alt="Uploaded"
-                    className="uploaded-image"
+                  src={msg.image}
+                  alt="Uploaded"
+                  className="uploaded-image"
+                  onError={(e) => (e.target.src = `http://localhost:8000${msg.image}`)}
                   />
                 )}
                 <div className="msg-text">{msg.message}</div>
