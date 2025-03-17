@@ -28,21 +28,21 @@ return [
     |
     */
 
-    'sftp' => [
-    'driver' => 'sftp',
-    'host' => env('SFTP_HOST'),
+    // 'sftp' => [
+    // 'driver' => 'sftp',
+    // 'host' => env('SFTP_HOST'),
 
-    // Settings for basic authentication...
-    'username' => env('SFTP_USERNAME'),
-    'password' => env('SFTP_PASSWORD'),
+    // // Settings for basic authentication...
+    // 'username' => env('SFTP_USERNAME'),
+    // 'password' => env('SFTP_PASSWORD'),
 
-    // Settings for SSH key based authentication with encryption password...
-    'privateKey' => env('SFTP_PRIVATE_KEY'),
-    'passphrase' => env('SFTP_PASSPHRASE'),
+    // // Settings for SSH key based authentication with encryption password...
+    // 'privateKey' => env('SFTP_PRIVATE_KEY'),
+    // 'passphrase' => env('SFTP_PASSPHRASE'),
 
-    // Settings for file / directory permissions...
-    'visibility' => 'private', // `private` = 0600, `public` = 0644
-    'directory_visibility' => 'private', // `private` = 0700, `public` = 0755
+    // // Settings for file / directory permissions...
+    // 'visibility' => 'private', // `private` = 0600, `public` = 0644
+    // 'directory_visibility' => 'private', // `private` = 0700, `public` = 0755
 
     // Optional SFTP Settings...
     // 'hostFingerprint' => env('SFTP_HOST_FINGERPRINT'),
@@ -52,41 +52,41 @@ return [
     // 'root' => env('SFTP_ROOT', ''),
     // 'timeout' => 30,
     // 'useAgent' => true,
-    ]
+    // ]
 
-    // 'disks' => [
+    'disks' => [
 
-    //     'local' => [
-    //         'driver' => 'local',
-    //         'root' => storage_path('app/private'),
-    //         'serve' => true,
-    //         'throw' => false,
-    //         'report' => false,
-    //     ],
+        'local' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private'),
+            'serve' => true,
+            'throw' => false,
+            'report' => false,
+        ],
 
-    //     'public' => [
-    //         'driver' => 'local',
-    //         'root' => storage_path('app/public'),
-    //         'url' => env('APP_URL').'/storage',
-    //         'visibility' => 'public',
-    //         'throw' => false,
-    //         'report' => false,
-    //     ],
+        'public' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public'),
+            'url' => env('APP_URL').'/storage',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
 
-    //     's3' => [
-    //         'driver' => 's3',
-    //         'key' => env('AWS_ACCESS_KEY_ID'),
-    //         'secret' => env('AWS_SECRET_ACCESS_KEY'),
-    //         'region' => env('AWS_DEFAULT_REGION'),
-    //         'bucket' => env('AWS_BUCKET'),
-    //         'url' => env('AWS_URL'),
-    //         'endpoint' => env('AWS_ENDPOINT'),
-    //         'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
-    //         'throw' => false,
-    //         'report' => false,
-    //     ],
+        's3' => [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'url' => env('AWS_URL'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'throw' => false,
+            'report' => false,
+        ],
 
-    // ],
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -99,8 +99,8 @@ return [
     |
     */
 
-    // 'links' => [
-    //     public_path('storage') => storage_path('app/public'),
-    // ],
+    'links' => [
+        public_path('storage') => storage_path('app/public'),
+    ],
 
 ];
