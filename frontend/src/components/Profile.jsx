@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiLogOut,
   FiTrash2,
@@ -20,17 +20,8 @@ import Avatar from "./Avatar";
 import "./Profile.css";
 import axios from "axios";
 
-const initialUserData = {
-  name: "John Doe",
-  age: 28,
-  sex: "Male",
-  job: "Software Engineer",
-  location: "New York, USA",
-  phone: "+1 555-123-4567",
-  email: "john.doe@example.com",
-  id: "user-12345",
-  teams: ["Team Alpha", "Design Squad", "Frontend Warriors", "Beta Testers"],
-};
+
+
 
 const Modal = ({ title, message, onConfirm, onCancel }) => (
   <div className="modal-overlay">
@@ -50,6 +41,17 @@ const Modal = ({ title, message, onConfirm, onCancel }) => (
 );
 
 export default function Profile({ setCurrentPage }) {
+  const initialUserData ={
+    name: "John Doe",
+    age: 28,
+    sex: "Male",
+    job: "Software Engineer",
+    location: "New York, USA",
+    phone: "+1 555-123-4567",
+    email: "john.doe@example.com",
+    id: "user-12345",
+    teams: [],
+  };
   const [userData, setUserData] = useState(initialUserData);
   const [isEditing, setIsEditing] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -65,6 +67,39 @@ export default function Profile({ setCurrentPage }) {
   const token = localStorage.getItem("token");
   const teamId = localStorage.getItem("teamId");
   // HANDLERS
+
+
+
+  useEffect( () => {
+    const response =  axios
+      .get("http://localhost:8000/api/user/show", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .catch((error) => console.error("Error fetching user:", error));
+    const teams = axios
+      .get("http://localhost:8000/api/user/teams", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .catch((error) => console.error("Error fetching teams:", error));
+      Promise.all([response, teams])
+      .then(([userResponse, teamsResponse]) => {
+        console.log("User data:", userResponse.data);
+        console.log("Teams data:", teamsResponse.data);
+        setUserData((prevData) => ({
+          ...prevData,
+          id: userResponse.data.id,
+          name: userResponse.data.name,
+          email: userResponse.data.email,
+          age: userResponse.data.age ?? prevData.age,
+          sex: userResponse.data.gender ?? prevData.sex,
+          job: userResponse.data.job ?? prevData.job,
+          location: userResponse.data.location ?? prevData.location,
+          phone: userResponse.data.phone ?? prevData.phone,
+          teams: teamsResponse.data.map((team) => team.name) ?? prevData.teams, // Assuming teams is an array
+        }));
+        setTeams(teamsResponse.data.map((team) => team.name));
+      });
+  }, []);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -150,7 +185,7 @@ export default function Profile({ setCurrentPage }) {
       }
     })
     .then(response => {
-      console.log(response.data.message);
+      // console.log(response.data.message);
       localStorage.removeItem("token");
       localStorage.removeItem("teamId");
       setCurrentPage("register");
@@ -168,7 +203,7 @@ export default function Profile({ setCurrentPage }) {
       setCurrentPage("teams");
     }
   };
-
+  
   return (
     <div className="profile-page">
       {/* Modals */}
