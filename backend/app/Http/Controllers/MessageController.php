@@ -43,8 +43,6 @@ class MessageController extends Controller
             'replyTo' => $validated['replyTo'] ?? null,
         ]);
 
-        //---
-
         // Build a custom response array
         $response = [
             'id' => $message->id,
