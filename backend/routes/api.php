@@ -9,6 +9,8 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\Ai_chatController;
+use App\Http\Controllers\Ai_messageController;
+
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -46,17 +48,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/teams/getTeamById/{id}', [TeamController::class, 'getTeamById']);
 
 
-//t
+
     Route::post('/team/{team}/addmembers',[TeamController::class,'addMembers']);
     Route::put('/team/{team}/changeroles',[TeamController::class,'changeRoles']);
     Route::put('/team/{team}/changeleader',[TeamController::class,'changeLeader']);
     Route::delete('/team/{team}/removemembers',[TeamController::class,'removeMembers']);
     Route::post('/team/joinTeam', [TeamController::class, 'joinTeam']);
 
+    Route::get('/ai_chats/{team}/index', [Ai_chatController::class, 'index']);
+    Route::get('/ai_chats/{ai_chat}/show', [Ai_chatController::class, 'show']);
+    Route::post('/ai_chats/{team}/store', [Ai_chatController::class, 'store']);
+    Route::delete('/ai_chats/{ai_chat}', [Ai_chatController::class, 'destroy']);
+
 });
 
 Route::post('/register', [UserController::class, 'store']);
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/ai/send-prompt', [\App\Http\Controllers\Ai_chatController::class, 'sendPrompt']);
+Route::post('/ai/send-prompt', [Ai_chatController::class, 'sendPrompt']);
+Route::get('/ai/history', [Ai_chatController::class, 'getHistory']);
 
