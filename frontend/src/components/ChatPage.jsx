@@ -15,6 +15,24 @@ import Avatar from "./Avatar";
 import "./ChatPage.css";
 import axios from "axios";
 
+// Add a Modal component for delete confirmation
+const Modal = ({ title, message, onConfirm, onCancel }) => (
+  <div className="modal-overlay">
+    <div className="modal-content">
+      <h3>{title}</h3>
+      <p>{message}</p>
+      <div className="modal-actions">
+        <button onClick={onConfirm} className="btn confirm-btn">
+          Confirm
+        </button>
+        <button onClick={onCancel} className="btn cancel-btn">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
 export default function ChatPage() {
   const token = localStorage.getItem("token");
   const teamId = localStorage.getItem("teamId");
@@ -44,6 +62,10 @@ export default function ChatPage() {
     () => new Set(messages.map((msg) => msg.id)),
     [messages]
   );
+
+  // New state variables for channel deletion modal
+  const [showDeleteChannelModal, setShowDeleteChannelModal] = useState(false);
+  const [channelToDelete, setChannelToDelete] = useState(null);
 
   const createChannel = async () => {
     if (!newChannel.trim()) return;
@@ -99,7 +121,7 @@ export default function ChatPage() {
           },
         }
       );
-      if(response.data.data.length === 0) {
+      if (response.data.data.length === 0) {
         setMessages([]);
         return;
       }
@@ -139,27 +161,23 @@ export default function ChatPage() {
 
   const deleteChannel = async (chatId) => {
     try {
-      await axios.delete(`http://localhost:8000/api/chats/${chatId}`,
-        {
+      await axios.delete(`http://localhost:8000/api/chats/${chatId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
-        data: { chat_id: chatId }, 
+        data: { chat_id: chatId },
       });
       setChannels((prev) => prev.filter((chat) => chat.id !== chatId));
-      if(channels.length > 1) {
-        
-        if(channels[0].id === chatId) {
+      if (channels.length > 1) {
+        if (channels[0].id === chatId) {
           setSelectedChatId(channels[1]?.id);
           getChatMessages(channels[1]?.id);
+        } else {
+          setSelectedChatId(channels[0]?.id);
+          getChatMessages(channels[0]?.id);
         }
-        else {
-        setSelectedChatId(channels[0]?.id);
-        getChatMessages(channels[0]?.id);
-        }
-      }
-      else{
+      } else {
         console.log("else");
         setMessages([]);
         setSelectedChatId(null);
@@ -419,14 +437,10 @@ export default function ChatPage() {
                                   <FiEdit2 /> Edit
                                 </button>
                                 <button
-                                  onClick={() => {
-                                    if (
-                                      window.confirm(
-                                        "Are you sure you want to delete this channel?"
-                                      )
-                                    ) {
-                                      deleteChannel(chat.id);
-                                    }
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setChannelToDelete(chat.id);
+                                    setShowDeleteChannelModal(true);
                                     setMenuOpen(null);
                                   }}
                                 >
@@ -580,6 +594,23 @@ export default function ChatPage() {
           </div>
         </div>
       </div>
+
+      {/* Render the custom delete modal for channels */}
+      {showDeleteChannelModal && (
+        <Modal
+          title="Delete Channel"
+          message="Are you sure you want to delete this channel?"
+          onConfirm={() => {
+            deleteChannel(channelToDelete);
+            setShowDeleteChannelModal(false);
+            setChannelToDelete(null);
+          }}
+          onCancel={() => {
+            setShowDeleteChannelModal(false);
+            setChannelToDelete(null);
+          }}
+        />
+      )}
     </div>
   );
 }
