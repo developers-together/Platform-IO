@@ -114,7 +114,7 @@ useEffect(() => {
     setReplyingTo({
       id: msg.id,
       user: msg.user,
-      text: msg.message.length > 40 ? msg.message.slice(0, 40) + "..." : msg.message,
+      text: msg.message?.length > 40 ? msg.message.slice(0, 40) + "..." : msg.message,
     });
   };
 
@@ -129,9 +129,9 @@ useEffect(() => {
     console.log(inputText, selectedImage);
     const formData = new FormData();
     formData.append("message", inputText);
-    if (selectedImage) {
+    if (imageUrl) {
       console.log("image url: ", imageUrl);
-      formData.append("image", selectedImage || null);
+      formData.append("image", imageUrl || null);
     }
     if (replyingTo) {
       formData.append("replyTo", replyingTo?.id || null);
