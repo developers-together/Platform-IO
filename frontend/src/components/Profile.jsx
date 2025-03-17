@@ -18,6 +18,7 @@ import {
 import { IoIosColorPalette } from "react-icons/io";
 import Avatar from "./Avatar";
 import "./Profile.css";
+import axios from "axios";
 
 const initialUserData = {
   name: "John Doe",
@@ -61,6 +62,8 @@ export default function Profile({ setCurrentPage }) {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  const token = localStorage.getItem("token");
+  const teamId = localStorage.getItem("teamId");
   // HANDLERS
 
   const handleFileChange = (e) => {
@@ -132,15 +135,30 @@ export default function Profile({ setCurrentPage }) {
   // Logout & Delete Modals
   const handleLogout = () => setShowLogoutModal(true);
   const confirmLogout = () => {
-    console.log("Logged out");
-    setShowLogoutModal(false);
+      localStorage.removeItem("token");
+      localStorage.removeItem("teamId");
+      setCurrentPage("login");
+      setShowDeleteModal(false);
   };
   const cancelLogout = () => setShowLogoutModal(false);
 
   const handleDelete = () => setShowDeleteModal(true);
-  const confirmDelete = () => {
-    console.log("Account deleted");
-    setShowDeleteModal(false);
+  const confirmDelete = async () => {
+    axios.delete("http://localhost:8000/api/user/delete", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      console.log(response.data.message);
+      localStorage.removeItem("token");
+      localStorage.removeItem("teamId");
+      setCurrentPage("register");
+      setShowDeleteModal(false);
+    })
+    .catch(error => {
+      console.error("Error deleting user:", error.response ? error.response.data : error);
+    });
   };
   const cancelDelete = () => setShowDeleteModal(false);
 
