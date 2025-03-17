@@ -16,25 +16,43 @@ class MessageController extends Controller
     use AuthorizesRequests;
     public function sendMessage(Request $request, Chat $chat)
     {
-        // Authorize the action
         Gate::authorize('update', $chat);
 
-        // Validate the request
+        // Validate request
         $validated = $request->validate([
             'message' => 'nullable|string',
-            'image' => 'nullable|image',
+            'image' => 'nullable', // can be file or base64
             'replyTo' => 'nullable|integer'
         ]);
 
-        $user = Auth::user(); // Get the user object
-
-        // Store the image if provided
+        $user = Auth::user();
         $path = null;
+
+        // Option 1: Image uploaded as file (FormData)
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('images', 'public');
         }
 
-        // Create the message
+        // Option 2: Image sent as base64 string
+        elseif ($request->has('image') && is_string($request->image)) {
+            $base64Image = $request->image;
+
+            // Check and decode base64 image
+            if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
+                $image = substr($base64Image, strpos($base64Image, ',') + 1);
+                $image = str_replace(' ', '+', $image);
+                $extension = strtolower($type[1]); // jpg, png, etc.
+
+                $imageName = uniqid() . '.' . $extension;
+                Storage::disk('public')->put("images/$imageName", base64_decode($image));
+
+                $path = "images/$imageName";
+            } else {
+                return response()->json(['success' => false, 'message' => 'Invalid base64 image format'], 422);
+            }
+        }
+
+        // Save message
         $message = Message::create([
             'chat_id' => $chat->id,
             'user_id' => $user->id,
@@ -43,7 +61,7 @@ class MessageController extends Controller
             'replyTo' => $validated['replyTo'] ?? null,
         ]);
 
-        // Build a custom response array
+        // Return response
         $response = [
             'id' => $message->id,
             'chat_id' => $message->chat_id,
@@ -61,6 +79,7 @@ class MessageController extends Controller
         ]);
     }
 
+
     public function getMessages(Chat $chat)
     {
         Gate::authorize('update', $chat);
@@ -68,8 +87,19 @@ class MessageController extends Controller
         $messages = Message::where('chat_id', $chat->id)->paginate(1000);
 
         $messages->getCollection()->transform(function ($message) {
-            // Get the user's name manually without defining a user() relationship
             $userName = DB::table('users')->where('id', $message->user_id)->value('name');
+
+            //  If path starts with 'data:image/' → it's base64
+            //  Else → treat it as a stored file path
+            $image_url = null;
+
+            if ($message->path) {
+                if (str_starts_with($message->path, 'data:image/')) {
+                    $image_url = $message->path; // Base64 already usable as <img src="">
+                } else {
+                    $image_url = Storage::url($message->path); // Get public file URL
+                }
+            }
 
             return [
                 'id' => $message->id,
@@ -77,7 +107,7 @@ class MessageController extends Controller
                 'user_id' => $message->user_id,
                 'user_name' => $userName,
                 'message' => $message->message,
-                'image_url' => $message->path ? Storage::url($message->path) : null,
+                'image_url' => $image_url,
                 'replyTo' => $message->replyTo,
                 'created_at' => $message->created_at->toDateTimeString(),
             ];
@@ -85,22 +115,5 @@ class MessageController extends Controller
 
         return response()->json($messages);
     }
-
-    public function destroy(Message $message)
-    {
-        $this->authorize('delete', $message); // Assuming your policy handles user ownership
-
-        // Extra fallback check (if no policy or just to double secure it)
-        $user = Auth::user();
-
-        if ($message->user_id !== $user->id) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
-
-        $message->delete();
-
-        return response()->json(['success' => true]);
-    }
-
 
 }
