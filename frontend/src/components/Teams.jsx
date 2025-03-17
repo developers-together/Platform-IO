@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import Avatar from "./Avatar"; // UI Avatars-based component
-import { FaFan } from "react-icons/fa"; // or import your existing rotating icon
+import { FaFan } from "react-icons/fa"; // Rotating fan icon for header
 import "./Teams.css";
 
 /**
- * Example rotating fan icon from your AI code
- * with normal/hover/click speeds.
+ * Rotating fan icon component (with normal/hover/click speeds)
  */
 function RotatingFanIcon({ size = 128 }) {
   const [rotation, setRotation] = useState(0);
@@ -17,15 +16,14 @@ function RotatingFanIcon({ size = 128 }) {
 
   useEffect(() => {
     const normalSpeed = 360 / 5000; // 5 seconds per rotation
-    const hoverSpeed = 360 / 2500; // 2.5 seconds
-    const clickSpeed = 360 / 1000; // 1 second
+    const hoverSpeed = 360 / 2500; // 2.5 seconds per rotation
+    const clickSpeed = 360 / 1000; // 1 second per rotation
 
     const animate = (time) => {
       if (!prevTimeRef.current) prevTimeRef.current = time;
       const delta = time - prevTimeRef.current;
       prevTimeRef.current = time;
-
-      let currentSpeed = fastMode
+      const currentSpeed = fastMode
         ? clickSpeed
         : hovered
         ? hoverSpeed
@@ -61,22 +59,37 @@ function RotatingFanIcon({ size = 128 }) {
   );
 }
 
+/* Simple modal for confirming leaving a team */
+function LeaveModal({ teamId, onConfirm, onCancel }) {
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h3>Leave Team</h3>
+        <p>Are you sure you want to leave this team?</p>
+        <div className="modal-actions">
+          <button onClick={() => onConfirm(teamId)} className="btn confirm-btn">
+            Yes, Leave
+          </button>
+          <button onClick={onCancel} className="btn cancel-btn">
+            Don't Leave
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Teams({ setCurrentPage }) {
   const token = localStorage.getItem("token");
   const [teams, setTeams] = useState([]);
   const [menuTeamId, setMenuTeamId] = useState(null);
   const [showTeamCode, setShowTeamCode] = useState(false);
-
-  // Add dialog for Join or Create
   const [showAddDialog, setShowAddDialog] = useState(false);
-
-  // Join Team state
   const [joinCode, setJoinCode] = useState("");
-
-  // Create Team state
   const [teamName, setTeamName] = useState("");
   const [projectName, setProjectName] = useState("");
   const [teamDescription, setTeamDescription] = useState("");
+  const [leaveModalTeamId, setLeaveModalTeamId] = useState(null);
 
   // Fetch teams from API
   const getTeams = async () => {
@@ -93,6 +106,7 @@ export default function Teams({ setCurrentPage }) {
       return [];
     }
   };
+
   const fetchTeams = async () => {
     const t = await getTeams();
     const formatted = t.map((team) => ({
@@ -104,8 +118,8 @@ export default function Teams({ setCurrentPage }) {
     }));
     setTeams(formatted);
   };
+
   useEffect(() => {
-    
     fetchTeams();
   }, []);
 
@@ -122,34 +136,37 @@ export default function Teams({ setCurrentPage }) {
     setShowTeamCode(false);
   };
 
-  // Show code
+  // Show code dialog
   const handleShowCode = (id, e) => {
     e.stopPropagation();
     setMenuTeamId(id);
     setShowTeamCode(true);
   };
 
-  // Remove team
-  const handleRemoveTeam = async (id) => {
+  // Open leave modal instead of immediate deletion
+  const handleLeaveTeam = (id, e) => {
+    e.stopPropagation();
+    setLeaveModalTeamId(id);
+  };
+
+  const confirmLeaveTeam = async (id) => {
     try {
-      await axios.delete(
-        `http://localhost:8000/api/team/${id}/delete`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
+      await axios.delete(`http://localhost:8000/api/team/${id}/delete`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
       setTeams((prev) => prev.filter((team) => team.id !== id));
     } catch (error) {
       console.error(
-        "Error removing team:",
+        "Error leaving team:",
         error.response?.data || error.message
       );
     }
     setMenuTeamId(null);
     setShowTeamCode(false);
+    setLeaveModalTeamId(null);
   };
 
   // Join team
@@ -166,7 +183,6 @@ export default function Teams({ setCurrentPage }) {
           },
         }
       );
-      // Optionally refresh teams
       fetchTeams();
     } catch (error) {
       console.error(
@@ -199,7 +215,6 @@ export default function Teams({ setCurrentPage }) {
           },
         }
       );
-      // Add to local
       setTeams((prev) => [
         ...prev,
         {
@@ -222,7 +237,6 @@ export default function Teams({ setCurrentPage }) {
     setShowAddDialog(false);
   };
 
-  // Close the "Add" dialog
   const closeAddDialog = () => {
     setShowAddDialog(false);
     setJoinCode("");
@@ -233,13 +247,13 @@ export default function Teams({ setCurrentPage }) {
 
   return (
     <div className="teams-page">
-      {/* Top area with rotating fan + text */}
+      {/* Header area */}
       <div className="teams-header">
         <RotatingFanIcon size={60} />
         <h2 className="teams-headline">Which team do you want to log into?</h2>
       </div>
 
-      {/* Cards row (scrollable) */}
+      {/* Cards container */}
       <div className="teams-cards-container">
         {teams.map((team) => (
           <div
@@ -247,28 +261,46 @@ export default function Teams({ setCurrentPage }) {
             className="team-card"
             onClick={() => goToDashboard(team.id)}
           >
-            <Avatar
-              name={team.name}
-              options={{
-                size: "96",
-                background: "0052d4",
-                color: "fff",
-                bold: true,
-                rounded: true,
-              }}
-              className="team-avatar"
-            />
-            <h3 className="team-name">{team.name}</h3>
-            <p className="team-project">{team.projectname}</p>
-            <p className="team-description">{team.description}</p>
-
-            {/* Three-dots menu (larger icon) */}
-            <button
-              className="team-menu-btn"
-              onClick={(e) => toggleTeamMenu(team.id, e)}
-            >
-              &#8942;
-            </button>
+            <div className="team-avatar-container">
+              {/* Full-width square avatar taking half the card's height */}
+              <Avatar
+                name={team.name}
+                options={{
+                  size: "200", // Adjust size as needed
+                  background: "0052d4",
+                  color: "fff",
+                  bold: true,
+                  rounded: false, // square avatar
+                }}
+                className="team-avatar"
+              />
+              <button
+                className="team-menu-btn"
+                onClick={(e) => toggleTeamMenu(team.id, e)}
+              >
+                &#8942;
+              </button>
+            </div>
+            <div className="team-info">
+              <div className="info-item">
+                <span className="info-title">Team Name:</span>
+                <span className="info-value" title="Team Name">
+                  {team.name}
+                </span>
+              </div>
+              <div className="info-item">
+                <span className="info-title">Project:</span>
+                <span className="info-value" title="Project Name">
+                  {team.projectname}
+                </span>
+              </div>
+              <div className="info-item">
+                <span className="info-title">Description:</span>
+                <span className="info-value" title="Description">
+                  {team.description}
+                </span>
+              </div>
+            </div>
             {menuTeamId === team.id && !showTeamCode && (
               <div
                 className="team-menu-dialog"
@@ -281,10 +313,10 @@ export default function Teams({ setCurrentPage }) {
                   Show Code
                 </button>
                 <button
-                  className="team-menu-item"
-                  onClick={(e) => handleRemoveTeam(team.id, e)}
+                  className="team-menu-item2"
+                  onClick={(e) => handleLeaveTeam(team.id, e)}
                 >
-                  Remove
+                  Leave
                 </button>
               </div>
             )}
@@ -319,7 +351,7 @@ export default function Teams({ setCurrentPage }) {
         </div>
       </div>
 
-      {/* The "Add" dialog with Join + Create options */}
+      {/* "Add" Dialog */}
       {showAddDialog && (
         <div className="add-dialog-overlay">
           <div className="add-dialog-content2">
@@ -371,6 +403,15 @@ export default function Teams({ setCurrentPage }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Leave Modal */}
+      {leaveModalTeamId && (
+        <LeaveModal
+          teamId={leaveModalTeamId}
+          onConfirm={confirmLeaveTeam}
+          onCancel={() => setLeaveModalTeamId(null)}
+        />
       )}
     </div>
   );

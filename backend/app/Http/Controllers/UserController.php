@@ -123,6 +123,7 @@ class UserController extends Controller
             return [
                 'id' => $team->id,
                 'name' => $team->name,
+                'projectname' => $team->projectname,
                 'description' => $team->description,
                 'code' => $team->code,
             ];

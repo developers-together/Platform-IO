@@ -60,15 +60,23 @@ class Ai_chatController extends Controller
 
         $user = AUTH::user();
 
-        $stream = Gemini::geminiPro()->generateContent($validated['prompt']);
+        $result = generativeModel(model: 'models/gemini-1.5-flash-001')->generateContent($validated['prompt']);
+        
+        $ai_Response =  $result->text();
+
+    //     $stream = Gemini::geminiPro()->generateContent($validated['prompt']);
 
 
-    foreach ($stream as $response) {
+    // foreach ($stream as $response) {
 
-        return response()->streamJson($response->text());
-    }
+    //     return response()->streamJson($response->text());
+    // }
 
+<<<<<<< HEAD
      $ai_Response =   $stream->text();
+=======
+    //  $ai_Response =   $stream->text(); 
+>>>>>>> cb99507d733ffd9f44d841907b03d4f9c0ca1c30
 
 
         $Ai_chat = Ai_chat::create([
