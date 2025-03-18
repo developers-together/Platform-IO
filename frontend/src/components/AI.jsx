@@ -188,7 +188,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const handleSend = async () => {
     if (!input.trim()) return;
   
-    const newMessage = { sender: "user", text: input.trim() };
+    const newMessage = { sender: "You", text: input.trim() };
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
   
