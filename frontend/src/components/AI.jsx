@@ -294,6 +294,14 @@ export default function AIPage({ setLeftSidebarOpen }) {
                     <li className="main-feature">Web search</li>
                     <li className="main-feature">Research assistance</li>
                   </ul>
+                  <div className="custom-actions-section">
+                    <div className="actions-heading">Custom Actions</div>
+                    <ul className="actions-list">
+                      <li className="action-item">Add tasks</li>
+                      <li className="action-item">Calendar events</li>
+                      <li className="action-item">File management</li>
+                    </ul>
+                  </div>
                   <div className="additional-capabilities">
                     <span className="sparkle-icon">✨</span>
                     And much more...

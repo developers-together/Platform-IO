@@ -173,6 +173,13 @@
   box-shadow: 0 6px 20px rgba(0, 82, 212, 0.2);
 }
 
+.action-buttons button:active {
+  background: #e5e7eb;
+  transform: scale(0.95);
+  border: 1px solid #4dabf7;
+  box-shadow: 0 0px 10px rgba(0, 82, 212, 0.4);
+}
+
 /* Input Bar */
 .input-container {
   max-width: 800px;
@@ -189,11 +196,17 @@
   align-items: center;
   gap: 8px;
   transition: border-color 0.2s ease;
+  transition: all 0.2s ease-in-out;
+}
+
+.outer-input-bar:hover {
+  border-color: hsla(207, 91%, 64%, 0.3);
+  box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.1);
 }
 
 .outer-input-bar:focus-within {
   border-color: #4dabf7;
-  box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.1);
+  box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.2);
 }
 
 .input-add-button {
@@ -266,6 +279,7 @@
   cursor: pointer;
   transition: opacity 0.2s ease;
   margin-top: 4px;
+  z-index: 100;
 }
 
 .rotating-ai-icon:hover {
@@ -274,6 +288,16 @@
 
 .rotating-ai-icon svg {
   transition: filter 0.3s ease;
+}
+
+.rotating-ai-icon svg path {
+  fill: #8e44ad !important;
+  stroke: #fff !important;
+  stroke-width: 0.5px !important;
+  stroke-linejoin: round !important;
+  stroke-linecap: round !important;
+  paint-order: fill stroke !important;
+  vector-effect: non-scaling-stroke;
 }
 
 .rotating-ai-icon:hover svg {
@@ -302,6 +326,7 @@
   font-size: 0.8rem;
   transition: all 0.2s ease;
   position: relative;
+  z-index: 1000;
 }
 
 .info-button:hover {
@@ -389,11 +414,13 @@
   justify-content: center;
   transition: transform 0.3s ease, background 0.2s;
   transition: all 0.2s ease-in-out;
+  box-shadow: 0 6px 20px rgba(0, 82, 212, 0.4);
 }
 
 .sidebar-toggle-icon:hover {
   transform: scale(1.1);
   background: #0041ac;
+  box-shadow: 0px 0px 20px rgba(0, 81, 212, 0.8);
 }
 
 .sidebar-toggle-icon:active {
@@ -406,6 +433,17 @@
   font-size: 1.2rem;
   transition: all 0.2s ease-in-out;
   margin-top: 0.4%;
+  color: #0052d4;
+  font-size: 1.8rem;
+  background-color: white;
+  border: 2px solid #0052d4;
+  box-shadow: 0 3px 10px rgba(0, 82, 212, 0.4);
+}
+
+.sidebar-toggle-icon.sidebar-toggle-small:hover {
+  color: white;
+  background: #0041ac;
+  box-shadow: 0 6px 20px rgba(0, 82, 212, 0.4);
 }
 
 /* Right Sidebar */
@@ -416,14 +454,14 @@
   height: 100vh;
   width: 280px;
   background: #ffffff;
-  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 20px rgba(0, 82, 212, 0.2);
   border: 1px solid #e5e7eb;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   z-index: 2500;
   transform: translateX(100%);
-  transition: transform 0.3s easei;
+  transition: transform 0.3s ease-in-out;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -513,19 +551,20 @@
 
 .chat-item-menu {
   position: absolute;
-  top: 100%;
+  top: 50%;
   right: 0;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 0.5rem 0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 100;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease-in-out;
+  z-index: 10000;
 }
 
 .chat-item-menu button {
   background: none;
+  background: #ffffff;
   border-color: transparent;
   border-radius: 12px;
   color: #2d3748;
