@@ -281,7 +281,6 @@ async function deletedir(){
    }},
    {
      params:{
-       name:'test',
        path:'/'
    }
   });

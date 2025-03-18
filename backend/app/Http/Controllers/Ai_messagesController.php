@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ai_Chat;
+use App\Models\Ai_chat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Team;
@@ -10,6 +10,7 @@ use Gemini\Laravel\Facades\Gemini;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Models\Ai_Messages;
+
 
 class Ai_messagesController extends Controller
 {
