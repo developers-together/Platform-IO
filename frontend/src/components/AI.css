@@ -164,7 +164,6 @@
   font-size: 0.9rem;
   cursor: pointer;
   border: 0.5px solid #4dabf7;
-  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
   transition: all 0.2s ease-in-out;
 }
 
@@ -476,11 +475,11 @@
   z-index: 2500;
   transform: translateX(100%);
   transition: transform 0.3s ease-in-out;
-  scrollbar-width: none;
+  scrollbar-width: none; /* Firefox */
 }
 
 .right-sidebar::-webkit-scrollbar {
-  display: none;
+  display: none; /* Chrome/Safari */
 }
 
 .right-sidebar.open {
@@ -498,7 +497,7 @@
   padding: 0;
   margin: 0;
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto; /* If the menu is clipped, you might need overflow: visible */
   scrollbar-width: none;
 }
 
@@ -506,15 +505,16 @@
   display: none;
 }
 
+/* Each chat item is relative so its menu can stack above subsequent items */
 .previous-chat-item {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.6rem 0.8rem;
-  position: relative;
-  margin-bottom: 4px;
+  margin-bottom: 10px;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: background 0.2s ease-in-out, color 0.2s;
   border-radius: 12px;
   margin-left: 0.1rem;
   margin-right: 0.1rem;
@@ -522,10 +522,10 @@
 
 .previous-chat-item:hover {
   background: #f1f5f9;
-  transform: scale(1.02);
   color: #0052d4;
 }
 
+/* Minimally keep a smaller transform on active if you like; or remove. */
 .previous-chat-item:active {
   transform: scale(0.98);
 }
@@ -542,6 +542,7 @@
 /* Chat item actions and drop-down menu */
 .chat-item-actions {
   position: relative;
+  display: inline-block;
 }
 
 .chat-menu-btn {
@@ -559,17 +560,19 @@
   transform: scale(1.2);
 }
 
+/* Position the menu directly below the 3-dot button */
 .chat-item-menu {
   position: absolute;
-  top: 50%;
-  right: 0;
+  top: -100%;
+  right: -50%;
+  margin-top: 4px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 0.5rem 0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: opacity 0.2s ease-in-out;
-  z-index: 10000;
+  z-index: 9999; /* Must be high so it floats above other items */
 }
 
 .chat-item-menu button {
@@ -600,10 +603,11 @@
   border-radius: 12px;
   margin-top: 0.5rem;
   padding: 0.8rem;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 }
 
-.task-edit-input2 {
+.task-edit-input2,
+.task-create-input2 {
   padding: 0.8rem;
   border: 1px solid #cbd5e0;
   border-radius: 8px;
@@ -611,7 +615,9 @@
   color: #2d3748;
 }
 
-.save-button3 {
+/* The small Save buttons next to rename/new chat inputs */
+.save-button3,
+.save-button4 {
   background: #4dabf7;
   color: white;
   border: none;
@@ -623,4 +629,69 @@
   height: 45px;
   top: 15%;
   right: 3%;
+}
+
+.save-button4 {
+  top: 18%;
+}
+
+.previous-chat-item.active-chat {
+  background: #e3f2fd;
+  font-weight: 600;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.modal-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirm-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.confirm-btn:hover {
+  background: #dc2626;
+}
+
+.cancel-btn {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.cancel-btn:hover {
+  background: #cbd5e0;
 }
