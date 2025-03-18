@@ -75,4 +75,9 @@ class User extends Authenticatable
                     ->withTimestamps();
     }
 
+    public function getSftpUsernameAttribute()
+{
+    return 'user_'.$this->id.'_'.md5($this->created_at);
+}
+
 }

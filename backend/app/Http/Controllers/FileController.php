@@ -157,54 +157,31 @@ class FileController extends Controller
         $validated = $request->validate([
             'new_name' => 'required|string|max:255|regex:/^[a-zA-Z0-9-_ .]+$/',
         ]);
-    
-        // Get original extension
-        $extension = pathinfo($file->name, PATHINFO_EXTENSION);
-        $newName = pathinfo($validated['new_name'], PATHINFO_FILENAME);
-        $newFileName = $newName . ($extension ? ".$extension" : '');
-    
-        // Get current path components
-        $currentPath = $file->path;
-        $directory = pathinfo($currentPath, PATHINFO_DIRNAME);
-        $newPath = ($directory !== '.' ? $directory . '/' : '') . $newFileName;
-    
-        // Build the team-specific disk
+
         $disk = Storage::build([
             'driver' => 'local',
             'root' => storage_path('app/public/teams/' . $file->team_id),
+            'visibility' => 'public'
+        ]);
+        
+        // Rename the file on disk
+        $newPath = $disk->move($file->path, $validated['new_name']);
+        // Update the file name in the database
+        $file->name = $validated['new_name'];
+        $file->save();
+
+        return response()->json([
+            'message' => 'File updated successfully',
+            'new_path' => $newPath,
         ]);
     
-        // Check for existing file
-        if ($disk->exists($newPath)) {
-            return response()->json(['error' => 'File name already exists'], 409);
-        }
-    
-        try {
-            // Perform storage rename
-            $disk->move($currentPath, $newPath);
-    
-            // Update database record
-            $file->update([
-                'name' => $newFileName,
-                'path' => $newPath
-            ]);
-    
-            return response()->json([
-                'success' => 'File renamed successfully',
-                'new_path' => $newPath
-            ]);
-    
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'File rename failed: ' . $e->getMessage()
-            ], 500);
-        }
+      
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(File $file , Team $team)
+    public function destroy(File $file )
     {
         Gate::authorize('delete', $file);
 
