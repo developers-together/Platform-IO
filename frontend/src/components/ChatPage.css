@@ -6,6 +6,7 @@
   height: 100vh;
   padding: 20px;
   background: #f9fafc;
+  transition: all 0.2s ease-in-out;
 }
 
 /* Left Panel Styles */
@@ -503,7 +504,7 @@
   border-radius: 8px;
   object-fit: cover;
 }
-.remove-image-btn {
+.remove-image-btn1 {
   position: absolute;
   top: 8px;
   right: 11px;
@@ -518,8 +519,9 @@
   justify-content: center;
   cursor: pointer;
   transition: background 0.2s;
+  transition: all 0.2s ease-in-out;
 }
-.remove-image-btn:hover {
+.remove-image-btn1:hover {
   background: rgba(0, 82, 212, 0.1) !important;
   color: #003c9f !important;
   transform: scale(1.2);
@@ -538,28 +540,30 @@
   font-size: 0.9rem;
   color: #555;
 }
-.cancel-reply {
+.cancel-reply1 {
   position: absolute;
+  right: 3.6%;
   background: none !important;
   border: none;
   color: #0052d4 !important;
   width: 32px;
   height: 32px;
-  display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   cursor: pointer;
   transition: background 0.2s, transform 0.2s;
+  transition: all 0.2s ease-in-out;
 }
-.cancel-reply:hover {
+.cancel-reply1:hover {
   background: rgba(0, 82, 212, 0.1) !important;
   color: #003c9f !important;
   transform: scale(1.2);
 }
-.cancel-reply svg {
+.cancel-reply1 svg {
   width: 18px;
   height: 18px;
+  transition: all 0.2s ease-in-out;
 }
 
 .channel-edit-container {

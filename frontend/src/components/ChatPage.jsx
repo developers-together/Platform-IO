@@ -548,7 +548,7 @@ export default function ChatPage() {
                 {replyingTo.text}
               </span>
               <button
-                className="cancel-reply"
+                className="cancel-reply1"
                 onClick={() => setReplyingTo(null)}
               >
                 <FiXCircle />
@@ -563,7 +563,7 @@ export default function ChatPage() {
                 alt="Preview"
               />
               <button
-                className="remove-image-btn"
+                className="remove-image-btn1"
                 onClick={() => setSelectedImage(null)}
               >
                 <FiXCircle />

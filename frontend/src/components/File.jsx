@@ -1,14 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   FiFolder,
-  FiFile,
   FiFileText,
   FiVideo,
   FiMoreVertical,
-  FiPlus,
+  FiMenu,
   FiFile as FiGenericFile,
 } from "react-icons/fi";
+import { FaFileMedical } from "react-icons/fa6";
+import { IoMdDownload } from "react-icons/io";
+import { FaFolderPlus } from "react-icons/fa";
 import { AiFillFilePdf } from "react-icons/ai";
+import { IoEnter } from "react-icons/io5";
+import { MdDelete } from "react-icons/md";
 import "./File.css";
 
 // Default data for folders and files combined
@@ -27,15 +31,12 @@ const defaultItems = [
 ];
 
 export default function FileShareSystem() {
-  // State for all items
+  // State for items and menus
   const [items, setItems] = useState(defaultItems);
-  // State for the three-dots menu per item
   const [menuItemId, setMenuItemId] = useState(null);
-  // State for Add dialog
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [connectCode, setConnectCode] = useState("");
 
-  // Tooltip for help: clicking the "?" opens and remains open until clicking outside
+  // Tooltip for help
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipTab, setTooltipTab] = useState("windows");
   const helpRef = useRef(null);
@@ -56,7 +57,7 @@ export default function FileShareSystem() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Functions for three-dots menu actions
+  // Three-dots menu functions
   const toggleMenu = (itemId, e) => {
     e.stopPropagation();
     setMenuItemId((prev) => (prev === itemId ? null : itemId));
@@ -77,18 +78,9 @@ export default function FileShareSystem() {
     setMenuItemId(null);
   };
 
-  // Add dialog actions
-  const openAddDialog = () => {
-    setShowAddDialog(true);
-    setConnectCode("");
-  };
-  const closeAddDialog = () => {
-    setShowAddDialog(false);
-    setConnectCode("");
-  };
-  const connectCodeAction = () => {
-    console.log("Connect code:", connectCode);
-    setShowAddDialog(false);
+  // Toggle the add dialog pop-up
+  const toggleAddDialog = () => {
+    setShowAddDialog((prev) => !prev);
   };
 
   return (
@@ -96,7 +88,7 @@ export default function FileShareSystem() {
       <header className="file-header">
         <div className="header-left">
           <h2 className="file-headline">File Share System</h2>
-          <div
+          {/* <div
             className="help-circle"
             ref={helpRef}
             onClick={() => setShowTooltip(true)}
@@ -152,11 +144,30 @@ export default function FileShareSystem() {
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
-        <button className="add-button" onClick={openAddDialog}>
-          <span className="add-icon">+</span>
-        </button>
+        <div className="add-button-container2">
+          <button className="add-button2" onClick={toggleAddDialog}>
+            <FiMenu size={24} />
+          </button>
+          {showAddDialog && (
+            <div className="add-dialog-popup2">
+              {/* <div className="add-dialog-separator2"></div> */}
+              <button
+                className="add-dialog-item3"
+                onClick={() => console.log("Add File")}
+              >
+                <FaFileMedical /> Upload File
+              </button>
+              <button
+                className="add-dialog-item2"
+                onClick={() => console.log("Add Folder")}
+              >
+                <FaFolderPlus /> Create Folder
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
       <main className="file-main">
@@ -180,19 +191,19 @@ export default function FileShareSystem() {
                     className="item-menu-item open-item"
                     onClick={() => handleOpen(item.id)}
                   >
-                    Open
+                    <IoEnter /> Open
+                  </button>
+                  <button
+                    className="item-menu-item open-item"
+                    onClick={() => handleOpen(item.id)}
+                  >
+                    <IoMdDownload /> Download
                   </button>
                   <button
                     className="item-menu-item delete-item"
                     onClick={() => handleDelete(item.id)}
                   >
-                    Delete
-                  </button>
-                  <button
-                    className="item-menu-item share-item"
-                    onClick={() => handleShare(item.id)}
-                  >
-                    Share
+                    <MdDelete /> Delete
                   </button>
                 </div>
               )}
@@ -200,36 +211,6 @@ export default function FileShareSystem() {
           ))}
         </div>
       </main>
-
-      {/* Add Dialog */}
-      {showAddDialog && (
-        <div className="add-dialog-overlay">
-          <div className="add-dialog-content">
-            <button className="close-dialog-btn" onClick={closeAddDialog}>
-              &times;
-            </button>
-            <h3>Enter Code</h3>
-            <input
-              type="text"
-              placeholder="Enter Code..."
-              value={connectCode}
-              onChange={(e) => setConnectCode(e.target.value)}
-              className="add-dialog-input"
-            />
-            <div className="add-dialog-actions">
-              <button className="add-dialog-cancel" onClick={closeAddDialog}>
-                Cancel
-              </button>
-              <button
-                className="add-dialog-connect"
-                onClick={connectCodeAction}
-              >
-                Connect
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -240,6 +221,5 @@ function renderItemIcon(item) {
   if (item.type === "video") return <FiVideo size={28} color="#4dabf7" />;
   if (item.type === "pdf") return <AiFillFilePdf size={28} color="#4dabf7" />;
   if (item.type === "text") return <FiFileText size={28} color="#4dabf7" />;
-  // For image or unknown types, use a generic file icon
   return <FiGenericFile size={28} color="#4dabf7" />;
 }
