@@ -15,9 +15,17 @@ class FolderController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Team $team)
     {
-        //
+        
+        $disk = Storage::build([
+            'driver' => 'local',
+            'root' => storage_path('app/public/teams/'.$team->id),
+            'throw' => true
+        ]);
+        $folders = $disk->allFiles();
+
+        return response()->json($folders);
     }
 
     /**
