@@ -224,9 +224,9 @@ function renderItemIcon(item) {
   return <FiGenericFile size={28} color="#4dabf7" />;
 }
 
-const x = LocalStorage.get("teamId");;
+const teamId = LocalStorage.get("teamId");
 async function getdirsroot(){
-   const response = await axios.get(`http://localhost:8000/api/folders/${x}/index`,{
+   const response = await axios.get(`http://localhost:8000/api/folders/${teamId}/index`,{
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json'
@@ -238,4 +238,53 @@ async function getdirsroot(){
    });
     console.log(response.data);
     return response.data;
+}
+
+
+async function getdircontent(){
+  const response = await axios.get(`http://localhost:8000/api/folders/${teamId}/show`,{
+   headers: {
+     Authorization: `Bearer ${token}`,
+     'Content-Type': 'application/json'
+   }},
+   {
+     params:{
+       path:'/'
+   }
+  });
+   console.log(response.data);
+   return response.data;
+}
+
+async function createdir(){
+  const response = await axios.post(`http://localhost:8000/api/folders/${teamId}/store`,{
+   headers: {
+     Authorization: `Bearer ${token}`,
+     'Content-Type': 'application/json'
+   }},
+   {
+     params:{
+       name:'test',
+       path:'/'
+   }
+  });
+   console.log(response.data);
+   return response.data;
+}
+
+
+async function deletedir(){
+  const response = await axios.delete(`http://localhost:8000/api/folders/${teamId}/delete`,{
+   headers: {
+     Authorization: `Bearer ${token}`,
+     'Content-Type': 'application/json'
+   }},
+   {
+     params:{
+       name:'test',
+       path:'/'
+   }
+  });
+   console.log(response.data);
+   return response.data;
 }
