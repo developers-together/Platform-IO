@@ -61,6 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/ai_chats/{ai_chat}/show', [Ai_chatController::class, 'show']);
     Route::post('/ai_chats/{team}/store', [Ai_chatController::class, 'store']);
     Route::delete('/ai_chats/{ai_chat}', [Ai_chatController::class, 'destroy']);
+    Route::put('/ai_chats/{ai_chat}/update', [Ai_chatController::class, 'update']);
 
     Route::post('/ai_chats/{chat}/send', [Ai_messagesController::class, 'sendPrompt']);
     Route::get('/ai_chats/{chat}/history', [Ai_messagesController::class, 'getHistory']);
@@ -77,8 +78,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/folders/{team}/delete', [FolderController::class, 'destroy']);
     Route::put('/folders/{team}/update', [FolderController::class, 'update']);
 
-  
-    
+
+
 
 
 });
