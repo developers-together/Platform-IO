@@ -36,7 +36,7 @@ class SftpServiceProvider extends ServiceProvider
     
             foreach (glob("$teamPath/*") as $teamDir) {
                 $teamId = basename($teamDir);
-                $linkPath = "$basePath/team_$teamId";
+                $linkPath = "$basePath/$teamId";
                 
                 if (!file_exists($linkPath)) {
                     symlink($teamDir, $linkPath);

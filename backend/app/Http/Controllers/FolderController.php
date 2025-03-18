@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Folder;
+// use App\Models\Folder;
 use Illuminate\Http\Request;
 use App\Models\Team;
 use Illuminate\Support\Facades\Storage;
@@ -34,7 +34,7 @@ class FolderController extends Controller
     public function store(Request $request, Team $team)
     {
         // Authorization check
-        $this->authorize('create', [Folder::class, $team]);
+        Gate::authorize('create', $team);
     
         $validated = $request->validate([
             'name' => [
@@ -102,11 +102,11 @@ class FolderController extends Controller
             $disk->setVisibility($fullPath, 'public');
     
             return response()->json([
-                'message' => 'Folder created successfully',
-                'data' => $folder,
-                'links' => [
+                'message' => 'Folder created successfully'
+              //  'data' => $folder
+                //'links' => [
                     // 'self' => route('folders.show', [$team, $folder])
-                ]
+              //  ]
             ], 201);
     
         } catch (\Exception $e) {
@@ -127,20 +127,27 @@ class FolderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Folder $folder)
+    public function show(Team $team , Request $request)
     {
+        Gate::authorize('view', $team);
+
+        $validated = $request->validate([
+            'path' => 'required|string'
+        ]);
+
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('app/public/teams/' . $folder->team_id),
+            'root' => storage_path('app/public/teams/' . $team->id),
             'visibility' => 'public'
         ]);
-        if (!$disk->exists($folder->path)) {
+
+        if (!$disk->exists($validated['path'])) {
             abort(404, 'Folder not found');
         }
         return response()->json([
             'success' => true,
             'folder' => $folder,
-            'files' => $disk->allFiles($folder->path)
+            'files' => $disk->allFiles($validated['path'])
         ]);
 
     }
@@ -156,28 +163,32 @@ class FolderController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Folder $folder)
+    public function update(Request $request, Team $team)
 {
     // Authorization check
-    $this->authorize('update', $folder);
+    Gate::authorize('update', $team);
 
 }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Folder $folder)
+    public function destroy(Team $team , Request $request)
     {
-        $this->authorize('delete', $folder);
+        Gate::authorize('create', $team);
+
+        $validated = $request->validate([
+            'path' => 'required|string'
+        ]);
 
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('app/public/teams/' . $folder->team_id),
+            'root' => storage_path('app/public/teams/' . $team->id),
         ]);
 
         try {
             // Delete the directory on the file system
-            $disk->deleteDirectory($folder->path);
+            $disk->deleteDirectory($validated['path']);
 
             // Soft delete the folder from the database
             // $folder->delete();
@@ -185,7 +196,7 @@ class FolderController extends Controller
             // Return a successful response with the deleted folder data (optional)
             return response()->json([
                 'message' => 'Folder deleted successfully',
-                'data' => $folder,
+                'data' => $validated['path'],
             ]);
 
         } catch (\Exception $e) {
