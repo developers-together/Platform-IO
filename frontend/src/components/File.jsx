@@ -88,7 +88,7 @@ export default function FileShareSystem() {
       <header className="file-header">
         <div className="header-left">
           <h2 className="file-headline">File Share System</h2>
-          <div
+          {/* <div
             className="help-circle"
             ref={helpRef}
             onClick={() => setShowTooltip(true)}
@@ -144,7 +144,7 @@ export default function FileShareSystem() {
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
         <div className="add-button-container2">
           <button className="add-button2" onClick={toggleAddDialog}>
@@ -152,24 +152,18 @@ export default function FileShareSystem() {
           </button>
           {showAddDialog && (
             <div className="add-dialog-popup2">
-              <button
-                className="add-dialog-item2"
-                onClick={() => console.log("Copy File URL")}
-              >
-                <IoMdDownload /> Download
-              </button>
-              <div className="add-dialog-separator2"></div>
+              {/* <div className="add-dialog-separator2"></div> */}
               <button
                 className="add-dialog-item3"
                 onClick={() => console.log("Add File")}
               >
-                <FaFileMedical /> Add File
+                <FaFileMedical /> Upload File
               </button>
               <button
                 className="add-dialog-item2"
                 onClick={() => console.log("Add Folder")}
               >
-                <FaFolderPlus /> Add Folder
+                <FaFolderPlus /> Create Folder
               </button>
             </div>
           )}
@@ -198,6 +192,12 @@ export default function FileShareSystem() {
                     onClick={() => handleOpen(item.id)}
                   >
                     <IoEnter /> Open
+                  </button>
+                  <button
+                    className="item-menu-item open-item"
+                    onClick={() => handleOpen(item.id)}
+                  >
+                    <IoMdDownload /> Download
                   </button>
                   <button
                     className="item-menu-item delete-item"
