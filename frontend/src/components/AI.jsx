@@ -195,7 +195,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
     let chatId = selectedChatId;
   
     // If no chat exists, create a new one
-    if (!chatId) {
+    if (previousChats.length==0) {
       try {
         const response = await axios.post(
           `http://localhost:8000/api/ai_chats/${teamId}/store`,
