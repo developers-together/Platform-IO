@@ -14,6 +14,26 @@ use App\Models\Ai_Messages;
 class Ai_messagesController extends Controller
 {
 
+    public function sendtogemini($prompt){
+
+        // Call Gemini API
+        $response = Http::withHeaders([
+           'Content-Type' => 'application/json',
+       ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=' . env('GEMINI_API_KEY'), [
+           'contents' => [
+               [
+                   'parts' => [
+                       ['text' => $prompt],
+                   ]
+               ]
+           ]
+       ]);
+
+       $responseData = $response->json();
+       $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
+       return $aiResponse;
+      }
+
    // Send a prompt to Gemini and store message in chat
    public function sendPrompt(Request $request, Ai_chat $chat)
    {
@@ -22,22 +42,23 @@ class Ai_messagesController extends Controller
        ]);
 
        $user = Auth::user();
+       $aiResponse = $this->sendToGemini($validated['prompt']);
 
        // Call Gemini API
-       $response = Http::withHeaders([
-           'Content-Type' => 'application/json',
-       ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=YOUR_API_KEY' . env('GEMINI_API_KEY'), [
-           'contents' => [
-               [
-                   'parts' => [
-                       ['text' => $validated['prompt']],
-                   ]
-               ]
-           ]
-       ]);
+    //    $response = Http::withHeaders([
+    //        'Content-Type' => 'application/json',
+    //    ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=YOUR_API_KEY' . env('GEMINI_API_KEY'), [
+    //        'contents' => [
+    //            [
+    //                'parts' => [
+    //                    ['text' => $validated['prompt']],
+    //                ]
+    //            ]
+    //        ]
+    //    ]);
 
-       $responseData = $response->json();
-       $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
+    //    $responseData = $response->json();
+    //    $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
 
        // Save message in ai_messages table
        $message = Ai_Messages::create([

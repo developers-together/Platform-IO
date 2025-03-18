@@ -33,7 +33,7 @@ class FileController extends Controller
      */
     public function store(Request $request, Team $team)
     {
-        Gate::authorize('create', File::class);
+        Gate::authorize('create', Team::class);
 
         $validated = $request->validate([
             'file' => 'required|file',
@@ -60,12 +60,12 @@ class FileController extends Controller
         );
     
         // Create file record with proper relationships
-        File::create([
-            'name' => $file->getClientOriginalName(),
-            'path' => $path,
-            'user_id' => auth()->id(),
-            'team_id' => $team->id, // Associate with the team
-        ]);
+        // File::create([
+        //     'name' => $file->getClientOriginalName(),
+        //     'path' => $path,
+        //     'user_id' => auth()->id(),
+        //     'team_id' => $team->id, // Associate with the team
+        // ]);
     
         return response()->json($path);
     }
@@ -73,33 +73,37 @@ class FileController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(File $file)
+    public function show(Team $team , Request $request)
     {
 
-        Gate::authorize('view', $file);
+        Gate::authorize('view', $team);
+
+        $validated = $request->validate([
+            'path' => 'required|string'
+        ]);
        
     // Rebuild the team-specific disk
     $disk = Storage::build([
         'driver' => 'local',
-        'root' => storage_path('app/public/teams/' . $file->team_id),
+        'root' => storage_path('app/public/teams/' . $team->id),
         'visibility' => 'public'
     ]);
 
     // Verify file exists
-    if (!$disk->exists($file->path)) {
+    if (!$disk->exists($validated['path'])) {
         abort(404, 'File not found');
     }
 
     try {
         // Get file contents and metadata
-        $content = $disk->get($file->path);
-        $mimeType = $disk->mimeType($file->path);
-        $fileSize = $disk->size($file->path);
+        $content = $disk->get($validated['path']);
+        $mimeType = $disk->mimeType($validated['path']);
+        $fileSize = $disk->size($validated['path']);
 
         return response($content)
             ->header('Content-Type', $mimeType)
             ->header('Content-Length', $fileSize)
-            ->header('Content-Disposition', 'inline; filename="' . $file->name . '"');
+            ->header('Content-Disposition', 'inline; filename="' . $validated['path'] . '"');
 
     } catch (\Exception $e) {
         Log::error("File content retrieval failed: {$e->getMessage()}");
@@ -107,34 +111,37 @@ class FileController extends Controller
     }
     }
 
-    public function download(File $file)
+    public function download(team $team, Request $request)
     {
 
-        Gate::authorize('view', $file);
+        Gate::authorize('view', $team);
 
-
+        $validated = $request->validate([
+            'path' => 'required|string'
+        ]);
     
         // Rebuild the team-specific disk
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('app/public/teams/' . $file->team_id),
+            'root' => storage_path('app/public/teams/' . $team->id),
             'visibility' => 'public'
         ]);
     
         // Verify file exists in storage
-        if (!$disk->exists($file->path)) {
+        if (!$disk->exists($validated['path'])) {
             abort(404, 'File not found');
         }
+
+        return Storage::download($validated['path']);
     
         // Create download response with original filename
-        return $disk->response(
-            $file->path,
-            $file->name, // Use original filename from database
-            [
-                'Content-Type' => $disk->mimeType($file->path),
-                'Content-Disposition' => 'attachment; filename="' . $file->name . '"'
-            ]
-        );
+        // return $disk->response(
+        //     $validated['path'] , // Use original filename from database
+        //     [
+        //         'Content-Type' => $disk->mimeType($validated['path']),
+        //         'Content-Disposition' => 'attachment; filename="' . $validated['path']  . '"'
+        //     ]
+        // );
     }
     
 
@@ -150,25 +157,26 @@ class FileController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, File $file)
+    public function update(Request $request, Team $team)
     {
-        Gate::authorize('update', $file);
+        Gate::authorize('update', $team);
 
         $validated = $request->validate([
             'new_name' => 'required|string|max:255|regex:/^[a-zA-Z0-9-_ .]+$/',
+            'path' => 'required|string'
         ]);
 
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('app/public/teams/' . $file->team_id),
+            'root' => storage_path('app/public/teams/' . $team->id),
             'visibility' => 'public'
         ]);
         
         // Rename the file on disk
-        $newPath = $disk->move($file->path, $validated['new_name']);
+        $newPath = $disk->move($validated['path'], $validated['new_name']);
         // Update the file name in the database
-        $file->name = $validated['new_name'];
-        $file->save();
+        // $file->name = $validated['new_name'];
+        // $file->save();
 
         return response()->json([
             'message' => 'File updated successfully',
@@ -181,16 +189,27 @@ class FileController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(File $file )
+    public function destroy(Team $team , Request $request )
     {
-        Gate::authorize('delete', $file);
+        Gate::authorize('delete', $Team);
 
+        $validated = $request->validate([
+            'path' => 'required|string'
+        ]);
+        
          // Rebuild the team-specific disk
     $disk = Storage::build([
         'driver' => 'local',
-        'root' => storage_path('app/public/teams/' . $file->team_id),
+        'root' => storage_path('app/public/teams/' . $team->id),
         'visibility' => 'public'
     ]);
+
+    // Check if file exists in storage
+    if ($disk->exists($validated['path'])) {
+        // Delete the physical file
+        $disk->delete($validated['path']);
+    }
+    
 
     $deletedFromStorage = false;
     $error = null;
@@ -212,7 +231,7 @@ class FileController extends Controller
     }
 
     // Always delete the database record even if storage deletion fails
-    $file->delete();
+    // $file->delete();
 
     if ($error) {
         return response()->json([

@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/chats/{chat}', [ChatController::class, 'update']);
 
     Route::post('/chats/{chat}/sendMessages', [MessageController::class, 'sendMessage']);
+    Route::post('/chats/{chat}/ask', [MessageController::class, 'askgemini']);
     Route::get('/chats/{chat}/getMessages', [MessageController::class, 'getMessages']);
     Route::delete('chats/{message}/deleteMessage', [MessageController::class, 'destroy']);
 
@@ -64,16 +65,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/ai_chats/{chat}/history', [Ai_messagesController::class, 'getHistory']);
 
     Route::get('/files/{team}/index', [FileController::class, 'index']);
-    Route::get('/files/{file}/show', [FileController::class, 'show']);
+    Route::get('/files/{team}/show', [FileController::class, 'show']);
     Route::post('/files/{team}/store', [FileController::class, 'store']);
-    Route::delete('/files/{file}', [FileController::class, 'destroy']);
-    Route::put('/files/{file}', [FileController::class, 'update']);
+    Route::delete('/files/{team}', [FileController::class, 'destroy']);
+    Route::put('/files/{team}', [FileController::class, 'update']);
 
     Route::get('folders/{team}/index', [FolderController::class, 'index']);
-    Route::get('/folders/{folder}/show/', [FolderController::class, 'show']);
+    Route::get('/folders/{team}/show/', [FolderController::class, 'show']);
     Route::post('/folders/{team}/store', [FolderController::class, 'store']);
-    Route::delete('/folders/{folder}', [FolderController::class, 'destroy']);
-    Route::put('/folders/{folder}', [FolderController::class, 'update']);
+    Route::delete('/folders/{team}', [FolderController::class, 'destroy']);
+    Route::put('/folders/{team}', [FolderController::class, 'update']);
     
 
 

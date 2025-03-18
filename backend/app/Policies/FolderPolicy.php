@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Folder;
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -19,9 +19,9 @@ class FolderPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Folder $folder): bool
+    public function view(User $user, Team $team): bool
     {
-        return $folder->team->users()->where('user_id', $user->id)->exists();
+        return $team->users()->where('user_id', $user->id)->exists();
     }
 
     /**
@@ -34,9 +34,9 @@ class FolderPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Folder $folder): bool
+    public function update(User $user, Team $team): bool
     {
-        return $folder->team->users()
+        return $team->users()
         ->where('user_id', $user->id)
         ->whereIn('role', ['leader', 'member'])
         ->exists();
@@ -45,9 +45,9 @@ class FolderPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Folder $folder): bool
+    public function delete(User $user, Team $team): bool
     {
-        return $folder->team->users()->where('user_id', $user->id)->whereIn('role', ['leader', 'member'])->exists();
+        return $team->users()->where('user_id', $user->id)->whereIn('role', ['leader', 'member'])->exists();
     }
 
     /**
@@ -61,7 +61,7 @@ class FolderPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Folder $folder): bool
+    public function forceDelete(User $user, Team $team): bool
     {
         return false;
     }

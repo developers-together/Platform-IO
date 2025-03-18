@@ -34,7 +34,7 @@ class SftpController extends Controller
         return response()->json([
             'message' => 'SFTP connection established',
             'teams' => $user->teams->pluck('id'),
-            'chroot_base' => '/team_'
+            'chroot_base' => '/'
         ]);
     }
 
@@ -50,7 +50,7 @@ class SftpController extends Controller
         $sftp->login($user->sftp_username, $request->header('X-SFTP-Session'));
 
         $command = $request->input('command');
-        $path = "team_{$team->id}/" . ltrim($request->input('path'), '/');
+        $path = "{$team->id}/" . ltrim($request->input('path'), '/');
 
         switch ($command) {
             case 'list':
