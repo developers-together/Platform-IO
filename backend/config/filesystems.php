@@ -29,16 +29,6 @@ return [
     */
 
 
-  'sftp' =>  [
-        'host' => env('SFTP_HOST', 'localhost'),
-        'port' => env('SFTP_PORT', 22),
-        'base_path' => storage_path('app/sftp'),
-      //  'chroot_template' => '',//team_%d
-        'permissions' => [
-            'read' => ['member', 'admin','viewer'],
-            'write' => ['admin','member']
-        ]
-  ],
 
     // 'sftp' => [
     // 'driver' => 'sftp',
@@ -85,15 +75,46 @@ return [
             'report' => false,
         ],
 
-        's3' => [
-            'driver' => 's3',
-            'key' => env('AWS_ACCESS_KEY_ID'),
-            'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            'region' => env('AWS_DEFAULT_REGION'),
-            'bucket' => env('AWS_BUCKET'),
-            'url' => env('AWS_URL'),
-            'endpoint' => env('AWS_ENDPOINT'),
-            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+        /*  
+              'sftp' =>  [
+            'host' => env('SFTP_HOST', 'localhost'),
+            'port' => env('SFTP_PORT', 22),
+            'base_path' => storage_path('app/sftp'),
+          //  'chroot_template' => '',//team_%d
+            'permissions' => [
+                'read' => ['member', 'admin','viewer'],
+                'write' => ['admin','member']
+            ]
+                */ 
+
+        // 's3' => [
+        //     'driver' => 's3',
+        //     'key' => env('AWS_ACCESS_KEY_ID'),
+        //     'secret' => env('AWS_SECRET_ACCESS_KEY'),
+        //     'region' => env('AWS_DEFAULT_REGION'),
+        //     'bucket' => env('AWS_BUCKET'),
+        //     'url' => env('AWS_URL'),
+        //     'endpoint' => env('AWS_ENDPOINT'),
+        //     'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+        //     'throw' => false,
+        //     'report' => false,
+        // ],
+
+        'sftp' => [
+            'driver' => 'sftp',
+            'host' => env('SFTP_HOST'),
+            'port' => env('SFTP_PORT'),
+            'username' => env('SFTP_USERNAME'),
+            'password' => env('SFTP_PASSWORD'),
+            'root' => env('SFTP_ROOT', '/'),
+            'timeout' => 30,
+            'visibility' => 'public',
+            'directory_visibility' => 'public',
+            'permissions' => [
+                'read' => ['member', 'admin','viewer'],
+                'write' => ['admin','member']
+            ],
+            // 'chroot_template' => '',//team_%d
             'throw' => false,
             'report' => false,
         ],
