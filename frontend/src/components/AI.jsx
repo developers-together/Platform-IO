@@ -104,15 +104,11 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const [showTooltip, setShowTooltip] = useState(false);
 
   const token = localStorage.getItem("token");
-
+  const teamId = localStorage.getItem("teamId");
   // State for the right sidebar (chat history)
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Remove the “Make a new chat” item from the chat list; we’ll render it separately.
-  const [previousChats, setPreviousChats] = useState([
-    { id: "chat-1", name: "Chat with Support" },
-    { id: "chat-2", name: "Project Brainstorm" },
-    { id: "chat-3", name: "Casual Chat" },
-  ]);
+  const [previousChats, setPreviousChats] = useState([]);
   const [editingChatId, setEditingChatId] = useState(null);
   const [editingChatName, setEditingChatName] = useState("");
   const [menuOpenChatId, setMenuOpenChatId] = useState(null);
@@ -124,6 +120,30 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [isCreatingNewChat, setIsCreatingNewChat] = useState(false);
   const [newChatName, setNewChatName] = useState("");
+
+  useEffect(() => {
+    const fetchChats = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8000/api/ai_chats/${teamId}/index`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+         // Map response data to match the expected state format
+        const chats = response.data.map(chat => ({
+          id: chat.id,
+          name: chat.name
+        }));
+
+        setPreviousChats(chats); // Update state with fetched chats
+        console.log(response.data);
+      } catch (error) {
+        console.error("Error fetching chats:", error);
+      }
+    };
+    fetchChats();
+  },[teamId, token]); // Add dependencies to prevent unnecessary re-renders
+  
 
   // Toggle sidebar function
   const toggleSidebar = () => {
@@ -213,14 +233,29 @@ export default function AIPage({ setLeftSidebarOpen }) {
   };
 
   // Handler for saving a new chat from the “Make a new chat” prompt
-  const handleNewChatSave = () => {
-    if (!newChatName.trim()) return;
-    const newId = "chat-" + Date.now();
-    setPreviousChats([...previousChats, { id: newId, name: newChatName }]);
-    setSelectedChatId(newId);
+
+const handleNewChatSave = async () => {
+  if (!newChatName.trim()) return;
+  try {
+    const response = await axios.post(`http://localhost:8000/api/ai_chats/${teamId}/store`,
+      {"name": newChatName},
+      {headers:{
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    console.log(response.data);
+    
+    const newChat = response.data; // Assuming backend returns the created chat
+    setPreviousChats([...previousChats, { id: newChat.id, name: newChat.name }]);
+    setSelectedChatId(newChat.id);
     setIsCreatingNewChat(false);
     setNewChatName("");
-  };
+  } catch (error) {
+    console.error("Error creating chat:", error);
+  }
+};
+
 
   return (
     <div className="ai-chat-page">
