@@ -86,16 +86,16 @@ export default function Login({ setCurrentPage }) {
           onClick={() => setCurrentPage("teams")}
         >
           SKIP to teams
-        </button>
+        </button>*/}
         <p className="login-footer">
           Don't have an account?{" "}
           <span
             onClick={() => setCurrentPage("register")}
             className="register-link"
           >
-            Create Account 
+            Create Account
           </span>
-        </p>*/}
+        </p>
       </div>
     </div>
   );
