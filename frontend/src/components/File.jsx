@@ -223,3 +223,18 @@ function renderItemIcon(item) {
   if (item.type === "text") return <FiFileText size={28} color="#4dabf7" />;
   return <FiGenericFile size={28} color="#4dabf7" />;
 }
+
+async function getdirsroot(){
+   const response = await axios.get('http://localhost:8000/api/folders',{
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }},
+    {
+      params:{
+        path:'/'
+    }
+   });
+    console.log(response.data);
+    return response.data;
+}
