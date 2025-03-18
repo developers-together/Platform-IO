@@ -121,7 +121,7 @@ class MessageController extends Controller
                ]
            ]
        ]);
-   
+
        $responseData = $response->json();
        $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
        return $aiResponse;
@@ -133,7 +133,7 @@ class MessageController extends Controller
             'prompt' => ['required', 'string'],
         ]);
 
-        $aiResponse = sendtogemini($validated['prompt']);
+        $aiResponse = $this->sendtogemini($validated['prompt']);
 
         $message1 = Message::create([
             'user_id' => Auth::id(),
@@ -151,7 +151,7 @@ class MessageController extends Controller
       }
 
       /*
-      
+
       public function getMessages(Chat $chat)
 {
     Gate::authorize('update', $chat);
@@ -176,8 +176,8 @@ class MessageController extends Controller
 
     return response()->json($messages);
 }
-      
-      */ 
+
+      */
 
 
 }
