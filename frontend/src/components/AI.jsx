@@ -13,6 +13,7 @@ import {
 import { HiOutlineGlobeAlt } from "react-icons/hi";
 import "./AI.css";
 import axios from "axios";
+
 // Reusable Modal component
 const Modal = ({ title, message, onConfirm, onCancel }) => (
   <div className="modal-overlay">
@@ -53,7 +54,7 @@ function RotatingAIIcon({ size = 128 }) {
   const prevTimeRef = useRef();
   const [hovered, setHovered] = useState(false);
   const [isFastMode, setIsFastMode] = useState(false);
-  
+
   useEffect(() => {
     const baseSpeed = 360 / 5000;
     const hoverSpeed = 360 / 2500;
@@ -106,8 +107,8 @@ export default function AIPage({ setLeftSidebarOpen }) {
 
   // State for the right sidebar (chat history)
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Remove the “Make a new chat” item from the chat list; we’ll render it separately.
   const [previousChats, setPreviousChats] = useState([
-    { id: "chat-new", name: "Make a new chat", isNew: true },
     { id: "chat-1", name: "Chat with Support" },
     { id: "chat-2", name: "Project Brainstorm" },
     { id: "chat-3", name: "Casual Chat" },
@@ -117,7 +118,12 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const [menuOpenChatId, setMenuOpenChatId] = useState(null);
   const [showDeleteChatModal, setShowDeleteChatModal] = useState(false);
   const [chatToDelete, setChatToDelete] = useState(null);
-  const [selectedAction, setSelectedAction] = useState(""); // New state for selection
+  const [selectedAction, setSelectedAction] = useState(""); // For action button selection
+
+  // New state for tracking the selected chat and new chat creation
+  const [selectedChatId, setSelectedChatId] = useState(null);
+  const [isCreatingNewChat, setIsCreatingNewChat] = useState(false);
+  const [newChatName, setNewChatName] = useState("");
 
   // Toggle sidebar function
   const toggleSidebar = () => {
@@ -129,26 +135,31 @@ export default function AIPage({ setLeftSidebarOpen }) {
 
   const handleSend = async () => {
     if (!input.trim()) return;
-    
+
     const newMessage = { sender: "user", text: input.trim() };
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
-  
+
     try {
-      const response = await axios.post("http://localhost:8000/api/ai/send-prompt", {
-        prompt : input.trim(),
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        setMessages((prev) => [...prev, { sender: "ai", text: data.response }]);
+      const response = await axios.post(
+        "http://localhost:8000/api/ai/send-prompt",
+        {
+          prompt: input.trim(),
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // Adjusted for axios – remove response.json()
+      if (response.status === 200) {
+        setMessages((prev) => [
+          ...prev,
+          { sender: "ai", text: response.data.response },
+        ]);
       } else {
-        console.error("Error:", data);
+        console.error("Error:", response.data);
         setMessages((prev) => [
           ...prev,
           { sender: "ai", text: "An error occurred. Please try again." },
@@ -179,7 +190,6 @@ export default function AIPage({ setLeftSidebarOpen }) {
   };
 
   // Toggle action selection:
-  // If the same action button is clicked again, deselect it and clear the input.
   const handleAction = (action) => {
     if (selectedAction === action) {
       setSelectedAction("");
@@ -200,6 +210,16 @@ export default function AIPage({ setLeftSidebarOpen }) {
       default:
         break;
     }
+  };
+
+  // Handler for saving a new chat from the “Make a new chat” prompt
+  const handleNewChatSave = () => {
+    if (!newChatName.trim()) return;
+    const newId = "chat-" + Date.now();
+    setPreviousChats([...previousChats, { id: newId, name: newChatName }]);
+    setSelectedChatId(newId);
+    setIsCreatingNewChat(false);
+    setNewChatName("");
   };
 
   return (
@@ -223,13 +243,40 @@ export default function AIPage({ setLeftSidebarOpen }) {
           <h3>Chat History</h3>
         </div>
         <ul className="previous-chats-list">
+          {/* “Make a new chat” item */}
+          <li
+            key="new-chat"
+            className={`previous-chat-item default-chat ${
+              selectedChatId === "new-chat" ? "active-chat" : ""
+            }`}
+            onClick={() => setIsCreatingNewChat(true)}
+          >
+            {isCreatingNewChat ? (
+              <div className="channel-edit-container2" tabIndex={0}>
+                <input
+                  type="text"
+                  className="task-create-input2"
+                  placeholder="Enter chat name..."
+                  value={newChatName}
+                  onChange={(e) => setNewChatName(e.target.value)}
+                  autoFocus
+                />
+                <button className="save-button4" onClick={handleNewChatSave}>
+                  <FiCheck />
+                </button>
+              </div>
+            ) : (
+              <span className="chat-item-name">Make a new chat</span>
+            )}
+          </li>
+          {/* Existing chats */}
           {previousChats.map((chat) => (
             <li
               key={chat.id}
               className={`previous-chat-item ${
-                chat.isNew ? "default-chat" : ""
+                selectedChatId === chat.id ? "active-chat" : ""
               }`}
-              onClick={() => setMessages([])}
+              onClick={() => setSelectedChatId(chat.id)}
             >
               {editingChatId === chat.id ? (
                 <div className="channel-edit-container2" tabIndex={0}>
@@ -244,10 +291,10 @@ export default function AIPage({ setLeftSidebarOpen }) {
                     className="save-button3"
                     onClick={() => {
                       setPreviousChats((prev) =>
-                        prev.map((chat) =>
-                          chat.id === editingChatId
-                            ? { ...chat, name: editingChatName }
-                            : chat
+                        prev.map((c) =>
+                          c.id === editingChatId
+                            ? { ...c, name: editingChatName }
+                            : c
                         )
                       );
                       setEditingChatId(null);
@@ -260,44 +307,44 @@ export default function AIPage({ setLeftSidebarOpen }) {
               ) : (
                 <>
                   <span className="chat-item-name">{chat.name}</span>
-                  {!chat.isNew && (
-                    <div className="chat-item-actions">
-                      <button
-                        className="chat-menu-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setMenuOpenChatId(chat.id);
-                        }}
-                      >
-                        <FiMoreHorizontal />
-                      </button>
-                      {menuOpenChatId === chat.id && (
-                        <div
-                          className="chat-item-menu"
-                          onMouseLeave={() => setMenuOpenChatId(null)}
+                  {/* Wrap the actions button and menu so the menu stays open while hovered */}
+                  <div
+                    className="chat-item-actions"
+                    onMouseEnter={() => setMenuOpenChatId(chat.id)}
+                    onMouseLeave={() => setMenuOpenChatId(null)}
+                  >
+                    <button
+                      className="chat-menu-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuOpenChatId(chat.id);
+                      }}
+                    >
+                      <FiMoreHorizontal />
+                    </button>
+                    {menuOpenChatId === chat.id && (
+                      <div className="chat-item-menu">
+                        <button
+                          onClick={() => {
+                            setEditingChatId(chat.id);
+                            setEditingChatName(chat.name);
+                            setMenuOpenChatId(null);
+                          }}
                         >
-                          <button
-                            onClick={() => {
-                              setEditingChatId(chat.id);
-                              setEditingChatName(chat.name);
-                              setMenuOpenChatId(null);
-                            }}
-                          >
-                            <FiEdit2 /> Rename
-                          </button>
-                          <button
-                            onClick={() => {
-                              setChatToDelete(chat.id);
-                              setShowDeleteChatModal(true);
-                              setMenuOpenChatId(null);
-                            }}
-                          >
-                            <FiTrash2 /> Delete
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                          <FiEdit2 /> Rename
+                        </button>
+                        <button
+                          onClick={() => {
+                            setChatToDelete(chat.id);
+                            setShowDeleteChatModal(true);
+                            setMenuOpenChatId(null);
+                          }}
+                        >
+                          <FiTrash2 /> Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
             </li>
