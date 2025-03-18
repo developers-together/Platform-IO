@@ -138,6 +138,11 @@
   justify-content: space-between;
   margin-bottom: 5px;
 }
+
+.left-card-content li:last-child {
+  margin-bottom: 0px;
+}
+
 .left-card-content li:hover {
   background: #f0f0f0;
   transform: translateX(4px);

@@ -15,7 +15,7 @@ import FilePage from "./components/File";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("login");
-  // Toggle for the collapsible sidebar, if you’re using that
+  // Toggle for the left (collapsible) sidebar
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
@@ -40,12 +40,15 @@ export default function App() {
         {currentPage === "Tasks" && <TasksPage />}
         {currentPage === "Calendar" && <CalendarPage />}
         {currentPage === "File" && <FilePage />}
-        {currentPage === "AI" && <AIPage />}
+        {/*
+          Note: The AI page now receives the left sidebar setter (setSidebarOpen)
+          so that it can close the left sidebar automatically.
+        */}
+        {currentPage === "AI" && <AIPage setLeftSidebarOpen={setSidebarOpen} />}
         {currentPage === "teams" && <Teams setCurrentPage={setCurrentPage} />}
         {currentPage === "Profile" && (
           <Profile setCurrentPage={setCurrentPage} />
         )}
-        {/* Add other pages as needed */}
       </div>
     </div>
   );
