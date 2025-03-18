@@ -72,10 +72,10 @@ function AISuggestedActionsCard() {
           <li key={index} className="ai-item">
             <span>{text}</span>
             <div className="ai-actions">
-              <button className="action-btn accept" title="Accept suggestion">
+              <button className="action-btn2 accept" title="Accept suggestion">
                 <FiCheck />
               </button>
-              <button className="action-btn reject" title="Reject suggestion">
+              <button className="action-btn2 reject" title="Reject suggestion">
                 <FiX />
               </button>
             </div>

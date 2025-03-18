@@ -219,7 +219,7 @@
   margin-left: 12px;
 }
 
-.action-btn {
+.action-btn2 {
   padding: 6px;
   border-radius: 50%;
   transition: all 0.2s ease;
@@ -230,29 +230,29 @@
   justify-content: center;
 }
 
-.action-btn svg {
+.action-btn2 svg {
   width: 18px;
   height: 18px;
   stroke-width: 2.5px;
 }
 
-.action-btn.accept {
+.action-btn2.accept {
   color: #34d399;
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-.action-btn.accept:hover {
+.action-btn2.accept:hover {
   background: #34d399;
   color: white;
   border-color: transparent;
 }
 
-.action-btn.reject {
+.action-btn2.reject {
   color: #f87171;
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-.action-btn.reject:hover {
+.action-btn2.reject:hover {
   background: #f87171;
   color: white;
   border-color: transparent;
