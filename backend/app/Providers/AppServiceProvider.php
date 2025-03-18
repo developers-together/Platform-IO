@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Policies\MessagePolicy;
 use App\Models\Message;
+use Illuminate\Support\Facades\Schema;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,12 +18,14 @@ class AppServiceProvider extends ServiceProvider
         //
     }
 
+
+
     /**
      * Bootstrap any application services.
      */
     public function boot(): void
     {
-        //
+        Schema::disableForeignKeyConstraints();
     }
 
     protected $policies = [

@@ -17,26 +17,100 @@
 
 .left-card {
   border-radius: 20px;
-  overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
+  overflow: visible;
   background-color: transparent;
-  margin-top: -20px;
+  margin-top: 0px;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.left-card .panel-heading {
-  background: #e2e3e3;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #333;
+/* Panel Heading Container */
+.panel-heading-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 12px 16px;
-  border: 1px solid #fff;
+  background: #e2e3e3;
   border-radius: 20px;
-}
-
-.panel-heading {
   margin-bottom: 10px;
 }
 
+/* Panel Heading */
+.panel-heading {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Left Panel Button Styling */
+.add-channel-btn {
+  background: #e2e3e3;
+  border: none;
+  border-radius: 4px;
+  padding: 8px;
+  padding-left: 16px;
+  cursor: pointer;
+  color: #0052d4;
+  transition: background 0.2s, transform 0.2s;
+  padding: 0;
+  margin: 0;
+}
+
+.add-channel-btn svg {
+  font-size: 1.3rem;
+}
+
+.add-channel-btn:hover {
+  background: #d0d0d0;
+  transform: scale(1.05);
+}
+
+/* Create Channel Dialog */
+.create-channel-dialog,
+.edit-channel-dialog {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  border: 1px solid #e2e3e3;
+  padding: 12px;
+  margin: 8px 0;
+}
+.create-channel-dialog input,
+.edit-channel-dialog input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+.dialog-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.dialog-actions button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+.dialog-actions button:first-child {
+  background: #0052d4;
+  color: white;
+}
+.dialog-actions button:last-child {
+  background: #f0f0f0;
+  color: #333;
+}
+.dialog-actions button:hover {
+  opacity: 0.9;
+}
+
+/* Left Card Content */
 .left-card-content {
   background: #fff;
   padding: 12px 16px;
@@ -45,29 +119,97 @@
   gap: 6px;
   border-radius: 20px;
   border: 1px solid #e2e3e3;
+  min-height: 200px;
 }
-
 .left-card-content ul {
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
 }
-
 .left-card-content li {
   padding: 10px;
   border-radius: 8px;
   font-size: 1rem;
-  display: flex;
-  align-items: center;
   transition: background 0.2s, transform 0.2s;
   color: #333;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.left-card-content li:last-child {
+  margin-bottom: 0px;
 }
 
 .left-card-content li:hover {
-  background: #d5d6d6;
+  background: #f0f0f0;
   transform: translateX(4px);
+}
+.active-chat {
+  background-color: #e3f2fd !important;
   font-weight: 600;
+}
+
+/* Channel Item Layout */
+.channel-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Channel Actions & Menu */
+.channel-actions {
+  position: relative;
+}
+.channel-menu-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s;
+}
+.channel-menu-btn:hover {
+  color: #0052d4;
+}
+.channel-menu {
+  position: absolute;
+  right: 0;
+  top: 25px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  min-width: 140px;
+  background-color: none;
+}
+.channel-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+  margin: 0;
+}
+
+.channel-menu-btn svg {
+  font-size: 1.3rem;
+}
+
+.channel-menu button:hover {
+  background: #f5f5f5;
+  border-radius: 4px;
 }
 
 /* Chat Center Styles */
@@ -76,7 +218,6 @@
   flex-direction: column;
   overflow: hidden;
 }
-
 .chat-header3 {
   background: #e2e3e3;
   padding: 12px 18px;
@@ -88,18 +229,15 @@
   border-bottom: 1px solid #e2e3e3;
   border-radius: 20px;
 }
-
 .chat-header3 h3 {
   margin: 0;
   flex: 1;
 }
-
 .header-actions {
   display: flex;
   gap: 12px;
   margin-left: auto;
 }
-
 .header-actions button {
   background: none;
   border: none;
@@ -108,7 +246,6 @@
   color: #0052d4;
   transition: color 0.2s, transform 0.2s;
 }
-
 .header-actions button:hover {
   color: #003c9f;
   transform: scale(1.1);
@@ -140,7 +277,6 @@
     transform: translateY(0) scale(1);
   }
 }
-
 @keyframes messageDelete {
   from {
     opacity: 1;
@@ -156,12 +292,10 @@
     padding: 0;
   }
 }
-
 .chat-message2.adding {
   animation: messageAppear 0.4s cubic-bezier(0.2, 0, 0.1, 1);
   transform-origin: bottom center;
 }
-
 .chat-message2.deleting {
   animation: messageDelete 0.3s ease-out forwards;
   overflow: hidden;
@@ -174,13 +308,11 @@
   align-items: flex-start;
   transition: background 0.2s;
 }
-
 .avatar {
   width: 42px;
   height: 42px;
   border-radius: 50%;
 }
-
 .msg-body {
   background: #fff;
   border-radius: 10px;
@@ -191,29 +323,24 @@
   position: relative;
   transition: background 0.2s;
 }
-
 .msg-header {
   display: flex;
   justify-content: space-between;
   margin-bottom: 4px;
 }
-
 .msg-user {
   font-weight: 600;
   color: #333;
 }
-
 .msg-time {
   font-size: 0.85rem;
   color: #777;
 }
-
 .msg-text {
   margin-bottom: 6px;
   color: #444;
   line-height: 1.4;
 }
-
 .uploaded-image {
   max-width: 100%;
   max-height: 200px;
@@ -229,11 +356,9 @@
   bottom: 8px;
   gap: 6px;
 }
-
 .msg-body:hover .msg-actions {
   display: flex;
 }
-
 .msg-actions button {
   background: none;
   border: none;
@@ -242,7 +367,6 @@
   color: #0052d4;
   transition: color 0.2s, transform 0.2s;
 }
-
 .msg-actions button:hover {
   transform: scale(1.1);
 }
@@ -254,7 +378,6 @@
   border-radius: 8px;
   animation: highlight-pulse 1.5s ease-out;
 }
-
 @keyframes highlight-pulse {
   0% {
     box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
@@ -276,18 +399,15 @@
   cursor: pointer;
   transition: background 0.2s, transform 0.1s;
 }
-
 .reply-container:hover {
   background: #d1e9ff;
   transform: translateX(2px);
 }
-
 .reply-user {
   font-weight: 700;
   color: #0052d4;
   font-size: 0.9rem;
 }
-
 .reply-text {
   padding-left: 8px;
   font-size: 0.9rem;
@@ -298,32 +418,25 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
-/* Deleted Reply Styling */
 .reply-container.deleted-reply {
   border-left-color: #dc3545 !important;
   background: #f8d7da;
   cursor: not-allowed;
   animation: deleted-pulse 2s ease-in-out infinite;
 }
-
 .reply-container.deleted-reply .reply-user {
   color: #dc3545 !important;
 }
-
 .reply-container.deleted-reply .reply-text {
   color: #721c24 !important;
 }
-
 .reply-container.deleted-reply:hover {
   background: #f5c6cb;
   border-left-color: #c82333 !important;
 }
-
 .reply-container.deleted-reply:hover .reply-user {
   color: #c82333 !important;
 }
-
 @keyframes deleted-pulse {
   0% {
     opacity: 0.95;
@@ -346,42 +459,12 @@
   border-radius: 20px;
   border: 1px solid #fff;
 }
-
-/* Reply Preview Close Button */
-.cancel-reply {
-  right: 4cqmax;
-  position: absolute;
-  background: none !important;
-  border: none;
-  color: #0052d4 !important;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
-}
-
-.cancel-reply:hover {
-  background: rgba(0, 82, 212, 0.1) !important;
-  color: #003c9f !important;
-  transform: scale(1.2);
-}
-
-.cancel-reply svg {
-  width: 18px;
-  height: 18px;
-}
-
 .chat-input-row {
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
 }
-
 .chat-input input {
   flex: 1;
   padding: 10px 14px;
@@ -389,13 +472,11 @@
   border-radius: 8px;
   transition: border 0.2s;
 }
-
 .chat-input input:focus {
   border: 1px solid #0052d4;
   outline: none;
   box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.1);
 }
-
 .chat-input button {
   background: none;
   border: none;
@@ -404,26 +485,24 @@
   color: #0052d4;
   transition: color 0.2s;
 }
-
 .chat-input button:hover {
   color: #003c9f;
   transform: scale(1.1);
 }
 
+/* Image Preview */
 .image-preview-container {
   position: relative;
   width: 100%;
   display: flex;
   justify-content: flex-start;
 }
-
 .image-preview {
   max-width: 100px;
   max-height: 100px;
   border-radius: 8px;
   object-fit: cover;
 }
-
 .remove-image-btn {
   position: absolute;
   top: 8px;
@@ -440,14 +519,13 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-
 .remove-image-btn:hover {
-  background: #ccc;
   background: rgba(0, 82, 212, 0.1) !important;
   color: #003c9f !important;
   transform: scale(1.2);
 }
 
+/* Reply Preview */
 .reply-preview {
   display: flex;
   align-items: center;
@@ -456,9 +534,119 @@
   border-radius: 10px;
   gap: 8px;
 }
-
 .reply-preview span {
   font-size: 0.9rem;
   color: #555;
 }
+.cancel-reply {
+  position: absolute;
+  background: none !important;
+  border: none;
+  color: #0052d4 !important;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.cancel-reply:hover {
+  background: rgba(0, 82, 212, 0.1) !important;
+  color: #003c9f !important;
+  transform: scale(1.2);
+}
+.cancel-reply svg {
+  width: 18px;
+  height: 18px;
+}
 
+.channel-edit-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.channel-edit-container input.task-edit-input {
+  flex: 1;
+  /* Optionally adjust padding, font-size, etc. as needed */
+}
+
+.channel-edit-container button {
+  background: #0052d4;
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.channel-edit-container button:hover {
+  background: #003c9f;
+  transform: scale(1.05);
+}
+
+/* Adjust channel-actions if needed */
+.channel-actions {
+  position: relative;
+  display: inline-block;
+}
+
+/* Modal Styles for Chat Page */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.modal-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirm-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.confirm-btn:hover {
+  background: #dc2626;
+}
+
+.cancel-btn {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.cancel-btn:hover {
+  background: #cbd5e0;
+}

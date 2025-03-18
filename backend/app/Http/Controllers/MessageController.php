@@ -97,6 +97,11 @@ class MessageController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
+        // Delete the image from storage if it exists
+        if ($message->path) {
+            Storage::disk('public')->delete($message->path);
+        }
+
         $message->delete();
 
         return response()->json(['success' => true]);

@@ -54,30 +54,19 @@
 }
 
 .tasks-page {
-  padding-left: 1rem;
-  padding-right: 1rem;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+  padding: 1rem;
   height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
   background: #f9fafc;
   width: 100%;
   overflow: hidden;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.tasks-page ::-webkit-scrollbar {
-  display: none;
 }
 
 .tasks-header h1 {
   font-size: 2rem;
   color: #2d3748;
-  text-align: left;
   font-weight: 600;
-  margin: 0;
   margin-bottom: 20px;
 }
 
@@ -91,7 +80,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
-  padding-right: 0.5rem;
 }
 
 /* TASK ROW STYLING */
@@ -100,10 +88,12 @@
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 1rem;
-  transition: all 0.2s ease;
   position: relative;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
   animation: slideIn 0.3s ease both;
+  margin-bottom: 0.2rem;
+  overflow: visible; /* ensures confirm dialog isn't clipped */
+  transition: all 0.2s ease-in-out;
 }
 
 .task-row.starred {
@@ -116,12 +106,79 @@
   animation: fadeOut 0.3s ease forwards;
 }
 
+.task-row.task-edited {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* The main row content (left, center, right) */
 .task-content {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
+/* Left side: check circle + task title (bold) */
+.task-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.task-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #2d3748;
+}
+
+/* Center: due date (gray) */
+.task-center {
+  flex: 1;
+  text-align: center;
+  color: #a0aec0;
+  font-size: 0.95rem;
+}
+
+/* Right side: caret + star + edit + delete */
+.task-right {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.caret-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #718096;
+  transition: transform 0.2s ease;
+  margin-top: 5px;
+  padding: 0;
+}
+
+.caret-button svg {
+  font-size: 1.3rem;
+}
+
+.caret-button:hover {
+  transform: scale(1.2);
+}
+
+/* The extra details shown on expand (description) */
+.task-extra {
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid #e2e8f0;
+  animation: fadeIn 0.3s ease;
+}
+
+.task-extra p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #4a5568;
+}
+
+/* The check circle button */
 .check-button {
   background: none;
   border: none;
@@ -140,21 +197,10 @@
   transform: scale(1.1);
 }
 
-.task-text {
-  flex: 1;
-  font-size: 1rem;
-  color: #2d3748;
-  margin: 0 0.8rem;
-}
-
-.task-actions {
-  display: flex;
-  gap: 0.8rem;
-  margin-left: auto;
-  position: relative;
-}
-
-.task-actions svg {
+/* Icons on the right */
+.star-icon,
+.edit-icon,
+.delete-icon {
   font-size: 1.3rem;
   padding: 6px;
   cursor: pointer;
@@ -162,10 +208,6 @@
   transition: all 0.2s ease;
   width: 28px;
   height: 28px;
-}
-
-.star-icon {
-  transition: all 0.2s ease;
 }
 
 .star-icon:hover {
@@ -178,22 +220,21 @@
   fill: #f6ad55;
 }
 
-.delete-icon:hover {
-  color: #f56565;
-  transform: scale(1.1);
-}
-
 .edit-icon:hover {
   color: #4299e1;
   transform: scale(1.1);
 }
 
+.delete-icon:hover {
+  color: #f56565;
+  transform: scale(1.1);
+}
+
 /* CONFIRM DELETE DIALOG */
 .confirm-dialog {
-  position: absolute;
-  right: calc(100% + 10px);
-  bottom: 50%;
-  transform: translateY(50%);
+  position: relative;
+  left: 0%;
+  transform: translateY(10%);
   background: white;
   padding: 0.8rem 1rem;
   border-radius: 8px;
@@ -203,8 +244,10 @@
   align-items: center;
   border: 1px solid #e2e8f0;
   height: 60px;
-  width: 290px;
+  width: 260px;
   z-index: 1000;
+  transition: all 0.2s ease-in-out;
+  justify-self: end;
 }
 
 .confirm-buttons {
@@ -221,46 +264,29 @@
   transition: all 0.2s ease;
   font-size: 0.9rem;
   font-weight: 600;
-}
-
-.confirm-yes svg,
-.confirm-no svg {
-  color: #2d3748;
-}
-
-.confirm-yes svg:hover,
-.confirm-no svg:hover {
   color: white;
 }
 
 .confirm-yes {
+  background: #48bb78;
+  color: white;
+}
+
+.confirm-no {
+  background: #f56565;
+  color: white;
+}
+
+.confirm-yes:hover {
   border-color: #48bb78;
   background: white;
   color: #48bb78;
 }
 
-.confirm-no {
+.confirm-no:hover {
   border-color: #f56565;
   background: white;
   color: #f56565;
-}
-
-.confirm-yes:hover {
-  background: #48bb78;
-  color: white;
-}
-
-.confirm-no:hover {
-  background: #f56565;
-  color: white;
-}
-
-.confirm-buttons {
-  color: #2d3748;
-}
-
-.confirm-buttons:hover {
-  color: white;
 }
 
 /* COMPLETED TASKS SECTION */
@@ -274,7 +300,6 @@
   overflow: hidden;
 }
 
-/* Completed Tasks Header */
 .completed-header {
   display: flex;
   justify-content: space-between;
@@ -291,7 +316,6 @@
   background: #f1f3f5;
 }
 
-/* Completed Tasks List */
 .completed-list {
   max-height: 250px;
   overflow-y: hidden;
@@ -306,7 +330,6 @@
   animation: trayClose 0.3s ease-in-out;
 }
 
-/* Completed Task Item */
 .completed-task {
   display: flex;
   align-items: center;
@@ -317,7 +340,6 @@
   border-left: 4px solid #48bb78;
 }
 
-/* Completed Task Check Icon */
 .completed-icon {
   color: #48bb78;
   cursor: pointer;
@@ -382,40 +404,112 @@
   width: 20px;
 }
 
-/* Edit Container */
-.edit-container {
-  flex: 1;
-  position: relative;
+/* EDIT FORM (when user clicks edit icon) */
+.task-edit-form {
+  padding: 1rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-/* Task Edit Input */
-.task-edit-input {
-  width: 100%;
+.task-edit-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.edit-field label {
+  font-size: 0.9rem;
+  color: #4a5568;
+  font-weight: 600;
+}
+
+.task-edit-input,
+.task-edit-due,
+.task-edit-description {
   padding: 0.8rem;
   border: 1px solid #cbd5e0;
   border-radius: 8px;
   font-size: 1rem;
   color: #2d3748;
-  background: #ffffff;
+}
+
+.task-edit-description {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.edit-form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+/* We use a different color for Save and Cancel to differentiate from the add-button. */
+.save-button,
+.cancel-button {
+  background: #4dabf7;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.4rem;
+  border-radius: 8px;
+  cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
 }
 
-.task-edit-input:focus {
-  border-color: #4299e1;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.1);
+.save-button:hover,
+.cancel-button:hover {
+  background: #0041ac;
+  transform: scale(1.1);
 }
 
-/* Edit Hint (if you want to add a hint for saving) */
-.edit-hint {
-  position: absolute;
-  right: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
+.save-button svg,
+.cancel-button svg {
+  height: 20px;
+  width: 20px;
+}
+
+/* Center: due date (gray) with a label */
+.task-center {
+  flex: 1;
+  text-align: center;
+  color: #a0aec0;
+  font-size: 0.95rem;
+}
+.due-label {
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+/* Expanded details (task extra) */
+.task-extra {
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid #e2e8f0;
+  animation: fadeIn 0.3s ease;
+}
+.task-extra p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #4a5568;
+}
+.task-extra-dates {
+  margin-top: 0.5rem;
+}
+.task-extra-dates p {
+  margin: 0.2rem 0;
   font-size: 0.9rem;
   color: #718096;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  pointer-events: none;
 }

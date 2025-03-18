@@ -1,18 +1,52 @@
 import { useState, useRef, useEffect } from "react";
 import { FaFan } from "react-icons/fa";
-import { FiClock } from "react-icons/fi";
-import { IoSearch } from "react-icons/io5";
-import { FiPlus } from "react-icons/fi";
-import { FiCommand } from "react-icons/fi";
+import {
+  FiCommand,
+  FiMoreHorizontal,
+  FiEdit2,
+  FiTrash2,
+  FiPlus,
+  FiMenu,
+  FiX,
+  FiCheck,
+} from "react-icons/fi";
 import { HiOutlineGlobeAlt } from "react-icons/hi";
-
 import "./AI.css";
 
-/**
- * RotatingAIIcon component:
- * - Continuously rotates.
- * - Speeds up when hovered.
- */
+// Reusable Modal component
+const Modal = ({ title, message, onConfirm, onCancel }) => (
+  <div className="modal-overlay">
+    <div className="modal-content">
+      <h3>{title}</h3>
+      <p>{message}</p>
+      <div className="modal-actions">
+        <button onClick={onConfirm} className="btn confirm-btn">
+          Confirm
+        </button>
+        <button onClick={onCancel} className="btn cancel-btn">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+// Title shuffler for the starter page
+const TitleShuffler = () => {
+  const titles = [
+    "How can I help you today?",
+    "What's on your mind?",
+    "How can I help you?",
+  ];
+  const [title, setTitle] = useState("");
+  useEffect(() => {
+    const randomIndex = Math.floor(Math.random() * titles.length);
+    setTitle(titles[randomIndex]);
+  }, []);
+  return <h2>{title}</h2>;
+};
+
+// Rotating AI Icon component
 function RotatingAIIcon({ size = 128 }) {
   const [rotation, setRotation] = useState(0);
   const animationRef = useRef();
@@ -21,22 +55,19 @@ function RotatingAIIcon({ size = 128 }) {
   const [isFastMode, setIsFastMode] = useState(false);
 
   useEffect(() => {
-    const baseSpeed = 360 / 5000; // Normal speed: 5 seconds per rotation
-    const hoverSpeed = 360 / 2500; // Hover speed: 2.5 seconds per rotation
-    const clickSpeed = 360 / 1000; // Fast mode: 1 second per rotation
+    const baseSpeed = 360 / 5000;
+    const hoverSpeed = 360 / 2500;
+    const clickSpeed = 360 / 1000;
 
     const animate = (time) => {
       if (!prevTimeRef.current) prevTimeRef.current = time;
       const delta = time - prevTimeRef.current;
       prevTimeRef.current = time;
-
-      let currentSpeed;
-      if (isFastMode) {
-        currentSpeed = clickSpeed;
-      } else {
-        currentSpeed = hovered ? hoverSpeed : baseSpeed;
-      }
-
+      const currentSpeed = isFastMode
+        ? clickSpeed
+        : hovered
+        ? hoverSpeed
+        : baseSpeed;
       setRotation((prev) => (prev + currentSpeed * delta) % 360);
       animationRef.current = requestAnimationFrame(animate);
     };
@@ -45,17 +76,13 @@ function RotatingAIIcon({ size = 128 }) {
     return () => cancelAnimationFrame(animationRef.current);
   }, [hovered, isFastMode]);
 
-  const handleClick = () => {
-    setIsFastMode((prev) => !prev);
-  };
-
   return (
     <div
       className="rotating-ai-icon"
       style={{ width: size, height: size }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={handleClick}
+      onClick={() => setIsFastMode((prev) => !prev)}
     >
       <FaFan
         style={{
@@ -69,26 +96,42 @@ function RotatingAIIcon({ size = 128 }) {
   );
 }
 
-export default function AIChatPage() {
+export default function AIPage({ setLeftSidebarOpen }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const fileInputRef = useRef();
   const [showTooltip, setShowTooltip] = useState(false);
+  // State for the right sidebar (chat history)
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [previousChats, setPreviousChats] = useState([
+    { id: "chat-new", name: "Make a new chat", isNew: true },
+    { id: "chat-1", name: "Chat with Support" },
+    { id: "chat-2", name: "Project Brainstorm" },
+    { id: "chat-3", name: "Casual Chat" },
+  ]);
+  const [editingChatId, setEditingChatId] = useState(null);
+  const [editingChatName, setEditingChatName] = useState("");
+  const [menuOpenChatId, setMenuOpenChatId] = useState(null);
+  const [showDeleteChatModal, setShowDeleteChatModal] = useState(false);
+  const [chatToDelete, setChatToDelete] = useState(null);
+
+  // When toggling the right sidebar, also close the left sidebar
+  const toggleSidebar = () => {
+    if (!sidebarOpen) {
+      setLeftSidebarOpen(false);
+    }
+    setSidebarOpen((prev) => !prev);
+  };
 
   const handleSend = () => {
     if (!input.trim()) return;
     const newMessage = { sender: "user", text: input.trim() };
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
-
-    // Simulate an AI response
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
-        {
-          sender: "ai",
-          text: "This is a simulated response.",
-        },
+        { sender: "ai", text: "This is a simulated response." },
       ]);
     }, 600);
   };
@@ -110,9 +153,6 @@ export default function AIChatPage() {
 
   const handleAction = (action) => {
     switch (action) {
-      case "ask":
-        document.querySelector(".input-row input")?.focus();
-        break;
       case "search":
         setInput("Search for: ");
         break;
@@ -129,6 +169,107 @@ export default function AIChatPage() {
 
   return (
     <div className="ai-chat-page">
+      {sidebarOpen && (
+        <div className="sidebar-overlay" onClick={toggleSidebar}></div>
+      )}
+
+      {/* Right Sidebar Toggle Button */}
+      <button
+        className={`sidebar-toggle-icon ${
+          sidebarOpen ? "sidebar-toggle-small" : ""
+        }`}
+        onClick={toggleSidebar}
+      >
+        {sidebarOpen ? <FiX /> : <FiMenu />}
+      </button>
+
+      <div className={`right-sidebar ${sidebarOpen ? "open" : ""}`}>
+        <div className="sidebar-header">
+          <h3>Chat History</h3>
+        </div>
+        <ul className="previous-chats-list">
+          {previousChats.map((chat) => (
+            <li
+              key={chat.id}
+              className={`previous-chat-item ${
+                chat.isNew ? "default-chat" : ""
+              }`}
+              onClick={() => setMessages([])}
+            >
+              {editingChatId === chat.id ? (
+                <div className="channel-edit-container2" tabIndex={0}>
+                  <input
+                    type="text"
+                    className="task-edit-input2"
+                    value={editingChatName}
+                    onChange={(e) => setEditingChatName(e.target.value)}
+                    autoFocus
+                  />
+                  <button
+                    className="save-button3"
+                    onClick={() => {
+                      setPreviousChats((prev) =>
+                        prev.map((chat) =>
+                          chat.id === editingChatId
+                            ? { ...chat, name: editingChatName }
+                            : chat
+                        )
+                      );
+                      setEditingChatId(null);
+                      setEditingChatName("");
+                    }}
+                  >
+                    <FiCheck />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <span className="chat-item-name">{chat.name}</span>
+                  {!chat.isNew && (
+                    <div className="chat-item-actions">
+                      <button
+                        className="chat-menu-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMenuOpenChatId(chat.id);
+                        }}
+                      >
+                        <FiMoreHorizontal />
+                      </button>
+                      {menuOpenChatId === chat.id && (
+                        <div
+                          className="chat-item-menu"
+                          onMouseLeave={() => setMenuOpenChatId(null)}
+                        >
+                          <button
+                            onClick={() => {
+                              setEditingChatId(chat.id);
+                              setEditingChatName(chat.name);
+                              setMenuOpenChatId(null);
+                            }}
+                          >
+                            <FiEdit2 /> Rename
+                          </button>
+                          <button
+                            onClick={() => {
+                              setChatToDelete(chat.id);
+                              setShowDeleteChatModal(true);
+                              setMenuOpenChatId(null);
+                            }}
+                          >
+                            <FiTrash2 /> Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+
       <header className="chat-header2">
         <div className="header-content">
           <h2>AI Assistant</h2>
@@ -145,49 +286,14 @@ export default function AIChatPage() {
                   <span className="tooltip-title">Capabilities</span>
                   <span className="tooltip-subtitle">I can help with:</span>
                 </div>
-
                 <div className="tooltip-content">
                   <ul className="capabilities-list">
-                    <li className="main-feature">
-                      <span className="feature-icon">◦</span>
-                      Generating text
-                    </li>
-                    <li className="main-feature">
-                      <span className="feature-icon">◦</span>
-                      Answering questions
-                    </li>
-                    <li className="main-feature">
-                      <span className="feature-icon">◦</span>
-                      Analyzing images
-                    </li>
-                    <li className="main-feature">
-                      <span className="feature-icon">◦</span>
-                      Web search
-                    </li>
-                    <li className="main-feature">
-                      <span className="feature-icon">◦</span>
-                      Research assistance
-                    </li>
+                    <li className="main-feature">Generating text</li>
+                    <li className="main-feature">Answering questions</li>
+                    <li className="main-feature">Analyzing images</li>
+                    <li className="main-feature">Web search</li>
+                    <li className="main-feature">Research assistance</li>
                   </ul>
-
-                  <div className="custom-actions-section">
-                    <div className="actions-heading">Custom Actions</div>
-                    <ul className="actions-list">
-                      <li className="action-item">
-                        <span className="action-icon2">◦</span>
-                        Add tasks
-                      </li>
-                      <li className="action-item">
-                        <span className="action-icon2">◦</span>
-                        Calendar events
-                      </li>
-                      <li className="action-item">
-                        <span className="action-icon2">◦</span>
-                        File management
-                      </li>
-                    </ul>
-                  </div>
-
                   <div className="additional-capabilities">
                     <span className="sparkle-icon">✨</span>
                     And much more...
@@ -205,8 +311,8 @@ export default function AIChatPage() {
           <div className="starter-page">
             <div className="starter-content">
               <RotatingAIIcon size={128} />
-              <h1>What can I help with?</h1>
-              <p className="subtitle">Ask anything</p>
+              <TitleShuffler />
+              <p className="subtitle"></p>
             </div>
           </div>
         ) : (
@@ -264,11 +370,10 @@ export default function AIChatPage() {
             Make Actions
           </button>
         </div>
-
         <div className="input-container">
           <div className="outer-input-bar">
             <button
-              className="add-button input-add-button"
+              className="input-add-button"
               onClick={() => handleAction("upload")}
               type="button"
             >
@@ -276,7 +381,7 @@ export default function AIChatPage() {
             </button>
             <input
               type="text"
-              placeholder="Add a new task..."
+              placeholder="Ask Anything..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSend()}
@@ -309,6 +414,22 @@ export default function AIChatPage() {
         ref={fileInputRef}
         onChange={handleFileUpload}
       />
+
+      {showDeleteChatModal && (
+        <Modal
+          title="Delete Chat"
+          message="Are you sure you want to delete this chat? This action cannot be undone."
+          onConfirm={() => {
+            // Handle deletion logic here
+            setShowDeleteChatModal(false);
+            setChatToDelete(null);
+          }}
+          onCancel={() => {
+            setShowDeleteChatModal(false);
+            setChatToDelete(null);
+          }}
+        />
+      )}
     </div>
   );
 }

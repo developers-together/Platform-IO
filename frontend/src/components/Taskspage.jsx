@@ -14,141 +14,100 @@ import {
 } from "react-icons/fi";
 import "./Taskspage.css";
 
+// Helper function to format dates in a cleaner style
+function formatDueDate(dateStr) {
+  if (!dateStr) return "";
+  const dateObj = new Date(dateStr);
+  return dateObj.toLocaleString([], {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function TasksPage() {
   const [tasks, setTasks] = useState([]);
   const [completed, setCompleted] = useState([]);
   const [newTask, setNewTask] = useState("");
+
+  // Controls whether the "Completed Tasks" section is expanded
   const [showCompleted, setShowCompleted] = useState(false);
+
+  // For delete confirmation
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
+  // Which task is in "edit mode"?
+  const [currentEditingTask, setCurrentEditingTask] = useState(null);
+  const [editingTitle, setEditingTitle] = useState("");
+  const [editingDescription, setEditingDescription] = useState("");
+  const [editingDueDate, setEditingDueDate] = useState("");
+
+  // For toggling the details (description, etc.) of each task
+  const [expandedTasks, setExpandedTasks] = useState([]);
+  const toggleExpand = (id) => {
+    setExpandedTasks((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  // For animation after a task is edited
+  const [editedTaskId, setEditedTaskId] = useState(null);
+
+  // Retrieve token and teamId from localStorage
   const token = localStorage.getItem("token");
   const teamId = localStorage.getItem("teamId");
+
+  // Initial data fetch
   useEffect(() => {
-    axios.get(`http://localhost:8000/api/tasks/${teamId}/index`, {
+    axios
+      .get(`http://localhost:8000/api/tasks/${teamId}/index`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
       })
       .then((response) => {
-        // console.log(response.data);
         if (!response.data || !response.data.data) {
           console.error("Unexpected API response:", response.data);
           return;
         }
-  
-        const formattedTasks = response.data.data.map((task) => ({
-          id: task.id,
-          text: task.title || "Untitled Task",
-          completed: task.completed ?? false,
-          starred: task.stared ?? false,
-          editing: false,
-        })).sort((a, b) => b.starred - a.starred);
-  
-        setTasks(formattedTasks.filter((task) => !task.completed));
-        setCompleted(formattedTasks.filter((task) => task.completed));
+        const formattedTasks = response.data.data
+          .map((task) => ({
+            id: task.id,
+            title: task.title || "Untitled Task",
+            description: task.description || "",
+            dueDate: task.end || "",
+            createdAt: task.start || "",
+            completed: task.completed ?? false,
+            starred: task.stared ?? false,
+          }))
+          .sort((a, b) => b.starred - a.starred);
+
+        setTasks(formattedTasks.filter((t) => !t.completed));
+        setCompleted(formattedTasks.filter((t) => t.completed));
       })
       .catch((error) => {
         console.error("Error fetching tasks:", error);
       });
-  }, []);
-  
-  
+  }, [teamId, token]);
 
+  // Create a new task
   const handleAddTask = async () => {
     if (!newTask.trim()) return;
-  
     try {
       const response = await axios.post(
         `http://localhost:8000/api/tasks/${teamId}/store`,
         {
           title: newTask.trim(),
-          description: newTask.trim(), // Assuming description is the same as the title
-          stared: false, // Matches backend field name
-          start: new Date().toISOString().slice(0, 19).replace("T", " "), // Current timestamp
-          end: null, // No specific end date
-          completed: false,
-          category: "General", // Default category (adjust as needed)
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Bearer token for authentication
-            Accept: "application/json", // Ensures JSON response
-            "Content-Type": "application/json",
-          },
-        }
-      );
-  
-      const newTaskData = response.data; // Assuming API returns the created task
-  
-      const formattedTask = {
-        id: newTaskData.id,
-        text: newTaskData.title,
-        completed: newTaskData.completed ?? false,
-        starred: newTaskData.stared ?? false, // Convert to frontend format
-        editing: false,
-      };
-  
-      setTasks((prev) => [...prev, formattedTask].sort((a, b) => b.starred - a.starred));
-      setNewTask("");
-    } catch (error) {
-      console.error("Error adding task:", error);
-    }
-  };
-  
-
-  const handleEditTask = (id) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, editing: true } : t))
-    );
-  };
-
-  const handleEditSave = async (id, newText) => {
-    if(!newText.trim()) return;
-    try {
-      await axios.put(
-        `http://localhost:8000/api/tasks/${id}/update`,
-        {
-          title: newText,
-          description: newText,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      setTasks((prev) => prev.map((task) => (task.id === id ? { ...task, text: newText, editing: false } : task)));
-      setCompleted((prev) => prev.map((task) => (task.id === id ? { ...task, text: newText, editing: false } : task)));
-    } catch (error) {
-      console.error("Error editing task:", error);
-    }
-  };
-
-  // const handleStar = (id) => {
-  //   setTasks((prev) =>
-  //     prev
-  //       .map((t) => (t.id === id ? { ...t, starred: !t.starred } : t))
-  //       .sort((a, b) => b.starred - a.starred)
-  //   );
-  // };
-  const handleCompleteTask = async (id) => {
-    const task = tasks.find((t) => t.id === id);
-    if (!task) return;
-
-    try {
-      const response = await axios.put(
-        `http://localhost:8000/api/tasks/${id}/update`,
-        {
-          title: task.text,
-          description: task.text,
-          completed: true,
-          stared: task.starred,
+          // Do NOT copy the title into description; leave description empty
+          description: "",
+          stared: false,
           start: new Date().toISOString().slice(0, 19).replace("T", " "),
           end: null,
+          completed: false,
           category: "General",
         },
         {
@@ -159,27 +118,146 @@ export default function TasksPage() {
           },
         }
       );
+      const newTaskData = response.data;
+      const formattedTask = {
+        id: newTaskData.id,
+        title: newTaskData.title,
+        description: newTaskData.description || "",
+        dueDate: newTaskData.end || "",
+        createdAt: newTaskData.start || "",
+        completed: newTaskData.completed ?? false,
+        starred: newTaskData.stared ?? false,
+      };
+      setTasks((prev) =>
+        [...prev, formattedTask].sort((a, b) => b.starred - a.starred)
+      );
+      setNewTask("");
+    } catch (error) {
+      console.error("Error adding task:", error);
+    }
+  };
 
+  // Enter edit mode for a task
+  const handleEditTask = (id) => {
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+    setCurrentEditingTask(id);
+    setEditingTitle(task.title);
+    setEditingDescription(task.description);
+    setEditingDueDate(task.dueDate);
+  };
+
+  // Save the edited task
+  const handleEditSave = async () => {
+    if (!editingTitle.trim()) return;
+    try {
+      await axios.put(
+        `http://localhost:8000/api/tasks/${currentEditingTask}/update`,
+        {
+          title: editingTitle,
+          description: editingDescription,
+          end: editingDueDate,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      // Update local state (do not change createdAt)
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === currentEditingTask
+            ? {
+                ...task,
+                title: editingTitle,
+                description: editingDescription,
+                dueDate: editingDueDate,
+              }
+            : task
+        )
+      );
+      setCompleted((prev) =>
+        prev.map((task) =>
+          task.id === currentEditingTask
+            ? {
+                ...task,
+                title: editingTitle,
+                description: editingDescription,
+                dueDate: editingDueDate,
+              }
+            : task
+        )
+      );
+      // Trigger an animation
+      setEditedTaskId(currentEditingTask);
+      setTimeout(() => setEditedTaskId(null), 1000);
+
+      // Exit edit mode
+      setCurrentEditingTask(null);
+      setEditingTitle("");
+      setEditingDescription("");
+      setEditingDueDate("");
+    } catch (error) {
+      console.error("Error editing task:", error);
+    }
+  };
+
+  // Cancel editing
+  const cancelEdit = () => {
+    setCurrentEditingTask(null);
+    setEditingTitle("");
+    setEditingDescription("");
+    setEditingDueDate("");
+  };
+
+  // Mark a task as completed
+  const handleCompleteTask = async (id) => {
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+    try {
+      await axios.put(
+        `http://localhost:8000/api/tasks/${id}/update`,
+        {
+          title: task.title,
+          description: task.description,
+          completed: true,
+          stared: task.starred,
+          start: new Date().toISOString().slice(0, 19).replace("T", " "),
+          end: task.dueDate,
+          category: "General",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
       setTasks((prev) => prev.filter((t) => t.id !== id));
       setCompleted((prev) => [...prev, { ...task, completed: true }]);
     } catch (error) {
       console.error("Error completing task:", error);
     }
   };
+
+  // Mark a completed task as uncompleted
   const handleUncompleteTask = async (id) => {
     const task = completed.find((t) => t.id === id);
     if (!task) return;
-
     try {
       await axios.put(
         `http://localhost:8000/api/tasks/${id}/update`,
         {
-          title: task.text,
-          description: task.text,
+          title: task.title,
+          description: task.description,
           completed: false,
           stared: task.starred,
           start: new Date().toISOString().slice(0, 19).replace("T", " "),
-          end: null,
+          end: task.dueDate,
           category: "General",
         },
         {
@@ -190,27 +268,28 @@ export default function TasksPage() {
           },
         }
       );
-
       setCompleted((prev) => prev.filter((t) => t.id !== id));
       setTasks((prev) => [...prev, { ...task, completed: false }]);
     } catch (error) {
       console.error("Error uncompleting task:", error);
     }
   };
-  const handleStar = async (id) => {
-    const task = tasks.find((t) => t.id === id) || completed.find((t) => t.id === id);
-    if (!task) return;
 
+  // Toggle the "starred" status of a task
+  const handleStar = async (id) => {
+    const task =
+      tasks.find((t) => t.id === id) || completed.find((t) => t.id === id);
+    if (!task) return;
     try {
       await axios.put(
         `http://localhost:8000/api/tasks/${id}/update`,
         {
-          title: task.text,
-          description: task.text,
+          title: task.title,
+          description: task.description,
           completed: task.completed,
           stared: !task.starred,
           start: new Date().toISOString().slice(0, 19).replace("T", " "),
-          end: null,
+          end: task.dueDate,
           category: "General",
         },
         {
@@ -221,20 +300,24 @@ export default function TasksPage() {
           },
         }
       );
-
       setTasks((prev) => {
-        const updatedTasks = prev.map((t) => (t.id === id ? { ...t, starred: !t.starred } : t));
+        const updatedTasks = prev.map((t) =>
+          t.id === id ? { ...t, starred: !t.starred } : t
+        );
         return updatedTasks.sort((a, b) => b.starred - a.starred);
       });
-
       setCompleted((prev) => {
-        const updatedCompleted = prev.map((t) => (t.id === id ? { ...t, starred: !t.starred } : t));
+        const updatedCompleted = prev.map((t) =>
+          t.id === id ? { ...t, starred: !t.starred } : t
+        );
         return updatedCompleted.sort((a, b) => b.starred - a.starred);
       });
     } catch (error) {
       console.error("Error updating starred status:", error);
     }
   };
+
+  // Delete a task
   const handleDeleteTask = async (id) => {
     setDeletingId(id);
     try {
@@ -244,7 +327,6 @@ export default function TasksPage() {
           Accept: "application/json",
         },
       });
-
       setTasks((prev) => prev.filter((task) => task.id !== id));
       setCompleted((prev) => prev.filter((task) => task.id !== id));
       setConfirmDeleteId(null);
@@ -254,7 +336,7 @@ export default function TasksPage() {
       setDeletingId(null);
     }
   };
-  
+
   return (
     <div className="tasks-page">
       <header className="tasks-header">
@@ -263,76 +345,158 @@ export default function TasksPage() {
 
       <div className="tasks-group">
         <div className="tasks-list">
-          {tasks.map((task) => (
-            <div
-              className={`task-row ${task.starred ? "starred" : ""} ${
-                deletingId === task.id ? "deleting" : ""
-              }`}
-              key={task.id}
-            >
-              <div className="task-content">
-                <button
-                  className="check-button"
-                  onClick={() => handleCompleteTask(task.id)}
-                  aria-label="Complete task"
-                >
-                  <FiCircle className="check-icon" />
-                </button>
+          {tasks.map((task) =>
+            currentEditingTask === task.id ? (
+              // EDIT MODE
+              <div className="task-row task-edit-form" key={task.id}>
+                <div className="task-edit-content">
+                  <div className="edit-field">
+                    <label htmlFor="title">Title</label>
+                    <input
+                      id="title"
+                      type="text"
+                      className="task-edit-input"
+                      value={editingTitle}
+                      onChange={(e) => setEditingTitle(e.target.value)}
+                      placeholder="Task Title"
+                    />
+                  </div>
 
-                {task.editing ? (
-                  <input
-                    className="task-edit-input"
-                    defaultValue={task.text}
-                    autoFocus
-                    onBlur={(e) => handleEditSave(task.id, e.target.value)}
-                    onKeyDown={(e) =>
-                      e.key === "Enter" &&
-                      handleEditSave(task.id, e.target.value)
-                    }
-                  />
-                ) : (
-                  <span className="task-text">{task.text}</span>
-                )}
+                  <div className="edit-field">
+                    <label htmlFor="dueDate">Due Date</label>
+                    <input
+                      id="dueDate"
+                      type="datetime-local"
+                      className="task-edit-due"
+                      value={editingDueDate}
+                      onChange={(e) => setEditingDueDate(e.target.value)}
+                    />
+                  </div>
 
-                <div className="task-actions">
-                  <FiStar
-                    className={`star-icon ${task.starred ? "active" : ""}`}
-                    onClick={() => handleStar(task.id)}
-                  />
-                  <FiEdit
-                    className="edit-icon"
-                    onClick={() => handleEditTask(task.id)}
-                  />
-                  <FiTrash2
-                    className="delete-icon"
-                    onClick={() => setConfirmDeleteId(task.id)}
-                  />
-                  {confirmDeleteId === task.id && (
-                    <div className="confirm-dialog">
-                      <span>Delete this task?</span>
-                      <div className="confirm-buttons">
-                        <button
-                          className="confirm-yes"
-                          onClick={() => handleDeleteTask(task.id)}
-                        >
-                          <FiCheck />
-                        </button>
-                        <button
-                          className="confirm-no"
-                          onClick={() => setConfirmDeleteId(null)}
-                        >
-                          <FiX />
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                  <div className="edit-field">
+                    <label htmlFor="description">Description</label>
+                    <textarea
+                      id="description"
+                      className="task-edit-description"
+                      value={editingDescription}
+                      onChange={(e) => setEditingDescription(e.target.value)}
+                      placeholder="Task Description"
+                    ></textarea>
+                  </div>
+
+                  <div className="edit-form-actions">
+                    <button className="save-button" onClick={handleEditSave}>
+                      Save
+                    </button>
+                    <button className="cancel-button" onClick={cancelEdit}>
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ) : (
+              // NON-EDIT VIEW
+              <div
+                className={`task-row ${task.starred ? "starred" : ""} ${
+                  deletingId === task.id ? "deleting" : ""
+                } ${editedTaskId === task.id ? "task-edited" : ""}`}
+                key={task.id}
+              >
+                <div className="task-content">
+                  {/* Left side: check circle + bold title */}
+                  <div className="task-left">
+                    <button
+                      className="check-button"
+                      onClick={() => handleCompleteTask(task.id)}
+                      aria-label="Complete task"
+                    >
+                      <FiCircle className="check-icon" />
+                    </button>
+                    <span className="task-title">{task.title}</span>
+                  </div>
+
+                  {/* Center: display due date only if specified */}
+                  {task.dueDate && (
+                    <div className="task-center">
+                      <span className="due-label">Due: </span>
+                      {formatDueDate(task.dueDate)}
+                    </div>
+                  )}
+
+                  {/* Right side: caret, star, edit, delete */}
+                  <div className="task-right">
+                    <button
+                      className="caret-button"
+                      onClick={() => toggleExpand(task.id)}
+                      aria-label="Toggle details"
+                    >
+                      {expandedTasks.includes(task.id) ? (
+                        <FiChevronUp />
+                      ) : (
+                        <FiChevronDown />
+                      )}
+                    </button>
+                    <FiStar
+                      className={`star-icon ${task.starred ? "active" : ""}`}
+                      onClick={() => handleStar(task.id)}
+                    />
+                    <FiEdit
+                      className="edit-icon"
+                      onClick={() => handleEditTask(task.id)}
+                    />
+                    <FiTrash2
+                      className="delete-icon"
+                      onClick={() => setConfirmDeleteId(task.id)}
+                    />
+                  </div>
+                </div>
+
+                {/* Confirm Delete Dialog */}
+                {confirmDeleteId === task.id && (
+                  <div className="confirm-dialog">
+                    <span>Delete this task?</span>
+                    <div className="confirm-buttons">
+                      <button
+                        className="confirm-yes"
+                        onClick={() => handleDeleteTask(task.id)}
+                      >
+                        <FiCheck />
+                      </button>
+                      <button
+                        className="confirm-no"
+                        onClick={() => setConfirmDeleteId(null)}
+                      >
+                        <FiX />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Expanded details area */}
+                {expandedTasks.includes(task.id) && (
+                  <div className="task-extra">
+                    {task.description && <p>{task.description}</p>}
+                    <div className="task-extra-dates">
+                      {task.dueDate && (
+                        <p>
+                          <strong>Due Date:</strong>{" "}
+                          {formatDueDate(task.dueDate)}
+                        </p>
+                      )}
+                      <p>
+                        <strong>Created:</strong>{" "}
+                        {formatDueDate(task.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          )}
         </div>
       </div>
 
+      {/* Completed Tasks Section */}
       <div className="completed-section">
         <div
           className="completed-header"
@@ -350,7 +514,7 @@ export default function TasksPage() {
                     className="completed-icon"
                     onClick={() => handleUncompleteTask(task.id)}
                   />
-                  <span className="completed-text">{task.text}</span>
+                  <span className="completed-text">{task.title}</span>
                 </div>
               ))
             ) : (
@@ -360,6 +524,7 @@ export default function TasksPage() {
         )}
       </div>
 
+      {/* Add Task Bar */}
       <footer className="add-task-container">
         <input
           type="text"
