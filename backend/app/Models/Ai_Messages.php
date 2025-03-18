@@ -9,7 +9,7 @@ class Ai_Messages extends Model
 {
     protected $table = 'ai_messages';
 
-    protected $fillable = ['user_id', 'ai_chats_id', 'prompt', 'response', 'ai'];
+    protected $fillable = ['user_id', 'ai_chats_id', 'prompt', 'response', 'ai', 'file_path'];
 
     public function user(): BelongsTo
     {

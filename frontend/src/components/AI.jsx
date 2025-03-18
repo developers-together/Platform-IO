@@ -117,8 +117,9 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const [menuOpenChatId, setMenuOpenChatId] = useState(null);
   const [showDeleteChatModal, setShowDeleteChatModal] = useState(false);
   const [chatToDelete, setChatToDelete] = useState(null);
+  const [selectedAction, setSelectedAction] = useState(""); // New state for selection
 
-  // When toggling the right sidebar, also close the left sidebar
+  // Toggle sidebar function
   const toggleSidebar = () => {
     if (!sidebarOpen) {
       setLeftSidebarOpen(false);
@@ -177,7 +178,15 @@ export default function AIPage({ setLeftSidebarOpen }) {
     }
   };
 
+  // Toggle action selection:
+  // If the same action button is clicked again, deselect it and clear the input.
   const handleAction = (action) => {
+    if (selectedAction === action) {
+      setSelectedAction("");
+      setInput("");
+      return;
+    }
+    setSelectedAction(action);
     switch (action) {
       case "search":
         setInput("Search for: ");
@@ -395,11 +404,21 @@ export default function AIPage({ setLeftSidebarOpen }) {
 
       <footer className="chat-footer">
         <div className="action-buttons">
-          <button onClick={() => handleAction("search")}>
+          <button
+            onClick={() => handleAction("search")}
+            className={`action-btn ${
+              selectedAction === "search" ? "selected" : ""
+            }`}
+          >
             <HiOutlineGlobeAlt className="search-icon" />
             Search
           </button>
-          <button onClick={() => handleAction("actions")}>
+          <button
+            onClick={() => handleAction("actions")}
+            className={`action-btn ${
+              selectedAction === "actions" ? "selected" : ""
+            }`}
+          >
             <FiCommand className="action-icon" />
             Make Actions
           </button>
