@@ -23,21 +23,23 @@ class Ai_messagesController extends Controller
 
        $user = Auth::user();
 
-       // Call Gemini API
-       $response = Http::withHeaders([
-           'Content-Type' => 'application/json',
-       ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' . env('GEMINI_API_KEY'), [
-           'contents' => [
-               [
-                   'parts' => [
-                       ['text' => $validated['prompt']],
-                   ]
-               ]
-           ]
-       ]);
+     $aiResponse = sendtogemini($validated['prompt']);
 
-       $responseData = $response->json();
-       $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
+       // Call Gemini API
+    //    $response = Http::withHeaders([
+    //        'Content-Type' => 'application/json',
+    //    ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' . env('GEMINI_API_KEY'), [
+    //        'contents' => [
+    //            [
+    //                'parts' => [
+    //                    ['text' => $validated['prompt']],
+    //                ]
+    //            ]
+    //        ]
+    //    ]);
+
+    //    $responseData = $response->json();
+    //    $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
 
        // Save message in ai_messages table
        $message = Ai_Messages::create([
@@ -49,6 +51,26 @@ class Ai_messagesController extends Controller
        ]);
 
        return response()->json($message);
+   }
+
+   public function sendtogemini($prompt){
+
+     // Call Gemini API
+     $response = Http::withHeaders([
+        'Content-Type' => 'application/json',
+    ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' . env('GEMINI_API_KEY'), [
+        'contents' => [
+            [
+                'parts' => [
+                    ['text' => $prompt],
+                ]
+            ]
+        ]
+    ]);
+
+    $responseData = $response->json();
+    $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
+    return $aiResponse;
    }
 
     public function getHistory($chat)

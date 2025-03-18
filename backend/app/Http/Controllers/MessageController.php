@@ -107,5 +107,48 @@ class MessageController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function sendtogemini($prompt){
+
+        // Call Gemini API
+        $response = Http::withHeaders([
+           'Content-Type' => 'application/json',
+       ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' . env('GEMINI_API_KEY'), [
+           'contents' => [
+               [
+                   'parts' => [
+                       ['text' => $prompt],
+                   ]
+               ]
+           ]
+       ]);
+   
+       $responseData = $response->json();
+       $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
+       return $aiResponse;
+      }
+
+      public function askgemini(Request $requist, Chat $chat){
+
+        $validated = $request->validate([
+            'prompt' => ['required', 'string'],
+        ]);
+
+        $aiResponse = sendtogemini($validated['prompt']);
+
+        $message1 = Message::create([
+            'user_id' => Auth::id(),
+            'chat_id' => $chat->id,
+            'content' => $validated['prompt']
+        ]);
+
+        $message2 = Message::create([
+            'user_id' => Auth::id(),
+            'chat_id' => $chat->id,
+            'content' => $aiResponse
+        ]);
+
+        return response()->json(['success' => true, 'messages' => [$message1, $message2]]);
+      }
+
 
 }

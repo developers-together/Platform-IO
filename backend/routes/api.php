@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/chats/{chat}', [ChatController::class, 'update']);
 
     Route::post('/chats/{chat}/sendMessages', [MessageController::class, 'sendMessage']);
+    Route::post('/chats/{chat}/ask', [MessageController::class, 'askgemini']);
     Route::get('/chats/{chat}/getMessages', [MessageController::class, 'getMessages']);
     Route::delete('chats/{message}/deleteMessage', [MessageController::class, 'destroy']);
 
