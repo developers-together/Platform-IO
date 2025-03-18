@@ -14,6 +14,26 @@ use App\Models\Ai_Messages;
 class Ai_messagesController extends Controller
 {
 
+    public function sendtogemini($prompt){
+
+        // Call Gemini API
+        $response = Http::withHeaders([
+           'Content-Type' => 'application/json',
+       ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=' . env('GEMINI_API_KEY'), [
+           'contents' => [
+               [
+                   'parts' => [
+                       ['text' => $prompt],
+                   ]
+               ]
+           ]
+       ]);
+
+       $responseData = $response->json();
+       $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
+       return $aiResponse;
+      }
+
    // Send a prompt to Gemini and store message in chat
    public function sendPrompt(Request $request, Ai_chat $chat)
    {
@@ -22,8 +42,7 @@ class Ai_messagesController extends Controller
        ]);
 
        $user = Auth::user();
-
-     $aiResponse = sendtogemini($validated['prompt']);
+       $aiResponse = $this->sendToGemini($validated['prompt']);
 
        // Call Gemini API
     //    $response = Http::withHeaders([
@@ -51,26 +70,6 @@ class Ai_messagesController extends Controller
        ]);
 
        return response()->json($message);
-   }
-
-   public function sendtogemini($prompt){
-
-     // Call Gemini API
-     $response = Http::withHeaders([
-        'Content-Type' => 'application/json',
-    ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=' . env('GEMINI_API_KEY'), [
-        'contents' => [
-            [
-                'parts' => [
-                    ['text' => $prompt],
-                ]
-            ]
-        ]
-    ]);
-
-    $responseData = $response->json();
-    $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
-    return $aiResponse;
    }
 
     public function getHistory($chat)
