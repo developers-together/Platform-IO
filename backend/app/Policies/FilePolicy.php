@@ -48,7 +48,7 @@ class FilePolicy
      */
     public function delete(User $user, File $file): bool
     {
-        return $folder->team->users()->where('user_id', $user->id)->whereIn('role', ['leader', 'member'])->exists();
+        return $file->team->users()->where('user_id', $user->id)->whereIn('role', ['leader', 'member'])->exists();
     }
 
     /**
