@@ -232,58 +232,76 @@ async function getdirsroot(){
       'Content-Type': 'application/json'
     }},
     {
-      params:{
-        path:'/'
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    },
+    {
+      params: {
+        path: "/",
+      },
     }
-   });
-    console.log(response.data);
-    return response.data;
+  );
+  console.log(response.data);
+  return response.data;
 }
 
-
-async function getdircontent(){
-  const response = await axios.get(`http://localhost:8000/api/folders/${teamId}/show`,{
-   headers: {
-     Authorization: `Bearer ${token}`,
-     'Content-Type': 'application/json'
-   }},
-   {
-     params:{
-       path:'/'
-   }
-  });
-   console.log(response.data);
-   return response.data;
+async function getdircontent() {
+  const response = await axios.get(
+    `http://localhost:8000/api/folders/${teamId}/show`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    },
+    {
+      params: {
+        path: "/",
+      },
+    }
+  );
+  console.log(response.data);
+  return response.data;
 }
 
-async function createdir(){
-  const response = await axios.post(`http://localhost:8000/api/folders/${teamId}/store`,{
-   headers: {
-     Authorization: `Bearer ${token}`,
-     'Content-Type': 'application/json'
-   }},
-   {
-     params:{
-       name:'test',
-       path:'/'
-   }
-  });
-   console.log(response.data);
-   return response.data;
+async function createdir() {
+  const response = await axios.post(
+    `http://localhost:8000/api/folders/${teamId}/store`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    },
+    {
+      params: {
+        name: "test",
+        path: "/",
+      },
+    }
+  );
+  console.log(response.data);
+  return response.data;
 }
 
-
-async function deletedir(){
-  const response = await axios.delete(`http://localhost:8000/api/folders/${teamId}/delete`,{
-   headers: {
-     Authorization: `Bearer ${token}`,
-     'Content-Type': 'application/json'
-   }},
-   {
-     params:{
-       path:'/'
-   }
-  });
-   console.log(response.data);
-   return response.data;
+async function deletedir() {
+  const response = await axios.delete(
+    `http://localhost:8000/api/folders/${teamId}/delete`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    },
+    {
+      params: {
+        name: "test",
+        path: "/",
+      },
+    }
+  );
+  console.log(response.data);
+  return response.data;
 }

@@ -74,6 +74,7 @@ export default function Login({ setCurrentPage }) {
             {isLoading ? <div className="spinner"></div> : "Sign In"}
           </button>
         </form>
+        {/* 
         <button
           className="skip-button"
           onClick={() => setCurrentPage("dashboard")}
@@ -85,7 +86,7 @@ export default function Login({ setCurrentPage }) {
           onClick={() => setCurrentPage("teams")}
         >
           SKIP to teams
-        </button>
+        </button>*/}
         <p className="login-footer">
           Don't have an account?{" "}
           <span
