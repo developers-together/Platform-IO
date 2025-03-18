@@ -14,11 +14,10 @@ import {
 } from "react-icons/fi";
 import "./Taskspage.css";
 
-// Helper function to format the due date in a cleaner style
+// Helper function to format dates in a cleaner style
 function formatDueDate(dateStr) {
   if (!dateStr) return "";
   const dateObj = new Date(dateStr);
-  // Adjust the options to your preference
   return dateObj.toLocaleString([], {
     year: "numeric",
     month: "short",
@@ -81,6 +80,7 @@ export default function TasksPage() {
             title: task.title || "Untitled Task",
             description: task.description || "",
             dueDate: task.end || "",
+            createdAt: task.start || "",
             completed: task.completed ?? false,
             starred: task.stared ?? false,
           }))
@@ -124,6 +124,7 @@ export default function TasksPage() {
         title: newTaskData.title,
         description: newTaskData.description || "",
         dueDate: newTaskData.end || "",
+        createdAt: newTaskData.start || "",
         completed: newTaskData.completed ?? false,
         starred: newTaskData.stared ?? false,
       };
@@ -165,7 +166,7 @@ export default function TasksPage() {
           },
         }
       );
-      // Update local state
+      // Update local state (do not change createdAt)
       setTasks((prev) =>
         prev.map((task) =>
           task.id === currentEditingTask
@@ -414,10 +415,13 @@ export default function TasksPage() {
                     <span className="task-title">{task.title}</span>
                   </div>
 
-                  {/* Center: formatted due date in gray */}
-                  <div className="task-center">
-                    {formatDueDate(task.dueDate)}
-                  </div>
+                  {/* Center: display due date only if specified */}
+                  {task.dueDate && (
+                    <div className="task-center">
+                      <span className="due-label">Due: </span>
+                      {formatDueDate(task.dueDate)}
+                    </div>
+                  )}
 
                   {/* Right side: caret, star, edit, delete */}
                   <div className="task-right">
@@ -468,10 +472,22 @@ export default function TasksPage() {
                   </div>
                 )}
 
-                {/* Expanded description area (only if description is not empty) */}
-                {expandedTasks.includes(task.id) && task.description && (
+                {/* Expanded details area */}
+                {expandedTasks.includes(task.id) && (
                   <div className="task-extra">
-                    <p>{task.description}</p>
+                    {task.description && <p>{task.description}</p>}
+                    <div className="task-extra-dates">
+                      {task.dueDate && (
+                        <p>
+                          <strong>Due Date:</strong>{" "}
+                          {formatDueDate(task.dueDate)}
+                        </p>
+                      )}
+                      <p>
+                        <strong>Created:</strong>{" "}
+                        {formatDueDate(task.createdAt)}
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>

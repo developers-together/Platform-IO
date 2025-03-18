@@ -152,7 +152,7 @@
   cursor: pointer;
   color: #718096;
   transition: transform 0.2s ease;
-  margin: 0;
+  margin-top: 5px;
   padding: 0;
 }
 
@@ -479,4 +479,37 @@
 .cancel-button svg {
   height: 20px;
   width: 20px;
+}
+
+/* Center: due date (gray) with a label */
+.task-center {
+  flex: 1;
+  text-align: center;
+  color: #a0aec0;
+  font-size: 0.95rem;
+}
+.due-label {
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+/* Expanded details (task extra) */
+.task-extra {
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid #e2e8f0;
+  animation: fadeIn 0.3s ease;
+}
+.task-extra p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #4a5568;
+}
+.task-extra-dates {
+  margin-top: 0.5rem;
+}
+.task-extra-dates p {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+  color: #718096;
 }
