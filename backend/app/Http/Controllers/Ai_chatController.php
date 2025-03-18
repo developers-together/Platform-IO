@@ -58,7 +58,7 @@ class Ai_chatController extends Controller
         return $ai_chat->toJson();
     }
 
-    public function destroy(Chat $ai_chat)
+    public function destroy(Ai_Chat $ai_chat)
     {
         // $this->authorize('delete', $ai_chat);
 
