@@ -90,6 +90,6 @@ Route::post('/sftp/{team}/command', [SftpController::class, 'handleSftpCommand']
 Route::post('/register', [UserController::class, 'store']);
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/ai/send-prompt', [Ai_chatController::class, 'sendPrompt']);
-Route::get('/ai/history', [Ai_chatController::class, 'getHistory']);
+// Route::post('/ai/send-prompt', [Ai_chatController::class, 'sendPrompt']);
+// Route::get('/ai/history', [Ai_chatController::class, 'getHistory']);
 
