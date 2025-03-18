@@ -23,23 +23,22 @@ class Ai_messagesController extends Controller
 
        $user = Auth::user();
 
-     $aiResponse = sendtogemini($validated['prompt']);
 
        // Call Gemini API
-    //    $response = Http::withHeaders([
-    //        'Content-Type' => 'application/json',
-    //    ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=YOUR_API_KEY' . env('GEMINI_API_KEY'), [
-    //        'contents' => [
-    //            [
-    //                'parts' => [
-    //                    ['text' => $validated['prompt']],
-    //                ]
-    //            ]
-    //        ]
-    //    ]);
+       $response = Http::withHeaders([
+           'Content-Type' => 'application/json',
+       ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=YOUR_API_KEY' . env('GEMINI_API_KEY'), [
+           'contents' => [
+               [
+                   'parts' => [
+                       ['text' => $validated['prompt']],
+                   ]
+               ]
+           ]
+       ]);
 
-    //    $responseData = $response->json();
-    //    $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
+       $responseData = $response->json();
+       $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
 
        // Save message in ai_messages table
        $message = Ai_Messages::create([
@@ -53,25 +52,25 @@ class Ai_messagesController extends Controller
        return response()->json($message);
    }
 
-   public function sendtogemini($prompt){
+//    public function sendtogemini($prompt){
 
-     // Call Gemini API
-     $response = Http::withHeaders([
-        'Content-Type' => 'application/json',
-    ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=' . env('GEMINI_API_KEY'), [
-        'contents' => [
-            [
-                'parts' => [
-                    ['text' => $prompt],
-                ]
-            ]
-        ]
-    ]);
+//      // Call Gemini API
+//      $response = Http::withHeaders([
+//         'Content-Type' => 'application/json',
+//     ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=' . env('GEMINI_API_KEY'), [
+//         'contents' => [
+//             [
+//                 'parts' => [
+//                     ['text' => $prompt],
+//                 ]
+//             ]
+//         ]
+//     ]);
 
-    $responseData = $response->json();
-    $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
-    return $aiResponse;
-   }
+//     $responseData = $response->json();
+//     $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
+//     return $aiResponse;
+//    }
 
     public function getHistory($chat)
     {
