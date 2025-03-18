@@ -61,11 +61,13 @@
   border-radius: var(--radius-lg);
   padding: 2rem;
   display: grid;
-  grid-template-columns: 200px 1fr;
+  grid-template-columns: 250px 1fr; /* left col for avatar, right col for fields */
+  align-items: flex-start;
   gap: 2rem;
   box-shadow: var(--shadow-md);
   border: 1px solid #f1f5f9;
   transition: var(--transition);
+  min-height: 500px; /* helps prevent height collapse when editing */
 }
 .profile-card.editing {
   border-color: var(--primary-color);
@@ -91,12 +93,45 @@
   transition: var(--transition);
 }
 
-/* Mini-info under avatar: User ID, Full Name, Job */
+/* Buttons for Upload / Magic Avatar */
+.avatar-controls {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+.avatar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.9rem;
+}
+.avatar-btn:hover {
+  background: var(--primary-hover);
+  transform: scale(1.05);
+}
+.magic-btn {
+  background: #a78bfa; /* Purple-ish color for "Magic Avatar" */
+}
+.magic-btn:hover {
+  background: #8b5cf6;
+}
+
+/* Mini-info under avatar */
 .mini-info {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   width: 100%;
+  margin-top: 1rem; /* space below the avatar */
 }
 .mini-line {
   display: flex;
@@ -255,6 +290,38 @@ select:focus {
   background: #e2e8f0;
 }
 
+/* Save & Cancel Buttons when editing */
+.edit-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.save-changes-btn,
+.cancel-changes-btn {
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  padding: 0.6rem 1.2rem;
+  transition: var(--transition);
+  font-size: 0.9rem;
+}
+.save-changes-btn {
+  background: var(--primary-color);
+  color: #fff;
+}
+.save-changes-btn:hover {
+  background: var(--primary-hover);
+  transform: scale(1.05);
+}
+.cancel-changes-btn {
+  background: var(--secondary-color);
+  color: var(--text-color);
+}
+.cancel-changes-btn:hover {
+  background: #e2e8f0;
+  transform: scale(1.05);
+}
+
 /* Options Card (Right Card) */
 .options-card {
   animation: fadeIn 0.3s ease-out;
@@ -299,6 +366,35 @@ select:focus {
 }
 .red-btn:hover {
   background: #fecaca;
+}
+
+/* Tooltip Styles */
+.tooltip-container {
+  position: relative;
+  /* If you want the entire block to show a tooltip, ensure it has inline or block display. */
+}
+.tooltip-container:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: 125%; /* show above the item */
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2000;
+  opacity: 0;
+  animation: fadeTooltip 0.2s forwards;
+}
+/* optional fade-in for the tooltip */
+@keyframes fadeTooltip {
+  to {
+    opacity: 1;
+  }
 }
 
 /* Modal Styles */
@@ -383,6 +479,7 @@ select:focus {
   .profile-card {
     grid-template-columns: 1fr;
     padding: 1.5rem;
+    min-height: auto; /* let it adapt on smaller screens */
   }
   .profile-avatar {
     width: 120px;
