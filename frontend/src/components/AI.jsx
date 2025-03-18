@@ -121,6 +121,25 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const [isCreatingNewChat, setIsCreatingNewChat] = useState(false);
   const [newChatName, setNewChatName] = useState("");
 
+  const fetchChatContent = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/api/ai_chats/${selectedChatId}/show`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+       // Map response data to match the expected state format
+      const chats = response.data.map(chat => ({
+        id: chat.id,
+        name: chat.name
+      }));
+
+      setMessages(chats); // Update state with fetched chats
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error fetching chats:", error);
+    }
+  };
   useEffect(() => {
     const fetchChats = async () => {
       try {
@@ -162,11 +181,13 @@ export default function AIPage({ setLeftSidebarOpen }) {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/ai/send-prompt",
+        `http://localhost:8000/api/ai_chats/${selectedChatId}/send`,
         {
-          prompt: input.trim(),
+          "prompt": input.trim(),
+        },
+        {
           headers: {
-            Authorization: `Bearer ${token}`,
+            "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
@@ -256,6 +277,20 @@ const handleNewChatSave = async () => {
   }
 };
 
+const handleDeleteChat = async () => {
+  try {
+    const response = await axios.delete(`http://localhost:8000/api/ai_chats/${chatToDelete}`,
+      {headers:{
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    setPreviousChats(previousChats.filter(chat => chat.id !== chatToDelete));
+  } catch (error) {
+    console.error("Error creating chat:", error);
+  }
+  setChatToDelete(null);
+};
 
   return (
     <div className="ai-chat-page">
@@ -556,6 +591,7 @@ const handleNewChatSave = async () => {
           message="Are you sure you want to delete this chat? This action cannot be undone."
           onConfirm={() => {
             // Handle deletion logic here
+            handleDeleteChat();
             setShowDeleteChatModal(false);
             setChatToDelete(null);
           }}
