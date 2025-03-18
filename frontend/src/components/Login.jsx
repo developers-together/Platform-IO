@@ -74,6 +74,7 @@ export default function Login({ setCurrentPage }) {
             {isLoading ? <div className="spinner"></div> : "Sign In"}
           </button>
         </form>
+        {/* 
         <button
           className="skip-button"
           onClick={() => setCurrentPage("dashboard")}
@@ -92,9 +93,9 @@ export default function Login({ setCurrentPage }) {
             onClick={() => setCurrentPage("register")}
             className="register-link"
           >
-            Create Account
+            Create Account 
           </span>
-        </p>
+        </p>*/}
       </div>
     </div>
   );
