@@ -224,8 +224,9 @@ function renderItemIcon(item) {
   return <FiGenericFile size={28} color="#4dabf7" />;
 }
 
+const x = LocalStorage.get("teamId");;
 async function getdirsroot(){
-   const response = await axios.get('http://localhost:8000/api/folders',{
+   const response = await axios.get(`http://localhost:8000/api/folders/${x}/index`,{
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json'
