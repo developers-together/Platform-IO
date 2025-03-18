@@ -52,6 +52,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/team/{team}/removemembers',[TeamController::class,'removeMembers']);
     Route::post('/team/joinTeam', [TeamController::class, 'joinTeam']);
 
+    Route::get('/files/{team}/index', [FileController::class, 'index']);
+    Route::get('/files/{file}/show', [FileController::class, 'show']);
+    Route::post('/files/{team}/store', [FileController::class, 'store']);
+    Route::delete('/files/{file}', [FileController::class, 'destroy']);
+    Route::put('/files/{file}', [FileController::class, 'update']);
+
+    Route::get('folders/{team}/index', [FolderController::class, 'index']);
+    Route::get('/folders/{folder}/show/', [FolderController::class, 'show']);
+    Route::post('/folders/{team}/store', [FolderController::class, 'store']);
+    Route::delete('/folders/{folder}', [FolderController::class, 'destroy']);
+    Route::put('/folders/{folder}', [FolderController::class, 'update']);
+    
+
+
 });
 
 Route::post('/register', [UserController::class, 'store']);
