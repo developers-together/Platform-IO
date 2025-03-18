@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('ai_messages', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('ai_chats_id')->constrained()->onDelete('cascade');
+            $table->foreignId('ai_chats_id')->constrained()->cascadeOnDelete();
             $table->text('prompt');
             $table->text('response');
             $table->enum('ai',['response','action','agents'])->default('response');
