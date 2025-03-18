@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, use } from "react";
 import { FaFan } from "react-icons/fa";
 import {
   FiCommand,
@@ -120,22 +120,35 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [isCreatingNewChat, setIsCreatingNewChat] = useState(false);
   const [newChatName, setNewChatName] = useState("");
-
-  const fetchChatContent = async () => {
+  useEffect(() => {
+    if(previousChats.length>0){
+      setSelectedChatId(previousChats[0].id);
+      fetchChatContent(previousChats[0].id);
+    }
+    else if(previousChats.length==0){
+      setMessages([]);
+    }
+  },[previousChats]);
+  const fetchChatContent = async (chatId) => {
+    setSelectedChatId(chatId);
     try {
-      const response = await axios.get(`http://localhost:8000/api/ai_chats/${selectedChatId}/show`, {
+      const response = await axios.get(`http://localhost:8000/api/ai_chats/${chatId}/history`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-       // Map response data to match the expected state format
-      const chats = response.data.map(chat => ({
-        id: chat.id,
-        name: chat.name
-      }));
-
+      // Map response data to match the expected state format
+      const chats = response.data?.flatMap(chat => [
+        {
+          sender: chat.user.name, // User's message
+          text: chat.prompt
+        },
+        {
+          sender: "ai", // AI's response
+          text: chat.response
+        }
+      ]);
       setMessages(chats); // Update state with fetched chats
-      console.log(response.data);
     } catch (error) {
       console.error("Error fetching chats:", error);
     }
@@ -174,17 +187,55 @@ export default function AIPage({ setLeftSidebarOpen }) {
 
   const handleSend = async () => {
     if (!input.trim()) return;
-
+  
     const newMessage = { sender: "user", text: input.trim() };
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
-
+  
+    let chatId = selectedChatId;
+  
+    // If no chat exists, create a new one
+    if (!chatId) {
+      try {
+        const response = await axios.post(
+          `http://localhost:8000/api/ai_chats/${teamId}/store`,
+          { "name": "New Chat" },
+          {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+  
+        if (response.status === 200) {
+          const newChat = response.data; // Get newly created chat details
+          setPreviousChats((prev) => [...prev, { id: newChat.id, name: newChat.name }]);
+          setSelectedChatId(newChat.id);
+          chatId = newChat.id; // Update chatId for message sending
+        } else {
+          console.error("Error creating chat:", response.data);
+          setMessages((prev) => [
+            ...prev,
+            { sender: "ai", text: "Failed to create a new chat." },
+          ]);
+          return; // Stop execution if chat creation fails
+        }
+      } catch (error) {
+        console.error("Error creating chat:", error);
+        setMessages((prev) => [
+          ...prev,
+          { sender: "ai", text: "An error occurred while creating a chat." },
+        ]);
+        return; // Stop execution
+      }
+    }
+  
+    // Send the message now that a chat exists
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/ai_chats/${selectedChatId}/send`,
-        {
-          "prompt": input.trim(),
-        },
+        `http://localhost:8000/api/ai_chats/${chatId}/send`,
+        { "prompt": input.trim() },
         {
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -192,8 +243,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
           },
         }
       );
-
-      // Adjusted for axios – remove response.json()
+  
       if (response.status === 200) {
         setMessages((prev) => [
           ...prev,
@@ -214,6 +264,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
       ]);
     }
   };
+  
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -256,7 +307,9 @@ export default function AIPage({ setLeftSidebarOpen }) {
   // Handler for saving a new chat from the “Make a new chat” prompt
 
 const handleNewChatSave = async () => {
-  if (!newChatName.trim()) return;
+  if (!newChatName.trim()){ 
+    return;
+  }
   try {
     const response = await axios.post(`http://localhost:8000/api/ai_chats/${teamId}/store`,
       {"name": newChatName},
@@ -265,7 +318,6 @@ const handleNewChatSave = async () => {
         "Content-Type": "application/json",
       },
     });
-    console.log(response.data);
     
     const newChat = response.data; // Assuming backend returns the created chat
     setPreviousChats([...previousChats, { id: newChat.id, name: newChat.name }]);
@@ -319,7 +371,8 @@ const handleDeleteChat = async () => {
             className={`previous-chat-item default-chat ${
               selectedChatId === "new-chat" ? "active-chat" : ""
             }`}
-            onClick={() => setIsCreatingNewChat(true)}
+            onClick={() =>
+              setIsCreatingNewChat(true)}
           >
             {isCreatingNewChat ? (
               <div className="channel-edit-container2" tabIndex={0}>
@@ -346,7 +399,10 @@ const handleDeleteChat = async () => {
               className={`previous-chat-item ${
                 selectedChatId === chat.id ? "active-chat" : ""
               }`}
-              onClick={() => setSelectedChatId(chat.id)}
+              onClick={() => {
+                setSelectedChatId(chat.id)
+                fetchChatContent(chat.id)
+              }}
             >
               {editingChatId === chat.id ? (
                 <div className="channel-edit-container2" tabIndex={0}>
@@ -493,7 +549,7 @@ const handleDeleteChat = async () => {
                       style={{ background: "#4dabf7" }}
                     >
                       <span style={{ color: "#fff", fontSize: "0.8rem" }}>
-                        You
+                        {msg.sender}
                       </span>
                     </div>
                   </div>
