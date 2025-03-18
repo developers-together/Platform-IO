@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use phpseclib3\Net\SFTP;
+use Illuminate\Support\Facades\File;
 
 class SftpServiceProvider extends ServiceProvider
 {
@@ -40,6 +41,8 @@ class SftpServiceProvider extends ServiceProvider
                 
                 if (!file_exists($linkPath)) {
                     symlink($teamDir, $linkPath);
+                    // File::link($teamDir, $linkPath);
+                    // copy($teamDir, $linkPath);
                 }
             }
         }

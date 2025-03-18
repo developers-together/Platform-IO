@@ -33,7 +33,7 @@ return [
         'host' => env('SFTP_HOST', 'localhost'),
         'port' => env('SFTP_PORT', 22),
         'base_path' => storage_path('app/sftp'),
-        'chroot_template' => 'team_%d',
+      //  'chroot_template' => '',//team_%d
         'permissions' => [
             'read' => ['member', 'admin','viewer'],
             'write' => ['admin','member']

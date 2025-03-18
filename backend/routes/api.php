@@ -10,6 +10,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\Ai_chatController;
 use App\Http\Controllers\Ai_messagesController;
+use App\Http\Controllers\SftpController;
 
 
 // Route::get('/user', function (Request $request) {
@@ -75,10 +76,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/folders/{team}/store', [FolderController::class, 'store']);
     Route::delete('/folders/{team}', [FolderController::class, 'destroy']);
     Route::put('/folders/{team}', [FolderController::class, 'update']);
+
+  
     
 
 
 });
+
+Route::post('/sftp/connect', [SftpController::class, 'connect']);
+Route::post('/sftp/{team}/command', [SftpController::class, 'handleSftpCommand'])
+    ->middleware(['signed', 'auth:sanctum', 'sftp']);
 
 Route::post('/register', [UserController::class, 'store']);
 

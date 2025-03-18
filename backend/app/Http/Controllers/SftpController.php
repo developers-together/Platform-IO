@@ -14,11 +14,11 @@ class SftpController extends Controller
     public function connect(Request $request)
     {
         $credentials = $request->validate([
-            'username' => 'required',
+            'email' => 'required',
             'password' => 'required',
         ]);
 
-        $user = User::where('email', $credentials['username'])
+        $user = User::where('email', $credentials['email'])
             ->with('teams')
             ->first();
 
@@ -27,7 +27,7 @@ class SftpController extends Controller
         }
 
         $sftp = new SFTP(config('sftp.host'));
-        if (!$sftp->login($user->sftp_username, $credentials['password'])) {
+        if (!$sftp->login($user->email, $credentials['password'])) {
             abort(401, 'SFTP login failed');
         }
 
