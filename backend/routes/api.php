@@ -9,7 +9,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\Ai_chatController;
-use App\Http\Controllers\Ai_messageController;
+use App\Http\Controllers\Ai_messagesController;
 
 
 // Route::get('/user', function (Request $request) {
@@ -59,6 +59,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/ai_chats/{ai_chat}/show', [Ai_chatController::class, 'show']);
     Route::post('/ai_chats/{team}/store', [Ai_chatController::class, 'store']);
     Route::delete('/ai_chats/{ai_chat}', [Ai_chatController::class, 'destroy']);
+
+    Route::post('/ai_chats/{chat}/send', [Ai_messagesController::class, 'sendPrompt']);
+    Route::get('/ai_chats/{chat}/history', [Ai_messagesController::class, 'getHistory']);
 
 });
 

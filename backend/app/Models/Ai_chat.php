@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Ai_Messages;
 
 class Ai_chat extends Model
 {
@@ -15,9 +16,8 @@ class Ai_chat extends Model
         return $this->belongsTo(Team::class);
     }
 
-    public function Ai_Messages(): HasMany
+    public function ai_messages(): HasMany
     {
-        return $this->HasMany(Ai_Message::class);
-
+        return $this->hasMany(Ai_Messages::class, 'chat_id');
     }
 }
