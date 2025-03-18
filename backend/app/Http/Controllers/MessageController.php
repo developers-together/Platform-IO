@@ -150,5 +150,34 @@ class MessageController extends Controller
         return response()->json(['success' => true, 'messages' => [$message1, $message2]]);
       }
 
+      /*
+      
+      public function getMessages(Chat $chat)
+{
+    Gate::authorize('update', $chat);
+
+    $messages = Message::where('chat_id', $chat->id)
+        ->get()
+        ->map(function ($message) {
+            // Get the user's name manually without defining a user() relationship
+            $userName = DB::table('users')->where('id', $message->user_id)->value('name');
+
+            return [
+                'id' => $message->id,
+                'chat_id' => $message->chat_id,
+                'user_id' => $message->user_id,
+                'user_name' => $userName,
+                'message' => $message->message,
+                'image_url' => $message->path ? Storage::url($message->path) : null,
+                'replyTo' => $message->replyTo,
+                'created_at' => $message->created_at->toDateTimeString(),
+            ];
+        });
+
+    return response()->json($messages);
+}
+      
+      */ 
+
 
 }

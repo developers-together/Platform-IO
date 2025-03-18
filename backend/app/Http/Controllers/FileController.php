@@ -60,12 +60,12 @@ class FileController extends Controller
         );
     
         // Create file record with proper relationships
-        File::create([
-            'name' => $file->getClientOriginalName(),
-            'path' => $path,
-            'user_id' => auth()->id(),
-            'team_id' => $team->id, // Associate with the team
-        ]);
+        // File::create([
+        //     'name' => $file->getClientOriginalName(),
+        //     'path' => $path,
+        //     'user_id' => auth()->id(),
+        //     'team_id' => $team->id, // Associate with the team
+        // ]);
     
         return response()->json($path);
     }
@@ -167,8 +167,8 @@ class FileController extends Controller
         // Rename the file on disk
         $newPath = $disk->move($file->path, $validated['new_name']);
         // Update the file name in the database
-        $file->name = $validated['new_name'];
-        $file->save();
+        // $file->name = $validated['new_name'];
+        // $file->save();
 
         return response()->json([
             'message' => 'File updated successfully',
@@ -212,7 +212,7 @@ class FileController extends Controller
     }
 
     // Always delete the database record even if storage deletion fails
-    $file->delete();
+    // $file->delete();
 
     if ($error) {
         return response()->json([

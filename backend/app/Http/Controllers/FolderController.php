@@ -90,13 +90,13 @@ class FolderController extends Controller
             $disk->makeDirectory($fullPath);
     
             // Create folder record
-            $folder = Folder::create([
-                'name' => $folderName,
-                'path' => $fullPath,
-                'team_id' => $team->id,
-                'user_id' => auth()->id(),
-                'uuid' => Str::uuid(), // Add unique identifier
-            ]);
+            // $folder = Folder::create([
+            //     'name' => $folderName,
+            //     'path' => $fullPath,
+            //     'team_id' => $team->id,
+            //     'user_id' => auth()->id(),
+            //     'uuid' => Str::uuid(), // Add unique identifier
+            // ]);
     
             // Set proper permissions
             $disk->setVisibility($fullPath, 'public');
@@ -105,7 +105,7 @@ class FolderController extends Controller
                 'message' => 'Folder created successfully',
                 'data' => $folder,
                 'links' => [
-                    'self' => route('folders.show', [$team, $folder])
+                    // 'self' => route('folders.show', [$team, $folder])
                 ]
             ], 201);
     
@@ -180,7 +180,7 @@ class FolderController extends Controller
             $disk->deleteDirectory($folder->path);
 
             // Soft delete the folder from the database
-            $folder->delete();
+            // $folder->delete();
 
             // Return a successful response with the deleted folder data (optional)
             return response()->json([

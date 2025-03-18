@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('folders', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-            $table->string('name');
-            $table->string('path');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('team_id')->constrained()->onDelete('cascade');
-        });
+        // Schema::create('folders', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->timestamps();
+        //     $table->string('name');
+        //     $table->string('path');
+        //     $table->foreignId('user_id')->constrained()->onDelete('cascade');
+        //     $table->foreignId('team_id')->constrained()->onDelete('cascade');
+        // });
     }
 
     /**
