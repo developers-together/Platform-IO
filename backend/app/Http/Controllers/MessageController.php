@@ -112,7 +112,7 @@ class MessageController extends Controller
         // Call Gemini API
         $response = Http::withHeaders([
            'Content-Type' => 'application/json',
-       ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' . env('GEMINI_API_KEY'), [
+       ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=' . env('GEMINI_API_KEY'), [
            'contents' => [
                [
                    'parts' => [
