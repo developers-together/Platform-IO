@@ -20,9 +20,7 @@ import Avatar from "./Avatar";
 import "./Profile.css";
 import axios from "axios";
 
-
-
-
+// Reusable Modal component
 const Modal = ({ title, message, onConfirm, onCancel }) => (
   <div className="modal-overlay">
     <div className="modal-content">
@@ -41,7 +39,7 @@ const Modal = ({ title, message, onConfirm, onCancel }) => (
 );
 
 export default function Profile({ setCurrentPage }) {
-  const initialUserData ={
+  const initialUserData = {
     name: "John Doe",
     age: 28,
     sex: "Male",
@@ -52,6 +50,7 @@ export default function Profile({ setCurrentPage }) {
     id: "user-12345",
     teams: [],
   };
+
   const [userData, setUserData] = useState(initialUserData);
   const [isEditing, setIsEditing] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -65,26 +64,25 @@ export default function Profile({ setCurrentPage }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const token = localStorage.getItem("token");
-  const teamId = localStorage.getItem("teamId");
-  // HANDLERS
 
-
-
-  useEffect( () => {
-    const response =  axios
+  // Fetch user and team data
+  useEffect(() => {
+    const response = axios
       .get("http://localhost:8000/api/user/show", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .catch((error) => console.error("Error fetching user:", error));
-    const teams = axios
+
+    const teamsPromise = axios
       .get("http://localhost:8000/api/user/teams", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .catch((error) => console.error("Error fetching teams:", error));
-      Promise.all([response, teams])
-      .then(([userResponse, teamsResponse]) => {
-        console.log("User data:", userResponse.data);
-        console.log("Teams data:", teamsResponse.data);
+
+    Promise.all([response, teamsPromise]).then(
+      ([userResponse, teamsResponse]) => {
+        if (!userResponse || !teamsResponse) return;
+
         setUserData((prevData) => ({
           ...prevData,
           id: userResponse.data.id,
@@ -95,12 +93,23 @@ export default function Profile({ setCurrentPage }) {
           job: userResponse.data.job ?? prevData.job,
           location: userResponse.data.location ?? prevData.location,
           phone: userResponse.data.phone ?? prevData.phone,
-          teams: teamsResponse.data.map((team) => team.name) ?? prevData.teams, // Assuming teams is an array
+          teams: teamsResponse.data.map((team) => team.name) ?? prevData.teams,
         }));
         setTeams(teamsResponse.data.map((team) => team.name));
-      });
-  }, []);
+      }
+    );
+  }, [token]);
 
+  // Handlers for adding a team
+  const handleAddTeam = () => {
+    setIsAddingTeam(true);
+  };
+  const handleCancelAddTeam = () => {
+    setIsAddingTeam(false);
+    setNewTeamName("");
+  };
+
+  // Avatar File Change
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -110,6 +119,7 @@ export default function Profile({ setCurrentPage }) {
     }
   };
 
+  // Magic Avatar
   const handleMagicAvatar = () => {
     const randomColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
     setAvatarBgColor(randomColor);
@@ -123,12 +133,14 @@ export default function Profile({ setCurrentPage }) {
     );
   };
 
+  // Form changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUserData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  // Validate
   const validateForm = () => {
     const newErrors = {};
     if (userData.age < 18) newErrors.age = "Must be at least 18 years old";
@@ -139,12 +151,13 @@ export default function Profile({ setCurrentPage }) {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Save / Cancel
   const handleSave = () => {
     if (!validateForm()) return;
     setIsEditing(false);
   };
-
   const handleCancel = () => {
+    // Revert to initial data
     setUserData(initialUserData);
     setAvatarUrl("");
     setAvatarBgColor("#3b82f6");
@@ -155,6 +168,7 @@ export default function Profile({ setCurrentPage }) {
     setNewTeamName("");
   };
 
+  // Confirm Add Team
   const handleConfirmAddTeam = () => {
     if (newTeamName.trim()) {
       setTeams([...teams, newTeamName.trim()]);
@@ -170,30 +184,33 @@ export default function Profile({ setCurrentPage }) {
   // Logout & Delete Modals
   const handleLogout = () => setShowLogoutModal(true);
   const confirmLogout = () => {
-      localStorage.removeItem("token");
-      localStorage.removeItem("teamId");
-      setCurrentPage("login");
-      setShowDeleteModal(false);
+    localStorage.removeItem("token");
+    localStorage.removeItem("teamId");
+    setCurrentPage("login");
+    setShowLogoutModal(false);
   };
   const cancelLogout = () => setShowLogoutModal(false);
 
   const handleDelete = () => setShowDeleteModal(true);
   const confirmDelete = async () => {
-    axios.delete("http://localhost:8000/api/user/delete", {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-    .then(response => {
-      // console.log(response.data.message);
-      localStorage.removeItem("token");
-      localStorage.removeItem("teamId");
-      setCurrentPage("register");
-      setShowDeleteModal(false);
-    })
-    .catch(error => {
-      console.error("Error deleting user:", error.response ? error.response.data : error);
-    });
+    axios
+      .delete("http://localhost:8000/api/user/delete", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("teamId");
+        setCurrentPage("register");
+        setShowDeleteModal(false);
+      })
+      .catch((error) => {
+        console.error(
+          "Error deleting user:",
+          error.response ? error.response.data : error
+        );
+      });
   };
   const cancelDelete = () => setShowDeleteModal(false);
 
@@ -203,7 +220,7 @@ export default function Profile({ setCurrentPage }) {
       setCurrentPage("teams");
     }
   };
-  
+
   return (
     <div className="profile-page">
       {/* Modals */}
@@ -237,7 +254,10 @@ export default function Profile({ setCurrentPage }) {
           {/* Left Card: Profile Information */}
           <div className={`profile-card ${isEditing ? "editing" : ""}`}>
             {/* Left Column: Avatar & Mini Info */}
-            <div className="avatar-section">
+            <div
+              className="avatar-section tooltip-container"
+              data-tooltip="This is your profile photo"
+            >
               <div className="avatar-container">
                 {avatarUrl ? (
                   <img
@@ -252,18 +272,30 @@ export default function Profile({ setCurrentPage }) {
                     background={avatarBgColor}
                   />
                 )}
+
                 {/* Mini info under avatar: User ID, Full Name, Job */}
                 <div className="mini-info">
-                  <div className="mini-line">
+                  <div
+                    className="mini-line tooltip-container"
+                    data-tooltip="Your unique user ID"
+                  >
                     <FiHash className="icon" /> {userData.id}
                   </div>
-                  <div className="mini-line">
+                  <div
+                    className="mini-line tooltip-container"
+                    data-tooltip="Your display name"
+                  >
                     <FiUser className="icon" /> {userData.name}
                   </div>
-                  <div className="mini-line">
+                  <div
+                    className="mini-line tooltip-container"
+                    data-tooltip="Your job title"
+                  >
                     <FiBriefcase className="icon" /> {userData.job}
                   </div>
                 </div>
+
+                {/* Upload & Magic Avatar buttons only appear in edit mode */}
                 {isEditing && (
                   <div className="avatar-controls">
                     <input
@@ -290,7 +322,10 @@ export default function Profile({ setCurrentPage }) {
             {/* Right Column: Profile Fields & Team Membership */}
             <div className="profile-details">
               <div className="profile-fields">
-                <div className="form-group">
+                <div
+                  className="form-group tooltip-container"
+                  data-tooltip="Your age"
+                >
                   <label>
                     <FiCalendar className="icon" /> Age
                   </label>
@@ -312,7 +347,10 @@ export default function Profile({ setCurrentPage }) {
                   )}
                 </div>
 
-                <div className="form-group">
+                <div
+                  className="form-group tooltip-container"
+                  data-tooltip="Your gender"
+                >
                   <label>
                     <FiHeart className="icon" /> Gender
                   </label>
@@ -331,7 +369,10 @@ export default function Profile({ setCurrentPage }) {
                   )}
                 </div>
 
-                <div className="form-group">
+                <div
+                  className="form-group tooltip-container"
+                  data-tooltip="Your location"
+                >
                   <label>
                     <FiMapPin className="icon" /> Location
                   </label>
@@ -347,7 +388,10 @@ export default function Profile({ setCurrentPage }) {
                   )}
                 </div>
 
-                <div className="form-group">
+                <div
+                  className="form-group tooltip-container"
+                  data-tooltip="Your phone number"
+                >
                   <label>
                     <FiPhone className="icon" /> Phone
                   </label>
@@ -370,7 +414,10 @@ export default function Profile({ setCurrentPage }) {
                 </div>
 
                 {isEditing && (
-                  <div className="form-group">
+                  <div
+                    className="form-group tooltip-container"
+                    data-tooltip="Change your password"
+                  >
                     <label>
                       <FiLock className="icon" /> New Password
                     </label>
@@ -385,7 +432,10 @@ export default function Profile({ setCurrentPage }) {
               </div>
 
               {/* Team Membership Section under the profile fields */}
-              <div className="teams-section2">
+              <div
+                className="teams-section2 tooltip-container"
+                data-tooltip="Teams you belong to"
+              >
                 <h3>
                   <FiUsers className="icon" /> Team Memberships
                 </h3>
@@ -403,6 +453,7 @@ export default function Profile({ setCurrentPage }) {
                       )}
                     </div>
                   ))}
+
                   {isEditing &&
                     (isAddingTeam ? (
                       <div className="add-team-inline">
@@ -432,32 +483,57 @@ export default function Profile({ setCurrentPage }) {
                     ))}
                 </div>
               </div>
+
+              {/* Save & Cancel buttons when editing */}
+              {isEditing && (
+                <div className="edit-actions">
+                  <button className="save-changes-btn" onClick={handleSave}>
+                    Save
+                  </button>
+                  <button className="cancel-changes-btn" onClick={handleCancel}>
+                    Cancel
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Right Card: Options */}
-          <div className="options-card">
+          <div
+            className="options-card tooltip-container"
+            data-tooltip="Manage your account settings"
+          >
             <h3>Account Settings</h3>
             <button
-              className="option-btn"
+              className="option-btn tooltip-container"
+              data-tooltip="Toggle editing mode"
               onClick={() => setIsEditing(!isEditing)}
             >
               <FiEdit />
               {isEditing ? "Cancel Editing" : "Edit Profile"}
             </button>
             <button
-              className="option-btn"
-              onClick={() => setCurrentPage("teams")}
+              className="option-btn tooltip-container"
+              data-tooltip="Switch to another team"
+              onClick={handleChangeTeam}
             >
               <FiUsers />
               Change Team
             </button>
             <hr className="separator" />
-            <button className="option-btn red-btn" onClick={handleLogout}>
+            <button
+              className="option-btn red-btn tooltip-container"
+              data-tooltip="Sign out of your account"
+              onClick={handleLogout}
+            >
               <FiLogOut />
               Sign Out
             </button>
-            <button className="option-btn red-btn" onClick={handleDelete}>
+            <button
+              className="option-btn red-btn tooltip-container"
+              data-tooltip="Delete your account permanently"
+              onClick={handleDelete}
+            >
               <FiTrash2 />
               Delete Account
             </button>
