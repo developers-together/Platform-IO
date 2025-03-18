@@ -101,7 +101,6 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const [input, setInput] = useState("");
   const fileInputRef = useRef();
   const [showTooltip, setShowTooltip] = useState(false);
-  // State for the right sidebar (chat history)
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [previousChats, setPreviousChats] = useState([
     { id: "chat-new", name: "Make a new chat", isNew: true },
@@ -114,8 +113,9 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const [menuOpenChatId, setMenuOpenChatId] = useState(null);
   const [showDeleteChatModal, setShowDeleteChatModal] = useState(false);
   const [chatToDelete, setChatToDelete] = useState(null);
+  const [selectedAction, setSelectedAction] = useState(""); // New state for selection
 
-  // When toggling the right sidebar, also close the left sidebar
+  // Toggle sidebar function
   const toggleSidebar = () => {
     if (!sidebarOpen) {
       setLeftSidebarOpen(false);
@@ -151,7 +151,15 @@ export default function AIPage({ setLeftSidebarOpen }) {
     }
   };
 
+  // Toggle action selection:
+  // If the same action button is clicked again, deselect it and clear the input.
   const handleAction = (action) => {
+    if (selectedAction === action) {
+      setSelectedAction("");
+      setInput("");
+      return;
+    }
+    setSelectedAction(action);
     switch (action) {
       case "search":
         setInput("Search for: ");
@@ -294,6 +302,14 @@ export default function AIPage({ setLeftSidebarOpen }) {
                     <li className="main-feature">Web search</li>
                     <li className="main-feature">Research assistance</li>
                   </ul>
+                  <div className="custom-actions-section">
+                    <div className="actions-heading">Custom Actions</div>
+                    <ul className="actions-list">
+                      <li className="action-item">Add tasks</li>
+                      <li className="action-item">Calendar events</li>
+                      <li className="action-item">File management</li>
+                    </ul>
+                  </div>
                   <div className="additional-capabilities">
                     <span className="sparkle-icon">✨</span>
                     And much more...
@@ -361,11 +377,21 @@ export default function AIPage({ setLeftSidebarOpen }) {
 
       <footer className="chat-footer">
         <div className="action-buttons">
-          <button onClick={() => handleAction("search")}>
+          <button
+            onClick={() => handleAction("search")}
+            className={`action-btn ${
+              selectedAction === "search" ? "selected" : ""
+            }`}
+          >
             <HiOutlineGlobeAlt className="search-icon" />
             Search
           </button>
-          <button onClick={() => handleAction("actions")}>
+          <button
+            onClick={() => handleAction("actions")}
+            className={`action-btn ${
+              selectedAction === "actions" ? "selected" : ""
+            }`}
+          >
             <FiCommand className="action-icon" />
             Make Actions
           </button>

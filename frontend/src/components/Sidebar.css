@@ -53,6 +53,7 @@
   justify-content: baseline;
   gap: 10px;
   text-align: center;
+  white-space: nowrap;
 }
 
 .sidebar-item:hover {
