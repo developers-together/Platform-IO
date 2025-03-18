@@ -274,6 +274,7 @@ export default function ChatPage() {
       };
       setMessages((prev) => [...prev, newMessage]);
       setInputText("");
+      setImageUrl("");
       setSelectedImage(null);
       setReplyingTo(null);
     } catch (error) {
@@ -564,7 +565,7 @@ export default function ChatPage() {
               />
               <button
                 className="remove-image-btn1"
-                onClick={() => setSelectedImage(null)}
+                onClick={() => {setSelectedImage(null);setImageUrl("");}}
               >
                 <FiXCircle />
               </button>
