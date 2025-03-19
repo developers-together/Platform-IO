@@ -108,7 +108,6 @@ class Ai_messagesController extends Controller
         return response()->json($history);
     }
 
-
     public function websearch(Request $request)
     {
         $apiKey = env('GEMINI_API_KEY');
