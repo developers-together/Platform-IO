@@ -1,4 +1,8 @@
-import { useState, useRef, useEffect, use } from "react";
+import { useState, useRef, useEffect } from "react";
+import "./AI.css";
+import axios from "axios";
+import ReactMarkdown from "react-markdown"; // For AI markdown
+import Avatar from "./Avatar";
 import { FaFan } from "react-icons/fa";
 import {
   FiCommand,
@@ -11,10 +15,8 @@ import {
   FiCheck,
 } from "react-icons/fi";
 import { HiOutlineGlobeAlt } from "react-icons/hi";
-import "./AI.css";
-import axios from "axios";
 
-// Reusable Modal component
+// ========== MODAL COMPONENT ==========
 const Modal = ({ title, message, onConfirm, onCancel }) => (
   <div className="modal-overlay">
     <div className="modal-content">
@@ -32,7 +34,7 @@ const Modal = ({ title, message, onConfirm, onCancel }) => (
   </div>
 );
 
-// Title shuffler for the starter page
+// ========== TITLE SHUFFLER ==========
 const TitleShuffler = () => {
   const titles = [
     "How can I help you today?",
@@ -47,43 +49,64 @@ const TitleShuffler = () => {
   return <h2>{title}</h2>;
 };
 
-// Rotating AI Icon component
+// ========== ROTATING AI ICON (FIXED) ==========
 function RotatingAIIcon({ size = 128 }) {
   const [rotation, setRotation] = useState(0);
-  const animationRef = useRef();
-  const prevTimeRef = useRef();
-  const [hovered, setHovered] = useState(false);
-  const [isFastMode, setIsFastMode] = useState(false);
 
+  // Instead of storing hovered/isFastMode in state, we keep them in refs
+  const hoveredRef = useRef(false);
+  const isFastModeRef = useRef(false);
+
+  // Keep track of previous animation time
+  const prevTimeRef = useRef(null);
+  const requestRef = useRef(null);
+
+  // Animation loop
   useEffect(() => {
-    const baseSpeed = 360 / 5000;
-    const hoverSpeed = 360 / 2500;
-    const clickSpeed = 360 / 1000;
+    function animate(timestamp) {
+      if (!prevTimeRef.current) prevTimeRef.current = timestamp;
+      const delta = timestamp - prevTimeRef.current;
+      prevTimeRef.current = timestamp;
 
-    const animate = (time) => {
-      if (!prevTimeRef.current) prevTimeRef.current = time;
-      const delta = time - prevTimeRef.current;
-      prevTimeRef.current = time;
-      const currentSpeed = isFastMode
+      // Speeds
+      const baseSpeed = 360 / 5000;
+      const hoverSpeed = 360 / 2500;
+      const clickSpeed = 360 / 1000;
+
+      const currentSpeed = isFastModeRef.current
         ? clickSpeed
-        : hovered
+        : hoveredRef.current
         ? hoverSpeed
         : baseSpeed;
-      setRotation((prev) => (prev + currentSpeed * delta) % 360);
-      animationRef.current = requestAnimationFrame(animate);
-    };
 
-    animationRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animationRef.current);
-  }, [hovered, isFastMode]);
+      setRotation((prev) => (prev + currentSpeed * delta) % 360);
+      requestRef.current = requestAnimationFrame(animate);
+    }
+
+    requestRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+    };
+  }, []);
+
+  // Event handlers that set ref values (no re-renders)
+  const handleMouseEnter = () => {
+    hoveredRef.current = true;
+  };
+  const handleMouseLeave = () => {
+    hoveredRef.current = false;
+  };
+  const handleClick = () => {
+    isFastModeRef.current = !isFastModeRef.current;
+  };
 
   return (
     <div
       className="rotating-ai-icon"
       style={{ width: size, height: size }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onClick={() => setIsFastMode((prev) => !prev)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
     >
       <FaFan
         style={{
@@ -97,6 +120,7 @@ function RotatingAIIcon({ size = 128 }) {
   );
 }
 
+// ========== AI PAGE COMPONENT ==========
 export default function AIPage({ setLeftSidebarOpen }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -105,79 +129,85 @@ export default function AIPage({ setLeftSidebarOpen }) {
 
   const token = localStorage.getItem("token");
   const teamId = localStorage.getItem("teamId");
-  // State for the right sidebar (chat history)
+
+  // Right sidebar states
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // Remove the “Make a new chat” item from the chat list; we’ll render it separately.
   const [previousChats, setPreviousChats] = useState([]);
   const [editingChatId, setEditingChatId] = useState(null);
   const [editingChatName, setEditingChatName] = useState("");
   const [menuOpenChatId, setMenuOpenChatId] = useState(null);
   const [showDeleteChatModal, setShowDeleteChatModal] = useState(false);
   const [chatToDelete, setChatToDelete] = useState(null);
-  const [selectedAction, setSelectedAction] = useState(""); // For action button selection
+  const [selectedAction, setSelectedAction] = useState("");
 
-  // New state for tracking the selected chat and new chat creation
+  // Chat selection
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [isCreatingNewChat, setIsCreatingNewChat] = useState(false);
   const [newChatName, setNewChatName] = useState("");
+
+  // ===== Fetch chat data, show first chat automatically =====
   useEffect(() => {
-    if(previousChats.length>0){
+    if (previousChats.length > 0) {
       setSelectedChatId(previousChats[0].id);
       fetchChatContent(previousChats[0].id);
-    }
-    else if(previousChats.length==0){
+    } else {
       setMessages([]);
     }
-  },[previousChats]);
+  }, [previousChats]);
+
+  // ===== Fetch single chat content =====
   const fetchChatContent = async (chatId) => {
     setSelectedChatId(chatId);
     try {
-      const response = await axios.get(`http://localhost:8000/api/ai_chats/${chatId}/history`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      // Map response data to match the expected state format
-      const chats = response.data?.flatMap(chat => [
+      const response = await axios.get(
+        `http://localhost:8000/api/ai_chats/${chatId}/history`,
         {
-          sender: chat.user.name, // User's message
-          text: chat.prompt
-        },
-        {
-          sender: "ai", // AI's response
-          text: chat.response
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
+      );
+      const chats = response.data?.flatMap((chat) => [
+        {
+          sender: chat.user.name,
+          text: chat.prompt,
+        },
+        {
+          sender: "ai",
+          text: chat.response,
+        },
       ]);
-      setMessages(chats); // Update state with fetched chats
+      setMessages(chats);
     } catch (error) {
       console.error("Error fetching chats:", error);
     }
   };
+
+  // ===== Fetch all chats =====
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/ai_chats/${teamId}/index`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-         // Map response data to match the expected state format
-        const chats = response.data.map(chat => ({
+        const response = await axios.get(
+          `http://localhost:8000/api/ai_chats/${teamId}/index`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const chats = response.data.map((chat) => ({
           id: chat.id,
-          name: chat.name
+          name: chat.name,
         }));
-
-        setPreviousChats(chats); // Update state with fetched chats
-        console.log(response.data);
+        setPreviousChats(chats);
       } catch (error) {
         console.error("Error fetching chats:", error);
       }
     };
     fetchChats();
-  },[teamId, token]); // Add dependencies to prevent unnecessary re-renders
-  
+  }, [teamId, token]);
 
-  // Toggle sidebar function
+  // ===== Sidebar toggle =====
   const toggleSidebar = () => {
     if (!sidebarOpen) {
       setLeftSidebarOpen(false);
@@ -185,41 +215,44 @@ export default function AIPage({ setLeftSidebarOpen }) {
     setSidebarOpen((prev) => !prev);
   };
 
+  // ===== Send message =====
   const handleSend = async () => {
     if (!input.trim()) return;
-  
+
     const newMessage = { sender: "You", text: input.trim() };
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
-  
+
     let chatId = selectedChatId;
-  
+
     // If no chat exists, create a new one
-    if (previousChats.length==0) {
+    if (previousChats.length === 0) {
       try {
         const response = await axios.post(
           `http://localhost:8000/api/ai_chats/${teamId}/store`,
-          { "name": "New Chat" },
+          { name: "New Chat" },
           {
             headers: {
-              "Authorization": `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
           }
         );
-  
         if (response.status === 200) {
-          const newChat = response.data; // Get newly created chat details
-          setPreviousChats((prev) => [...prev, { id: newChat.id, name: newChat.name }]);
+          const newChat = response.data;
+          setPreviousChats((prev) => [
+            ...prev,
+            { id: newChat.id, name: newChat.name },
+          ]);
           setSelectedChatId(newChat.id);
-          chatId = newChat.id; // Update chatId for message sending
+          chatId = newChat.id;
         } else {
           console.error("Error creating chat:", response.data);
           setMessages((prev) => [
             ...prev,
             { sender: "ai", text: "Failed to create a new chat." },
           ]);
-          return; // Stop execution if chat creation fails
+          return;
         }
       } catch (error) {
         console.error("Error creating chat:", error);
@@ -227,23 +260,22 @@ export default function AIPage({ setLeftSidebarOpen }) {
           ...prev,
           { sender: "ai", text: "An error occurred while creating a chat." },
         ]);
-        return; // Stop execution
+        return;
       }
     }
-  
+
     // Send the message now that a chat exists
     try {
       const response = await axios.post(
         `http://localhost:8000/api/ai_chats/${chatId}/send`,
-        { "prompt": input.trim() },
+        { prompt: newMessage.text },
         {
           headers: {
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
       );
-  
       if (response.status === 200) {
         setMessages((prev) => [
           ...prev,
@@ -264,8 +296,8 @@ export default function AIPage({ setLeftSidebarOpen }) {
       ]);
     }
   };
-  
 
+  // ===== File upload =====
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -281,7 +313,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
     }
   };
 
-  // Toggle action selection:
+  // ===== Action buttons (search, actions, upload) =====
   const handleAction = (action) => {
     if (selectedAction === action) {
       setSelectedAction("");
@@ -304,45 +336,50 @@ export default function AIPage({ setLeftSidebarOpen }) {
     }
   };
 
-  // Handler for saving a new chat from the “Make a new chat” prompt
+  // ===== Creating a new chat =====
+  const handleNewChatSave = async () => {
+    if (!newChatName.trim()) return;
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/ai_chats/${teamId}/store`,
+        { name: newChatName },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const newChat = response.data;
+      setPreviousChats([
+        ...previousChats,
+        { id: newChat.id, name: newChat.name },
+      ]);
+      setSelectedChatId(newChat.id);
+      setIsCreatingNewChat(false);
+      setNewChatName("");
+    } catch (error) {
+      console.error("Error creating chat:", error);
+    }
+  };
 
-const handleNewChatSave = async () => {
-  if (!newChatName.trim()){ 
-    return;
-  }
-  try {
-    const response = await axios.post(`http://localhost:8000/api/ai_chats/${teamId}/store`,
-      {"name": newChatName},
-      {headers:{
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    
-    const newChat = response.data; // Assuming backend returns the created chat
-    setPreviousChats([...previousChats, { id: newChat.id, name: newChat.name }]);
-    setSelectedChatId(newChat.id);
-    setIsCreatingNewChat(false);
-    setNewChatName("");
-  } catch (error) {
-    console.error("Error creating chat:", error);
-  }
-};
-
-const handleDeleteChat = async () => {
-  try {
-    const response = await axios.delete(`http://localhost:8000/api/ai_chats/${chatToDelete}`,
-      {headers:{
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    setPreviousChats(previousChats.filter(chat => chat.id !== chatToDelete));
-  } catch (error) {
-    console.error("Error creating chat:", error);
-  }
-  setChatToDelete(null);
-};
+  // ===== Deleting a chat =====
+  const handleDeleteChat = async () => {
+    try {
+      await axios.delete(`http://localhost:8000/api/ai_chats/${chatToDelete}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      setPreviousChats(
+        previousChats.filter((chat) => chat.id !== chatToDelete)
+      );
+    } catch (error) {
+      console.error("Error creating chat:", error);
+    }
+    setChatToDelete(null);
+  };
 
   return (
     <div className="ai-chat-page">
@@ -350,7 +387,7 @@ const handleDeleteChat = async () => {
         <div className="sidebar-overlay" onClick={toggleSidebar}></div>
       )}
 
-      {/* Right Sidebar Toggle Button */}
+      {/* Toggle for Right Sidebar */}
       <button
         className={`sidebar-toggle-icon ${
           sidebarOpen ? "sidebar-toggle-small" : ""
@@ -360,19 +397,19 @@ const handleDeleteChat = async () => {
         {sidebarOpen ? <FiX /> : <FiMenu />}
       </button>
 
+      {/* Right Sidebar */}
       <div className={`right-sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="sidebar-header">
           <h3>Chat History</h3>
         </div>
         <ul className="previous-chats-list">
-          {/* “Make a new chat” item */}
+          {/* New Chat */}
           <li
             key="new-chat"
             className={`previous-chat-item default-chat ${
               selectedChatId === "new-chat" ? "active-chat" : ""
             }`}
-            onClick={() =>
-              setIsCreatingNewChat(true)}
+            onClick={() => setIsCreatingNewChat(true)}
           >
             {isCreatingNewChat ? (
               <div className="channel-edit-container2" tabIndex={0}>
@@ -392,7 +429,8 @@ const handleDeleteChat = async () => {
               <span className="chat-item-name">Make a new chat</span>
             )}
           </li>
-          {/* Existing chats */}
+
+          {/* Existing Chats */}
           {previousChats.map((chat) => (
             <li
               key={chat.id}
@@ -400,8 +438,8 @@ const handleDeleteChat = async () => {
                 selectedChatId === chat.id ? "active-chat" : ""
               }`}
               onClick={() => {
-                setSelectedChatId(chat.id)
-                fetchChatContent(chat.id)
+                setSelectedChatId(chat.id);
+                fetchChatContent(chat.id);
               }}
             >
               {editingChatId === chat.id ? (
@@ -433,7 +471,6 @@ const handleDeleteChat = async () => {
               ) : (
                 <>
                   <span className="chat-item-name">{chat.name}</span>
-                  {/* Wrap the actions button and menu so the menu stays open while hovered */}
                   <div
                     className="chat-item-actions"
                     onMouseEnter={() => setMenuOpenChatId(chat.id)}
@@ -478,6 +515,7 @@ const handleDeleteChat = async () => {
         </ul>
       </div>
 
+      {/* Header */}
       <header className="chat-header2">
         <div className="header-content">
           <h2>AI Assistant</h2>
@@ -522,6 +560,7 @@ const handleDeleteChat = async () => {
         </div>
       </header>
 
+      {/* Main Chat */}
       <main className="chat-main">
         {messages.length === 0 ? (
           <div className="starter-page">
@@ -540,31 +579,41 @@ const handleDeleteChat = async () => {
                   msg.sender === "ai" ? "ai-container" : "user-container"
                 }`}
               >
+                {/* AI Avatar */}
                 {msg.sender === "ai" ? (
                   <RotatingAIIcon size={40} />
                 ) : (
+                  /* User Avatar from UI Avatars */
                   <div className="user-avatar">
-                    <div
-                      className="avatar-circle"
-                      style={{ background: "#4dabf7" }}
-                    >
-                      <span style={{ color: "#fff", fontSize: "0.8rem" }}>
-                        {msg.sender}
-                      </span>
-                    </div>
+                    <Avatar
+                      name={msg.sender || "User"}
+                      options={{
+                        size: 48,
+                        background: "0041ac",
+                        color: "fff",
+                        rounded: true,
+                      }}
+                      alt={msg.sender}
+                    />
                   </div>
                 )}
+
                 <div
                   className={`chat-message ${
                     msg.sender === "ai" ? "ai-message" : "user-message"
                   }`}
                 >
+                  {/* If there's a file, show an image; else show text */}
                   {msg.file ? (
                     <img
                       src={msg.file}
                       alt="Uploaded content"
                       className="uploaded-image"
                     />
+                  ) : msg.sender === "ai" ? (
+                    <div className="ai-markdown">
+                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                    </div>
                   ) : (
                     msg.text
                   )}
@@ -575,6 +624,7 @@ const handleDeleteChat = async () => {
         )}
       </main>
 
+      {/* Footer */}
       <footer className="chat-footer">
         <div className="action-buttons">
           <button
@@ -596,6 +646,7 @@ const handleDeleteChat = async () => {
             Make Actions
           </button>
         </div>
+
         <div className="input-container">
           <div className="outer-input-bar">
             <button
@@ -633,6 +684,7 @@ const handleDeleteChat = async () => {
         </div>
       </footer>
 
+      {/* Hidden file input for "Upload" */}
       <input
         type="file"
         accept="image/*"
@@ -641,12 +693,12 @@ const handleDeleteChat = async () => {
         onChange={handleFileUpload}
       />
 
+      {/* Delete Chat Modal */}
       {showDeleteChatModal && (
         <Modal
           title="Delete Chat"
           message="Are you sure you want to delete this chat? This action cannot be undone."
           onConfirm={() => {
-            // Handle deletion logic here
             handleDeleteChat();
             setShowDeleteChatModal(false);
             setChatToDelete(null);

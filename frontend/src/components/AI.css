@@ -695,3 +695,30 @@
 .cancel-btn:hover {
   background: #cbd5e0;
 }
+
+/* Prevent wide content from spilling out of the chat message container */
+.chat-message {
+  max-width: 100%;
+  overflow-wrap: break-word; /* Or use word-wrap: break-word; */
+}
+
+/* Ensures code blocks and wide text don't overflow */
+.ai-markdown pre {
+  background: #f5f5f5;
+  padding: 0.75rem;
+  border-radius: 4px;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.ai-markdown code {
+  font-family: monospace;
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem;
+}
