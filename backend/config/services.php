@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'gemini' => [
+    'api_key' => env('GOOGLE_GEMINI_API_KEY'),
+    'base_url' => env('GOOGLE_GEMINI_BASE_URL', 'https://api.google.com/gemini'), // Use the correct URL from the docs
+    ],
+
 ];

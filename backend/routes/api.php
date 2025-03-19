@@ -11,6 +11,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\Ai_chatController;
 use App\Http\Controllers\Ai_messagesController;
 use App\Http\Controllers\SftpController;
+use App\Http\Controllers\GeminiController;
 
 
 // Route::get('/user', function (Request $request) {
@@ -91,6 +92,5 @@ Route::post('/sftp/{team}/command', [SftpController::class, 'handleSftpCommand']
 Route::post('/register', [UserController::class, 'store']);
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
-// Route::post('/ai/send-prompt', [Ai_chatController::class, 'sendPrompt']);
-// Route::get('/ai/history', [Ai_chatController::class, 'getHistory']);
+Route::post('/gemini/chat', [GeminiController::class, 'chat']);
 
