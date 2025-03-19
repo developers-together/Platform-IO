@@ -333,5 +333,31 @@ public function sendtogemini($prompt, $content = null)
     }
 }
 
+public function getFileUrl(Request $request, Team $team)
+{
+    Gate::authorize('view', $team);
+
+    $validated = $request->validate([
+        'filename' => 'required|string',
+        'path' => 'required|string',
+    ]);
+
+    $disk = Storage::build([
+        'driver' => 'local',
+        'root' => storage_path('app/public/teams/' . $team->id),
+        'visibility' => 'public'
+    ]);
+
+    $targetPath = ltrim($validated['path'], '/') . '/' . $validated['filename'];
+
+    if (!$disk->exists($targetPath)) {
+        return response()->json(['error' => 'File not found'], 404);
+    }
+
+    // Generate the public URL
+    $url = asset("storage/teams/{$team->id}/" . $targetPath);
+
+    return response()->json(['url' => $url]);
+}
 
 }
