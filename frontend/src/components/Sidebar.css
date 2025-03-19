@@ -1,8 +1,8 @@
 :root {
   --sidebar-width-open: 240px;
   --sidebar-width-closed: 70px;
-  --sidebar-bg: linear-gradient(135deg, #0052d4, #4364f7);
-  --ai-bg: linear-gradient(135deg, #8e2de2, #4a00e0);
+  --sidebar-bg: linear-gradient(135deg, #2b5ce7, #0052d4);
+  --ai-bg: linear-gradient(135deg, #8e2de2, #2b5ce7);
   --accent-color: #ff00ff;
 }
 
