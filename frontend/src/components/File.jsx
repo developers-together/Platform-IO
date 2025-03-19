@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
 import {
   FiFolder,
   FiFileText,
@@ -15,34 +16,22 @@ import { IoEnter } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
 import "./File.css";
 
-// Default data for folders and files combined
-const defaultItems = [
-  { id: 1, name: "Admissions File", type: "folder" },
-  { id: 2, name: "Hungarian Scholarship", type: "folder" },
-  { id: 3, name: "Books", type: "folder" },
-  { id: 4, name: "Certificates", type: "folder" },
-  { id: 5, name: "IDs", type: "folder" },
-  { id: 6, name: "phone", type: "folder" },
-  { id: 7, name: "Research Pictures", type: "folder" },
-  { id: 8, name: "20230501_161833.jpg", type: "image" },
-  { id: 9, name: "Adaptive High Bitrate.mp4", type: "video" },
-  { id: 10, name: "Adham Haitham CV.pdf", type: "pdf" },
-  { id: 11, name: "notes.txt", type: "text" },
-];
-
 export default function FileShareSystem() {
-  // State for items and menus
-  const [items, setItems] = useState(defaultItems);
+  // Initially set items to an empty array
+  const [items, setItems] = useState([]);
   const [menuItemId, setMenuItemId] = useState(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
-
-  // Tooltip for help
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipTab, setTooltipTab] = useState("windows");
   const helpRef = useRef(null);
   const tooltipRef = useRef(null);
 
+  const teamId = localStorage.getItem("teamId");
+  // Assume token is stored somewhere as well
+  const token = localStorage.getItem("token");
+
   useEffect(() => {
+    // Handle click outside the tooltip
     const handleClickOutside = (e) => {
       if (
         tooltipRef.current &&
@@ -54,8 +43,41 @@ export default function FileShareSystem() {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // API call to fetch directory data
+  async function getdirsroot() {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/folders/${teamId}/index`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          }
+        }
+      );
+      console.log(response.data);
+      return response.data; // Assuming this returns an array of items
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      return [];
+    }
+  }
+
+  // Call API on component mount
+  useEffect(() => {
+    async function fetchData() {
+      const data = await getdirsroot();
+      // If your API returns the items in a specific property, for example data.items,
+      // adjust accordingly. Here we assume the API returns an array.
+      console.log(data);
+      setItems(data);
+    }
+    fetchData();
+  }, [teamId, token]);
 
   // Three-dots menu functions
   const toggleMenu = (itemId, e) => {
@@ -83,68 +105,21 @@ export default function FileShareSystem() {
     setShowAddDialog((prev) => !prev);
   };
 
+  // Helper function to choose an icon based on item type
+  function renderItemIcon(item) {
+    if (item.type === "folder") return <FiFolder size={28} color="#4dabf7" />;
+    if (item.type === "video") return <FiVideo size={28} color="#4dabf7" />;
+    if (item.type === "pdf") return <AiFillFilePdf size={28} color="#4dabf7" />;
+    if (item.type === "text") return <FiFileText size={28} color="#4dabf7" />;
+    return <FiGenericFile size={28} color="#4dabf7" />;
+  }
+
   return (
     <div className="file-page">
       <header className="file-header">
         <div className="header-left">
           <h2 className="file-headline">File Share System</h2>
-          {/* <div
-            className="help-circle"
-            ref={helpRef}
-            onClick={() => setShowTooltip(true)}
-          >
-            ?
-            {showTooltip && (
-              <div className="help-tooltip" ref={tooltipRef}>
-                <div className="tooltip-tabs">
-                  <button
-                    className={`tooltip-tab ${
-                      tooltipTab === "windows" ? "active" : ""
-                    }`}
-                    onClick={() => setTooltipTab("windows")}
-                  >
-                    Windows
-                  </button>
-                  <button
-                    className={`tooltip-tab ${
-                      tooltipTab === "linux" ? "active" : ""
-                    }`}
-                    onClick={() => setTooltipTab("linux")}
-                  >
-                    Linux
-                  </button>
-                  <button
-                    className={`tooltip-tab ${
-                      tooltipTab === "mac" ? "active" : ""
-                    }`}
-                    onClick={() => setTooltipTab("mac")}
-                  >
-                    Mac
-                  </button>
-                </div>
-                <div className="tooltip-content">
-                  {tooltipTab === "windows" && (
-                    <p>
-                      Download and install the Nextcloud client for Windows to
-                      sync your files seamlessly.
-                    </p>
-                  )}
-                  {tooltipTab === "linux" && (
-                    <p>
-                      Use the Nextcloud client for Linux (available in most
-                      distributions) for file syncing.
-                    </p>
-                  )}
-                  {tooltipTab === "mac" && (
-                    <p>
-                      Install the Nextcloud client on your Mac for effortless
-                      file sharing and sync.
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div> */}
+          {/* Tooltip code can be added back here if needed */}
         </div>
         <div className="add-button-container2">
           <button className="add-button2" onClick={toggleAddDialog}>
@@ -152,7 +127,6 @@ export default function FileShareSystem() {
           </button>
           {showAddDialog && (
             <div className="add-dialog-popup2">
-              {/* <div className="add-dialog-separator2"></div> */}
               <button
                 className="add-dialog-item3"
                 onClick={() => console.log("Add File")}
@@ -195,7 +169,7 @@ export default function FileShareSystem() {
                   </button>
                   <button
                     className="item-menu-item open-item"
-                    onClick={() => handleOpen(item.id)}
+                    onClick={() => console.log("Download item:", item.id)}
                   >
                     <IoMdDownload /> Download
                   </button>
@@ -213,95 +187,4 @@ export default function FileShareSystem() {
       </main>
     </div>
   );
-}
-
-/** Helper function to choose an icon based on item type */
-function renderItemIcon(item) {
-  if (item.type === "folder") return <FiFolder size={28} color="#4dabf7" />;
-  if (item.type === "video") return <FiVideo size={28} color="#4dabf7" />;
-  if (item.type === "pdf") return <AiFillFilePdf size={28} color="#4dabf7" />;
-  if (item.type === "text") return <FiFileText size={28} color="#4dabf7" />;
-  return <FiGenericFile size={28} color="#4dabf7" />;
-}
-
-const teamId = localStorage.getItem("teamId");
-async function getdirsroot(){
-   const response = await axios.get(`http://localhost:8000/api/folders/${teamId}/index`,{
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    }},
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    },
-    {
-      params: {
-        path: "/",
-      },
-    }
-  );
-  console.log(response.data);
-  return response.data;
-}
-
-async function getdircontent() {
-  const response = await axios.get(
-    `http://localhost:8000/api/folders/${teamId}/show`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    },
-    {
-      params: {
-        path: "/",
-      },
-    }
-  );
-  console.log(response.data);
-  return response.data;
-}
-
-async function createdir() {
-  const response = await axios.post(
-    `http://localhost:8000/api/folders/${teamId}/store`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    },
-    {
-      params: {
-        name: "test",
-        path: "/",
-      },
-    }
-  );
-  console.log(response.data);
-  return response.data;
-}
-
-async function deletedir() {
-  const response = await axios.delete(
-    `http://localhost:8000/api/folders/${teamId}/delete`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    },
-    {
-      params: {
-        name: "test",
-        path: "/",
-      },
-    }
-  );
-  console.log(response.data);
-  return response.data;
 }
