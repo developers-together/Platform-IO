@@ -40,7 +40,7 @@
 }
 
 .day-header.today {
-  background: #ffcd42;
+  background: #83aeff;
   font-weight: 600;
 }
 
@@ -263,4 +263,13 @@
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
+}
+
+.day-header.selected {
+  background: #ffcd42; /* Yellow highlight */
+  font-weight: 600;
+}
+
+.day-header.selected:hover {
+  background: #ffe08a; /* Lighter yellow on hover */
 }
