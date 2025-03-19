@@ -123,5 +123,100 @@ class TaskController extends Controller
     }
 
 
+//     public function sendtogemini( Team $team)
+// {
+//     // Prepare the message for Gemini
+//     $inputText = "use the following json to suggest an improved more detailed tasks to help a team work more clearly:\n\n" . $this->index($team);
+
+//     try {
+//         // Call Gemini API
+//         $response = Http::withHeaders([
+//             'Content-Type' => 'application/json',
+//         ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=' . env('GEMINI_API_KEY'), [
+//             'contents' => [
+//                 [
+//                     'parts' => [
+//                         ['text' => $inputText],
+//                     ]
+//                 ]
+//             ]
+//         ]);
+
+//         $responseData = $response->json();
+
+//         // Check for errors or missing responses
+//         if ($response->failed() || !isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
+//             return response()->json(['error' => 'Failed to retrieve response from Gemini'], 500);
+//         }
+
+//         return $responseData['candidates'][0]['content']['parts'][0]['text'];
+//     } catch (\Exception $e) {
+//         return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+//     }
+// }
+
+
+public function sendToGemini(Team $team)
+{
+    // Prepare the message for Gemini
+    $inputText = "Use the following JSON to suggest improved, more detailed tasks to help a team work more clearly:\n\n" . $this->index($team);
+
+    try {
+        // Call Gemini API
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+        ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=' . env('GEMINI_API_KEY'), [
+            'contents' => [
+                [
+                    'parts' => [
+                        ['text' => $inputText],
+                    ]
+                ]
+            ]
+        ]);
+
+        $responseData = $response->json();
+
+        // Validate response
+        if ($response->failed() || !isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
+            return response()->json(['error' => 'Failed to retrieve response from Gemini'], 500);
+        }
+
+        // Parse the JSON response from Gemini
+        $geminiTasks = json_decode($responseData['candidates'][0]['content']['parts'][0]['text'], true);
+
+        if (!is_array($geminiTasks)) {
+            return response()->json(['error' => 'Invalid response format from Gemini'], 500);
+        }
+
+        // Format the response with pagination
+        $currentPage = 1;
+        $perPage = 10;
+        $total = count($geminiTasks);
+        $paginatedData = array_slice($geminiTasks, 0, $perPage);
+
+        return response()->json([
+            "current_page" => $currentPage,
+            "data" => $paginatedData,
+            "first_page_url" => url()->current() . "?page=1",
+            "from" => 1,
+            "last_page" => ceil($total / $perPage),
+            "last_page_url" => url()->current() . "?page=" . ceil($total / $perPage),
+            "links" => [
+                ["url" => null, "label" => "&laquo; Previous", "active" => false],
+                ["url" => url()->current() . "?page=1", "label" => "1", "active" => true],
+                ["url" => null, "label" => "Next &raquo;", "active" => false]
+            ],
+            "next_page_url" => null,
+            "path" => url()->current(),
+            "per_page" => $perPage,
+            "prev_page_url" => null,
+            "to" => count($paginatedData),
+            "total" => $total
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+    }
+}
 
 }

@@ -26,6 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/teams', [UserController::class, 'teams']);
 
     Route::get('/tasks/{team}/index', [TaskController::class, 'index']);
+    Route::get('/tasks/{team}/suggestions', [TaskController::class, 'sendtogemini']);
     Route::get('/tasks/{task}/show', [TaskController::class, 'show']);
     Route::post('/tasks/{team}/store', [TaskController::class, 'store'])->name('tasks.store');
     Route::delete('/tasks/{task}/delete',[TaskController::class, 'destroy'])->name('tasks.destroy');
