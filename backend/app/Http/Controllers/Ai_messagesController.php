@@ -71,26 +71,6 @@ class Ai_messagesController extends Controller
        return response()->json($message);
    }
 
-//    public function sendtogemini($prompt){
-
-//      // Call Gemini API
-//      $response = Http::withHeaders([
-//         'Content-Type' => 'application/json',
-//     ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=' . env('GEMINI_API_KEY'), [
-//         'contents' => [
-//             [
-//                 'parts' => [
-//                     ['text' => $prompt],
-//                 ]
-//             ]
-//         ]
-//     ]);
-
-//     $responseData = $response->json();
-//     $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
-//     return $aiResponse;
-//    }
-
     public function getHistory($chat)
     {
         $history = Ai_Messages::where('ai_chats_id', $chat)
