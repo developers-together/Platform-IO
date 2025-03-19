@@ -11,7 +11,6 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\Ai_chatController;
 use App\Http\Controllers\Ai_messagesController;
 use App\Http\Controllers\SftpController;
-use App\Http\Controllers\GeminiController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\FileController;
 
@@ -96,5 +95,9 @@ Route::post('/sftp/{team}/command', [SftpController::class, 'handleSftpCommand']
 Route::post('/register', [UserController::class, 'store']);
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/gemini/chat', [GeminiController::class, 'chat']);
+
+
+Route::post('/websearch', [Ai_messagesController::class, 'websearch']);
+
+
 
