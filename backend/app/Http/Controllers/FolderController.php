@@ -189,7 +189,7 @@ class FolderController extends Controller
             'success' => true,
             // 'folder' => $folder,
             'files' => $disk->allFiles($validated['path']),
-            'folders' =>$disk->allDirectories($validated['path'])
+            'folders' =>$disk->directories($validated['path'])
         ]);
 
     }
