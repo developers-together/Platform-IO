@@ -28,11 +28,11 @@ class FolderController extends Controller
                 return response()->json(['error' => 'Directory not found'], 404);
             }
 
-            $rootPath = storage_path(implode(DIRECTORY_SEPARATOR, ['app', 'public', 'teams', $team->id]));
+            
     
             $disk = Storage::build([
                 'driver' => 'local',
-                'root' => storage_path('app/public/teams/'.$team->id),
+                'root' => storage_path('app\public\teams\\'.$team->id),
                 'throw' => true, // Throw exceptions on errors
             ]);
     
