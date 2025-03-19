@@ -29,9 +29,9 @@ export default function Register({ setCurrentPage }) {
         email,
         password,
       });
-      console.log("Registration Success:", response.data);
+      localStorage.setItem("token", response.data.token);
       setSuccess("Registration successful! Redirecting to login...");
-      setTimeout(() => setCurrentPage("login"), 2000);
+      setCurrentPage("teams");
     } catch (error) {
       setError(
         error.response?.data?.message ||
