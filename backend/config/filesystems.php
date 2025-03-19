@@ -106,7 +106,7 @@ return [
             'port' => env('SFTP_PORT'),
             'username' => env('SFTP_USERNAME'),
             'password' => env('SFTP_PASSWORD'),
-            'root' => env('SFTP_ROOT', '/'),
+            // 'root' => env('SFTP_ROOT'),
             'timeout' => 30,
             'visibility' => 'public',
             'directory_visibility' => 'public',

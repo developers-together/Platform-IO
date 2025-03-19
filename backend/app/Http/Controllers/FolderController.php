@@ -188,7 +188,8 @@ class FolderController extends Controller
         return response()->json([
             'success' => true,
             // 'folder' => $folder,
-            'files' => $disk->allFiles($validated['path'])
+            'files' => $disk->allFiles($validated['path']),
+            'folders' =>$disk->allDirectories($validated['path'])
         ]);
 
     }

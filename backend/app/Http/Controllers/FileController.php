@@ -246,7 +246,7 @@ class FileController extends Controller
     public function sendtogemini($prompt, $content = null)
 {
     // Prepare the message for Gemini
-    $inputText = $content ? "Modify the following content:\n\n" . $content . "\n\nInstructions: " . $prompt : $prompt;
+    $inputText = $content ? "Modify the following content and write it in plain text:\n\n" . $content . "\n\nInstructions: " . $prompt : $prompt;
 
     try {
         // Call Gemini API
