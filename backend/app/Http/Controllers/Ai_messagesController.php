@@ -71,26 +71,6 @@ class Ai_messagesController extends Controller
        return response()->json($message);
    }
 
-//    public function sendtogemini($prompt){
-
-//      // Call Gemini API
-//      $response = Http::withHeaders([
-//         'Content-Type' => 'application/json',
-//     ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=' . env('GEMINI_API_KEY'), [
-//         'contents' => [
-//             [
-//                 'parts' => [
-//                     ['text' => $prompt],
-//                 ]
-//             ]
-//         ]
-//     ]);
-
-//     $responseData = $response->json();
-//     $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
-//     return $aiResponse;
-//    }
-
     public function getHistory($chat)
     {
         $history = Ai_Messages::where('ai_chats_id', $chat)
@@ -108,25 +88,42 @@ class Ai_messagesController extends Controller
         return response()->json($history);
     }
 
-    public function websearch(Request $request)
-    {
-        $apiKey = env('GEMINI_API_KEY');
-        $prompt = $request->input('prompt');
+    public function websearch(Request $request, Ai_chat $chat)
+        {
+        $validated = $request->validate([
+            'prompt' => 'required|string'
+        ]);
 
+        $user = Auth::user();
+        $apiKey = env('GEMINI_API_KEY');
+        $prompt = $validated['prompt'];
+
+        // Execute Python script
         $pythonScript = storage_path('app/scripts/gemini_api.py');
-        $process = new Process(['python', $pythonScript, $apiKey, $prompt]); // Use 'python' instead of 'python3' for Windows
+        $process = new Process(['python', $pythonScript, $apiKey, $prompt]);
 
         $process->run();
 
         if (!$process->isSuccessful()) {
             return response()->json([
                 'error' => 'Script execution failed',
-                'details' => $process->getErrorOutput() // Capture error details
+                'details' => $process->getErrorOutput()
             ], 500);
         }
 
-        return response()->json(json_decode($process->getOutput(), true));
+        $output = json_decode($process->getOutput(), true);
+        $aiResponse = $output['response'] ?? '';
+
+        // Save response in ai_messages table
+        $message = Ai_Messages::create([
+            'user_id' => $user->id,
+            'ai_chats_id' => $chat->id,
+            'prompt' => $prompt,
+            'response' => $aiResponse,
+            'ai' => 'response',
+            'image_path' => null, // No image in web search
+        ]);
+
+        return response()->json($message);
     }
-
-
 }
