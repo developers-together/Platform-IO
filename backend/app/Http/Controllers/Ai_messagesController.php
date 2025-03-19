@@ -21,22 +21,38 @@ class Ai_messagesController extends Controller
    {
        $validated = $request->validate([
            'prompt' => 'required|string',
+           'image' => 'nullable|image|max:5120'
        ]);
 
        $user = Auth::user();
+       $imagePath = null;
 
+       $contents = [
+            [
+                'parts' => [
+                    ['text' => $validated['prompt']]
+                ]
+            ]
+        ];
+
+        // Handle Image Upload
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('uploads', 'public');
+            $imageBase64 = base64_encode(file_get_contents(storage_path("app/public/{$imagePath}")));
+
+            $contents[0]['parts'][] = [
+                'inline_data' => [
+                    'mime_type' => $request->file('image')->getMimeType(),
+                    'data' => $imageBase64
+                ]
+            ];
+        }
 
        // Call Gemini API
        $response = Http::withHeaders([
            'Content-Type' => 'application/json',
        ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=' . env('GEMINI_API_KEY'), [
-           'contents' => [
-               [
-                   'parts' => [
-                       ['text' => $validated['prompt']],
-                   ]
-               ]
-           ]
+            'contents' => $contents
        ]);
 
        $responseData = $response->json();
@@ -49,6 +65,7 @@ class Ai_messagesController extends Controller
            'prompt' => $validated['prompt'],
            'response' => $aiResponse,
            'ai' => 'response',
+           'image_path' => $imagePath,
        ]);
 
        return response()->json($message);
@@ -79,7 +96,14 @@ class Ai_messagesController extends Controller
         $history = Ai_Messages::where('ai_chats_id', $chat)
                              ->with('user') // Optional: includes user info
                              ->orderBy('created_at', 'asc') // chronological order
-                             ->get();
+                             ->get()
+                             ->map(function ($message) {
+                                // Add full image URL if image exists
+                                if ($message->image_path) {
+                                    $message->image_url = asset('storage/' . $message->image_path);
+                                }
+                                return $message;
+                            });
 
         return response()->json($history);
     }
@@ -92,13 +116,13 @@ class Ai_messagesController extends Controller
 
         $pythonScript = storage_path('app/scripts/gemini_api.py');
         $process = new Process(['python3', $pythonScript, $apiKey, $prompt]);
-        
+
         $process->run();
-    
+
         if (!$process->isSuccessful()) {
             return response()->json(['error' => 'Script execution failed'], 500);
         }
-    
+
         return response()->json(json_decode($process->getOutput(), true));
     }
 

@@ -17,17 +17,19 @@ import { MdDelete } from "react-icons/md";
 import "./File.css";
 
 export default function FileShareSystem() {
-  // Initially set items to an empty array
+  // States for items and menus
   const [items, setItems] = useState([]);
   const [menuItemId, setMenuItemId] = useState(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipTab, setTooltipTab] = useState("windows");
+  const [confirmationMessage, setConfirmationMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
   const helpRef = useRef(null);
   const tooltipRef = useRef(null);
 
   const teamId = localStorage.getItem("teamId");
-  // Assume token is stored somewhere as well
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -56,11 +58,11 @@ export default function FileShareSystem() {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
-          }
+          },
         }
       );
       console.log(response.data);
-      return response.data; // Assuming this returns an array of items
+      return response.data.files || response.data; // adjust based on your API response
     } catch (error) {
       console.error("Error fetching data:", error);
       return [];
@@ -71,13 +73,44 @@ export default function FileShareSystem() {
   useEffect(() => {
     async function fetchData() {
       const data = await getdirsroot();
-      // If your API returns the items in a specific property, for example data.items,
-      // adjust accordingly. Here we assume the API returns an array.
       console.log(data);
       setItems(data);
     }
     fetchData();
   }, [teamId, token]);
+
+  // Function to create a new folder using the API
+  const handleCreateFolder = async () => {
+    // Prompt user for folder name (could be replaced with a custom modal)
+    const folderName = window.prompt("Enter a folder name:");
+    if (!folderName) return; // User cancelled or provided empty name
+
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/folders/${teamId}/store`,
+        {
+          name: folderName,
+          path: "/", // current directory, adjust if needed
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Folder creation response:", response.data);
+      setConfirmationMessage(response.data.message || "Folder created successfully!");
+
+      // Optionally update the items state if you want to reflect the new folder immediately
+      // e.g., setItems([...items, { id: newId, name: folderName, type: "folder" }]);
+    } catch (error) {
+      console.error("Error creating folder:", error);
+      setErrorMessage(
+        error.response?.data?.error || "An error occurred while creating the folder."
+      );
+    }
+  };
 
   // Three-dots menu functions
   const toggleMenu = (itemId, e) => {
@@ -103,6 +136,9 @@ export default function FileShareSystem() {
   // Toggle the add dialog pop-up
   const toggleAddDialog = () => {
     setShowAddDialog((prev) => !prev);
+    // Clear any previous confirmation or error messages when reopening the dialog
+    setConfirmationMessage("");
+    setErrorMessage("");
   };
 
   // Helper function to choose an icon based on item type
@@ -119,7 +155,6 @@ export default function FileShareSystem() {
       <header className="file-header">
         <div className="header-left">
           <h2 className="file-headline">File Share System</h2>
-          {/* Tooltip code can be added back here if needed */}
         </div>
         <div className="add-button-container2">
           <button className="add-button2" onClick={toggleAddDialog}>
@@ -135,10 +170,19 @@ export default function FileShareSystem() {
               </button>
               <button
                 className="add-dialog-item2"
-                onClick={() => console.log("Add Folder")}
+                onClick={handleCreateFolder}
               >
                 <FaFolderPlus /> Create Folder
               </button>
+              {/* Display confirmation or error messages */}
+              {confirmationMessage && (
+                <div className="confirmation-message">
+                  {confirmationMessage}
+                </div>
+              )}
+              {errorMessage && (
+                <div className="error-message">{errorMessage}</div>
+              )}
             </div>
           )}
         </div>
@@ -146,8 +190,8 @@ export default function FileShareSystem() {
 
       <main className="file-main">
         <div className="items-list">
-          {items.map((item) => (
-            <div key={item.id} className="item-card">
+          {items.map((item, index) => (
+            <div key={index} className="item-card">
               <div className="item-icon">{renderItemIcon(item)}</div>
               <p className="item-name">{item.name}</p>
               <button
@@ -169,7 +213,9 @@ export default function FileShareSystem() {
                   </button>
                   <button
                     className="item-menu-item open-item"
-                    onClick={() => console.log("Download item:", item.id)}
+                    onClick={() =>
+                      console.log("Download item:", item.id)
+                    }
                   >
                     <IoMdDownload /> Download
                   </button>
