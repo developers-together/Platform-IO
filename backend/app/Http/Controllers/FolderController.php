@@ -22,31 +22,38 @@ class FolderController extends Controller
         try {
             Log::info("Accessing storage for Team ID: {$team->id}");
 
-            $rootPath= storage_path('app\public\teams\\'.$team->id);
+            $rootPath = storage_path("app/public/teams/{$team->id}");
 
             if (!file_exists($rootPath)) {
                 Log::warning("Directory does not exist: {$rootPath}");
                 return response()->json(['error' => 'Directory not found'], 404);
             }
 
-
-
             $disk = Storage::build([
                 'driver' => 'local',
-                'root' => storage_path("app/public/teams/{$team->id}"),
+                'root' => $rootPath,
                 'throw' => true, // Throw exceptions on errors
             ]);
 
-            $folders = $disk->allFiles();
+            $allFiles = $disk->files();
+            $directories = $disk->allDirectories();
 
-            Log::info("Retrieved " . count($folders) . " files from: {$rootPath}");
+            // Process files to include their file type
+            $files = array_map(function ($filePath) use ($disk) {
+                return [
+                    'path' => $filePath,
+                    'type' => pathinfo($filePath, PATHINFO_EXTENSION) // Get file extension
+                ];
+            }, $allFiles);
+
+            Log::info("Retrieved " . count($allFiles) . " files from: {$rootPath}");
 
             return response()->json([
                 'status' => 'success',
                 'team_id' => $team->id,
-                'directory' => $disk->allDirectories(),
-                'allfiles' => $disk->files(),
-                'files' => $folders,
+                'directory' => $directories,
+                'allfiles' => $allFiles,
+                'files' => $files, // Now contains file type
             ]);
 
         } catch (\Exception $e) {
@@ -61,6 +68,7 @@ class FolderController extends Controller
             ], 500);
         }
     }
+
     /**
      * Show the form for creating a new resource.
      */
