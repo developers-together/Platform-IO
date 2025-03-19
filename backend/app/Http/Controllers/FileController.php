@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
+
 
 
 class FileController extends Controller
@@ -241,68 +243,7 @@ class FileController extends Controller
         }
     }
 
-    public function createFileWithGemini(Request $request, Team $team)
-{
-    Gate::authorize('create', Team::class);
-
-    $validated = $request->validate([
-        'filename' => 'required|string',
-        'path' => 'required|string',
-        'prompt' => 'required|string',
-    ]);
-
-    $disk = Storage::build([
-        'driver' => 'local',
-        'root' => storage_path("app/public/teams/{$team->id}"),
-        'visibility' => 'public'
-    ]);
-
-    $content = sendtogemini($validated['prompt']);
-
-    $targetPath = ltrim($validated['path'], '/') . '/' . $validated['filename'];
-
-    $disk->put($targetPath, $content);
-
-    return response()->json(['message' => 'File created successfully', 'path' => $targetPath]);
-}
-
-public function editFileWithGemini(Request $request, Team $team)
-{
-    Gate::authorize('update', Team::class);
-
-    $validated = $request->validate([
-        'filename' => 'required|string',
-        'path' => 'required|string',
-        'prompt' => 'required|string',
-    ]);
-
-    $disk = Storage::build([
-        'driver' => 'local',
-        'root' => storage_path("app/public/teams/{$team->id}"),
-        'visibility' => 'public'
-    ]);
-
-    $targetPath = ltrim($validated['path'], '/') . '/' . $validated['filename'];
-
-    if (!$disk->exists($targetPath)) {
-        return response()->json(['error' => 'File not found'], 404);
-    }
-
-    $existingContent = $disk->get($targetPath);
-
-    // Send request to Gemini with both the content and the prompt
-    $newContent = $this->sendtogemini($validated['prompt'], $existingContent);
-
-    if (is_array($newContent)) {
-        return response()->json($newContent, 500); // If Gemini returns an error
-    }
-
-    $disk->put($targetPath, $newContent);
-
-    return response()->json(['message' => 'File updated successfully', 'path' => $targetPath]);
-}
-
-public function sendtogemini($prompt, $content = null)
+    public function sendtogemini($prompt, $content = null)
 {
     // Prepare the message for Gemini
     $inputText = $content ? "Modify the following content:\n\n" . $content . "\n\nInstructions: " . $prompt : $prompt;
@@ -333,6 +274,70 @@ public function sendtogemini($prompt, $content = null)
         return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
     }
 }
+    
+
+    public function createFileWithGemini(Request $request, Team $team)
+{
+    Gate::authorize('create', Team::class);
+
+    $validated = $request->validate([
+        'filename' => 'required|string',
+        'path' => 'required|string',
+        'prompt' => 'required|string',
+    ]);
+
+    $disk = Storage::build([
+        'driver' => 'local',
+        'root' => storage_path("app/public/teams/{$team->id}"),
+        'visibility' => 'public'
+    ]);
+
+    $content = $this->sendtogemini($validated['prompt']);
+
+    $targetPath = ltrim($validated['path'], '/') . '/' . $validated['filename'];
+
+    $disk->put($targetPath, $content);
+
+    return response()->json(['message' => 'File created successfully', 'path' => $targetPath]);
+}
+
+public function editFileWithGemini(Request $request, Team $team)
+{
+    Gate::authorize('update', $team);
+
+    $validated = $request->validate([
+        'path' => 'required|string',
+        'prompt' => 'required|string',
+    ]);
+
+    $path = $validated['path'];
+
+    $disk = Storage::build([
+        'driver' => 'local',
+        'root' => storage_path("app/public/teams/{$team->id}"),
+        'visibility' => 'public'
+    ]);
+
+    // $targetPath = ltrim($validated['path'], '/') . '/' . $validated['filename'];
+
+    if (!$disk->exists($path)) {
+        return response()->json(['error' => 'File not found'], 404);
+    }
+
+    $existingContent = $disk->get($path);
+
+    // Send request to Gemini with both the content and the prompt
+    $newContent = $this->sendtogemini($validated['prompt'], $existingContent);
+
+    if (is_array($newContent)) {
+        return response()->json($newContent, 500); // If Gemini returns an error
+    }
+
+    $disk->put($path, $newContent);
+
+    return response()->json(['message' => 'File updated successfully', 'path' => $path]);
+}
+
 
 public function getFileUrl(Request $request, Team $team)
 {
