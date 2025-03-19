@@ -17,22 +17,23 @@ import { MdDelete } from "react-icons/md";
 import "./File.css";
 
 export default function FileShareSystem() {
-  // Initially set items to an empty array
+  // States for items, menus, messages, and current path
   const [items, setItems] = useState([]);
-  const [menuItemId, setMenuItemId] = useState(null);
+  const [menuItemPath, setMenuItemPath] = useState(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [tooltipTab, setTooltipTab] = useState("windows");
   const [confirmationMessage, setConfirmationMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  // Track current directory path (default root)
+  const [currentPath, setCurrentPath] = useState("/");
+
   const helpRef = useRef(null);
   const tooltipRef = useRef(null);
 
   const teamId = localStorage.getItem("teamId");
-  // Assume token is stored somewhere as well
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    // Handle click outside the tooltip
+    // Handle click outside (if you add a tooltip later)
     const handleClickOutside = (e) => {
       if (
         tooltipRef.current &&
@@ -40,15 +41,15 @@ export default function FileShareSystem() {
         helpRef.current &&
         !helpRef.current.contains(e.target)
       ) {
-        setShowTooltip(false);
+        // Optionally hide tooltip
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () =>
       document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [token]);
 
-  // API call to fetch directory data
+  // API call to fetch directory data based on currentPath
   async function getdirsroot() {
     try {
       const response = await axios.get(
@@ -58,80 +59,184 @@ export default function FileShareSystem() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+          // Passing currentPath so backend might use it if needed:
+          params: { path: currentPath },
         }
       );
-      console.log(response.data);
-      return response.data; // Assuming this returns an array of items
+  
+      const allItems = response.data.directory; // e.g. ["1", "1/2", "1/2/gg"]
+  
+      let filtered = [];
+  
+      if (currentPath === "/") {
+        // At root, we show only items with no slash – direct children only.
+        filtered = allItems.filter((item) => !item.includes("/"));
+      } else {
+        // For a non-root currentPath, normalize it (ensure it ends with a slash)
+        const normalizedPath = currentPath.endsWith("/") ? currentPath : currentPath + "/";
+        // Filter for items that start with normalizedPath AND whose remainder doesn't include a slash.
+        filtered = allItems.filter((item) => {
+          if (!item.startsWith(normalizedPath)) return false;
+          // Remove the normalized prefix; if there’s no further slash, it's an immediate child.
+          const remainder = item.slice(normalizedPath.length);
+          return !remainder.includes("/");
+        });
+      }
+  
+      // Map the filtered full paths into objects.
+      // We use the full path as our unique key.
+      const fetchedItems = filtered.map((fullPath) => {
+        // For display, take the last segment (split by "/")
+        const name = fullPath.split("/").pop();
+        return {
+          path: fullPath,
+          name,
+          type: "folder",
+        };
+      });
+  
+      return fetchedItems;
     } catch (error) {
       console.error("Error fetching data:", error);
       return [];
     }
   }
+  
 
-  // Call API on component mount
+  // Fetch directory items on mount and whenever currentPath changes
   useEffect(() => {
     async function fetchData() {
       const data = await getdirsroot();
-      console.log("API Response:", data); // Log response to check structure
-      setItems(Array.isArray(data) ? data : []); // Ensure it's an array
+      console.log("index: ", data);
+      setItems(data);
     }
     fetchData();
-  }, [teamId, token]);
+  }, [teamId, token, currentPath]);
 
-  // Three-dots menu functions
-  const toggleMenu = (itemId, e) => {
-    e.stopPropagation();
-    setMenuItemId((prev) => (prev === itemId ? null : itemId));
-  };
-
-  const handleOpen = (itemId) => {
-    console.log("Open item:", itemId);
-    setMenuItemId(null);
-  };
-
-  /**
-   * Delete the folder using the DELETE endpoint.
-   * We assume that for folder items, item.name is the path (adjust accordingly).
-   */
-  const handleDelete = async (item) => {
-    // Only allow deletion if the item is a folder.
-    if (item.type !== "folder") return;
-
+  // Create a new folder using the API
+  const handleCreateFolder = async () => {
+    const folderName = window.prompt("Enter a folder name:");
+    if (!folderName) return;
+  
+    // Ensure currentPath ends with a slash.
     try {
-      const response = await axios.delete(
-        `http://localhost:8000/api/folders/${teamId}/delete`,
+      const response = await axios.post(
+        `http://localhost:8000/api/folders/${teamId}/store`,
+        {
+          name: folderName,
+          path: currentPath, // create folder inside currentPath
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          // Axios allows a request body for DELETE via the "data" property
-          data: {
-            path: item.name, // Adjust this if your folder path is stored differently
-          },
         }
       );
-      console.log("Folder deleted:", response.data);
-      // Remove the deleted folder from the state
-      setItems((prevItems) => prevItems.filter((i) => i.id !== item.id));
-      // Display a confirmation message (replace with your custom UI as needed)
-      setConfirmationMessage("Folder deleted successfully.");
-      setMenuItemId(null);
-      // Optionally clear the message after a few seconds
-      setTimeout(() => setConfirmationMessage(""), 3000);
+      let path = currentPath;
+      if(path == "/")path +=folderName;
+      else path = path += "/"+folderName;
+      setConfirmationMessage(response.data.message || "Folder created successfully!");
+      const newFolder = {
+        path: path,
+        name: folderName,
+        type: "folder",
+      };
+      // Add the new folder to the list.
+      setItems((prevItems) => [...prevItems, newFolder]);
     } catch (error) {
-      console.error(
-        "Error deleting folder:",
-        error.response ? error.response.data : error.message
+      console.error("Error creating folder:", error);
+      setErrorMessage(
+        error.response?.data?.error ||
+          "An error occurred while creating the folder."
       );
-      setConfirmationMessage("Failed to delete folder.");
-      setTimeout(() => setConfirmationMessage(""), 3000);
+    }
+  };
+  
+
+  // Three-dots menu functions
+  const toggleMenu = (itemPath, e) => {
+    e.stopPropagation();
+    setMenuItemPath((prev) => (prev === itemPath ? null : itemPath));
+  };
+
+  // Open folder: use the "show" endpoint to fetch its contents.
+  // Even if the folder is empty, update the currentPath.
+  const handleOpen = async (itemPath) => {
+    // try {
+    //   const response = await axios.get(
+    //     `http://localhost:8000/api/folders/${teamId}/show/`,
+    //     {
+    //       headers: {
+    //         Authorization: `Bearer ${token}`,
+    //         "Content-Type": "application/json",
+    //       },
+    //       params: { path: itemPath },
+    //     }
+    //   );
+    //   // console.log(itemPath, response);
+    //   // Map the returned full paths into items.
+    //   const newItems = (response.data.folders || []).map((fullPath) => {
+    //     return {
+    //       path: fullPath, // use the full path directly
+    //       name: fullPath.split("/").pop(),
+    //       type: "folder",
+    //     };
+    //   });
+    //   console.log("newitems: ",newItems);
+    //   console.log(itemPath);
+    //   // Set the currentPath exactly to the folder you just opened.
+      setCurrentPath(itemPath);
+      setMenuItemPath(null);
+    // } catch (error) {
+    //   console.error("Error opening folder:", error);
+    //   setErrorMessage("An error occurred while opening the folder.");
+    // }
+  };
+  
+  const handleDelete = async (itemPath) => {
+    if (!window.confirm("Are you sure you want to delete this folder?")) return;
+
+    try {
+      await axios.delete(`http://localhost:8000/api/folders/${teamId}/delete`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        data: { path: itemPath },
+      });
+
+      setItems((prevItems) =>
+        prevItems.filter((item) => item.path !== itemPath)
+      );
+    } catch (error) {
+      console.error("Error deleting folder:", error);
+      setErrorMessage("An error occurred while deleting the folder.");
     }
   };
 
-  // Toggle the add dialog pop-up
+  const handleShare = (itemPath) => {
+    console.log("Share folder at path:", itemPath);
+    setMenuItemPath(null);
+  };
+
+  // "Back" button: navigate to the parent directory
+  const handleBack = () => {
+    if (currentPath === "/") return; // already at root
+    let p = currentPath.split("/");
+    p.pop();
+    let newPath = p.join("/");
+    if(newPath===""){
+      newPath="/";
+    }
+    setCurrentPath(newPath);
+  };
+
+  // Toggle the add dialog and clear messages
   const toggleAddDialog = () => {
     setShowAddDialog((prev) => !prev);
+    setConfirmationMessage("");
+    setErrorMessage("");
   };
 
   // Helper function to choose an icon based on item type
@@ -148,10 +253,13 @@ export default function FileShareSystem() {
       <header className="file-header">
         <div className="header-left">
           <h2 className="file-headline">File Share System</h2>
-          {confirmationMessage && (
-            <div className="confirmation-message">{confirmationMessage}</div>
+          {/* Display the current path */}
+          <p className="current-path">Current Path: {currentPath}</p>
+          {currentPath !== "/" && (
+            <button className="back-button" onClick={handleBack}>
+              Back
+            </button>
           )}
-          {/* Tooltip code can be added back here if needed */}
         </div>
         <div className="add-button-container2">
           <button className="add-button2" onClick={toggleAddDialog}>
@@ -165,12 +273,15 @@ export default function FileShareSystem() {
               >
                 <FaFileMedical /> Upload File
               </button>
-              <button
-                className="add-dialog-item2"
-                onClick={() => console.log("Create Folder")}
-              >
+              <button className="add-dialog-item2" onClick={handleCreateFolder}>
                 <FaFolderPlus /> Create Folder
               </button>
+              {confirmationMessage && (
+                <div className="confirmation-message">{confirmationMessage}</div>
+              )}
+              {errorMessage && (
+                <div className="error-message">{errorMessage}</div>
+              )}
             </div>
           )}
         </div>
@@ -179,37 +290,48 @@ export default function FileShareSystem() {
       <main className="file-main">
         <div className="items-list">
           {items.map((item) => (
-            <div key={item.id} className="item-card">
+            <div key={item.path}
+            className="item-card"
+            onClick={() => handleOpen(item.path)}
+            >
               <div className="item-icon">{renderItemIcon(item)}</div>
               <p className="item-name">{item.name}</p>
               <button
                 className="item-menu-btn"
-                onClick={(e) => toggleMenu(item.id, e)}
+                onClick={(e) => toggleMenu(item.path, e)}
               >
                 <FiMoreVertical size={20} />
               </button>
-              {menuItemId === item.id && (
+              {menuItemPath === item.path && (
                 <div
                   className="item-menu-dialog"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
                     className="item-menu-item open-item"
-                    onClick={() => handleOpen(item.id)}
+                    onClick={() => handleOpen(item.path)}
                   >
                     <IoEnter /> Open
                   </button>
                   <button
                     className="item-menu-item open-item"
-                    onClick={() => console.log("Download item:", item.id)}
+                    onClick={() =>
+                      console.log("Download item:", item.path)
+                    }
                   >
                     <IoMdDownload /> Download
                   </button>
                   <button
                     className="item-menu-item delete-item"
-                    onClick={() => handleDelete(item)}
+                    onClick={() => handleDelete(item.path)}
                   >
                     <MdDelete /> Delete
+                  </button>
+                  <button
+                    className="item-menu-item share-item"
+                    onClick={() => handleShare(item.path)}
+                  >
+                    Share
                   </button>
                 </div>
               )}
