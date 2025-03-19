@@ -31,7 +31,7 @@ class FolderController extends Controller
     
             $disk = Storage::build([
                 'driver' => 'local',
-                'root' => storage_path('app/public/teams/'.$team->id),
+                'root' => storage_path("app/public/teams/{$team->id}"),
                 'throw' => true, // Throw exceptions on errors
             ]);
     
@@ -105,7 +105,7 @@ class FolderController extends Controller
         // Build team-specific disk
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('app/public/teams/'.$team->id),
+            'root' => storage_path("app/public/teams/{$team->id}"),
             'throw' => true, // Throw exceptions on errors
         ]);
     
@@ -176,7 +176,7 @@ class FolderController extends Controller
 
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('app/public/teams/' . $team->id),
+            'root' => storage_path("app/public/teams/{$team->id}"),
             'visibility' => 'public'
         ]);
 
@@ -222,7 +222,7 @@ class FolderController extends Controller
 
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('app/public/teams/' . $team->id),
+            'root' => storage_path("app/public/teams/{$team->id}"),
         ]);
 
         try {
