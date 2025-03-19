@@ -68,7 +68,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/ai_chats/{chat}/send', [Ai_messagesController::class, 'sendPrompt']);
     Route::get('/ai_chats/{chat}/history', [Ai_messagesController::class, 'getHistory']);
-    Route::post('/ai_chats/{chat}/search', [Ai_messagesController::class, 'websearch']);
+    Route::post('/ai_chats/{chat}/websearch', [Ai_messagesController::class, 'websearch']);
 
     // Route::get('/files/{team}/index', [FileController::class, 'index']);
     Route::get('/files/{team}/show', [FileController::class, 'show']);
@@ -95,9 +95,3 @@ Route::post('/sftp/{team}/command', [SftpController::class, 'handleSftpCommand']
 Route::post('/register', [UserController::class, 'store']);
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
-
-
-Route::post('/websearch', [Ai_messagesController::class, 'websearch']);
-
-
-
