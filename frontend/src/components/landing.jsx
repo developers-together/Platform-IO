@@ -6,18 +6,37 @@ import "./landing.css";
 
 export default function Landing({ setCurrentPage }) {
   const [showOverlay, setShowOverlay] = useState(true);
+  const [fadingOut, setFadingOut] = useState(false); // New state for transition
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setShowOverlay(false);
+      setFadingOut(true); // Start fade-out animation
+      setTimeout(() => {
+        setShowOverlay(false); // Fully hide after animation completes
+      }, 1000); // Match this duration with CSS animation time
     }, 6000);
-    return () => clearTimeout(timer);
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setFadingOut(true);
+        setTimeout(() => {
+          setShowOverlay(false);
+        }, 1000);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   return (
     <div className="start5">
       {showOverlay && (
-        <div className="overlay">
+        <div className={`overlay ${fadingOut ? "fade-out" : ""}`}>
           <div className="overlay-content">
             <SplitText
               text="Hello, and Welcome to Platform-IO"
@@ -40,7 +59,6 @@ export default function Landing({ setCurrentPage }) {
             dapibus leo nec ornare diam sed commodo nibh ante facilisis
             bibendum.
           </p>
-          {/* Keep only Magnet + ShinyText without StarBorder */}
           <Magnet
             padding={10000}
             disabled={false}
