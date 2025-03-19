@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class TeamController extends Controller
 {
@@ -61,6 +62,8 @@ class TeamController extends Controller
         'code' => $validated['code']
 
         ]);
+
+        Storage::makeDirectory('public/teams/'.$team->id);
 
         //Attach the authenticated user to the team with the role "leader"
         $team->users()->attach($userId, ['role' => 'leader']);

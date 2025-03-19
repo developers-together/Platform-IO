@@ -85,9 +85,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/folders/{team}/update', [FolderController::class, 'update']);
 
 
-
-
-
 });
 
 Route::post('/sftp/connect', [SftpController::class, 'connect']);
