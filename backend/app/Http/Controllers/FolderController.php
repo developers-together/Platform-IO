@@ -22,16 +22,17 @@ class FolderController extends Controller
         try {
             Log::info("Accessing storage for Team ID: {$team->id}");
     
-            $rootPath = storage_path("app/public/teams/{$team->id}");
             
             if (!file_exists($rootPath)) {
                 Log::warning("Directory does not exist: {$rootPath}");
                 return response()->json(['error' => 'Directory not found'], 404);
             }
+
+            $rootPath = storage_path(implode(DIRECTORY_SEPARATOR, ['app', 'public', 'teams', $team->id]));
     
             $disk = Storage::build([
                 'driver' => 'local',
-                'root' => storage_path("app/public/teams/{$team->id}"),
+                'root' => $rootPath,
                 'throw' => true, // Throw exceptions on errors
             ]);
     
