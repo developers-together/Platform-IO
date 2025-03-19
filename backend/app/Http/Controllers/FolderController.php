@@ -33,7 +33,7 @@ class FolderController extends Controller
     
             $disk = Storage::build([
                 'driver' => 'local',
-                'root' => $rootPath,
+                'root' => storage_path("app/public/teams/{$team->id}"),
                 'throw' => true, // Throw exceptions on errors
             ]);
     
