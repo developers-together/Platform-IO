@@ -58,6 +58,22 @@ class Ai_chatController extends Controller
         return $ai_chat->toJson();
     }
 
+    public function update(Request $request, Ai_Chat $ai_chat)
+    {
+        // Validate the request
+        $validated = $request->validate([
+            'name' => 'required|string|max:255'
+        ]);
+
+        $user = Auth::user();
+
+        // Update the AI chat name
+        $ai_chat->update(['name' => $validated['name']]);
+
+        return response()->json(['success' => true, 'message' => 'Chat updated successfully', 'ai_chat' => $ai_chat]);
+    }
+
+
     public function destroy(Ai_Chat $ai_chat)
     {
         // $this->authorize('delete', $ai_chat);
