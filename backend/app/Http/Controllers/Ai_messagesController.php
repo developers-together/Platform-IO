@@ -114,14 +114,19 @@ class Ai_messagesController extends Controller
         $prompt = $request->input('prompt');
 
         $pythonScript = storage_path('app/scripts/gemini_api.py');
-        $process = new Process(['python', $pythonScript, $apiKey, $prompt]);
+        $process = new Process(['python', $pythonScript, $apiKey, $prompt]); // Use 'python' instead of 'python3' for Windows
 
         $process->run();
 
         if (!$process->isSuccessful()) {
-            return response()->json(['error' => 'Script execution failed'], 500);
+            return response()->json([
+                'error' => 'Script execution failed',
+                'details' => $process->getErrorOutput() // Capture error details
+            ], 500);
         }
 
         return response()->json(json_decode($process->getOutput(), true));
     }
+
+
 }
