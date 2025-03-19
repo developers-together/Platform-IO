@@ -12,6 +12,8 @@ use App\Http\Controllers\Ai_chatController;
 use App\Http\Controllers\Ai_messagesController;
 use App\Http\Controllers\SftpController;
 use App\Http\Controllers\GeminiController;
+use App\Http\Controllers\FolderController;
+use App\Http\Controllers\FileController;
 
 
 // Route::get('/user', function (Request $request) {
