@@ -73,6 +73,7 @@
 }
 
 /* ===== Overlay Styles ===== */
+/* Initial overlay state */
 .overlay {
   position: fixed;
   top: 0;
@@ -84,7 +85,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 1;
+  transition: opacity 1s ease-in-out; /* Smooth fade-out */
   z-index: 10000;
+}
+
+/* Fade-out effect */
+.overlay.fade-out {
+  opacity: 0;
+  pointer-events: none; /* Disable interaction while fading */
 }
 
 .overlay-content {
