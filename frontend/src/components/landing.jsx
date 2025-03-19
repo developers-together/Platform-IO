@@ -7,11 +7,6 @@ import "./landing.css";
 export default function Landing({ setCurrentPage }) {
   const [showOverlay, setShowOverlay] = useState(true);
 
-  const handleAnimationComplete = () => {
-    console.log("All letters have animated!");
-  };
-
-  // Auto-dismiss the overlay after 2 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowOverlay(false);
@@ -33,7 +28,6 @@ export default function Landing({ setCurrentPage }) {
               easing="easeOutCubic"
               threshold={0.2}
               rootMargin="-50px"
-              onLetterAnimationComplete={handleAnimationComplete}
             />
           </div>
         </div>
@@ -46,11 +40,11 @@ export default function Landing({ setCurrentPage }) {
             dapibus leo nec ornare diam sed commodo nibh ante facilisis
             bibendum.
           </p>
-          {/* Wrap the button with Magnet */}
+          {/* Keep only Magnet + ShinyText without StarBorder */}
           <Magnet
-            padding={500}
+            padding={10000}
             disabled={false}
-            magnetStrength={30}
+            magnetStrength={20}
             activeTransition="transform 0.2s ease-out"
             inactiveTransition="transform 0.4s ease-in-out"
           >

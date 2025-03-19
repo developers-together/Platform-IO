@@ -25,7 +25,7 @@
   margin-right: 10%;
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -134,12 +134,18 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 6px 20px rgba(0, 82, 212, 0.4);
 }
 
 .login-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 82, 212, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 0px 20px rgba(0, 82, 212, 0.8);
+}
+
+.login-button:active {
+  transform: scale(0.9);
 }
 
 .login-footer {

@@ -23,7 +23,8 @@
 .starter-content5 {
   text-align: center;
   padding: 2rem;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -41,7 +42,7 @@
 
 .starter-content5 p {
   font-size: 1.1rem;
-  color: #374151;
+  color: rgba(255, 255, 255, 0.6);
   margin-bottom: 2rem;
 }
 
