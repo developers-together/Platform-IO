@@ -72,8 +72,8 @@ export default function FileShareSystem() {
   useEffect(() => {
     async function fetchData() {
       const data = await getdirsroot();
-      console.log(data);
-      setItems(data);
+      console.log("API Response:", data); // Log response to check structure
+      setItems(Array.isArray(data) ? data : []); // Ensure it's an array
     }
     fetchData();
   }, [teamId, token]);
