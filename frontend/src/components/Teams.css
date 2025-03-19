@@ -6,6 +6,9 @@
   background: #f9fafc;
   font-family: Arial, sans-serif;
   padding: 1rem;
+  background: url(./bg.png) center center no-repeat;
+  background-size: cover;
+  display: flex;
 }
 
 /* Header area: rotating fan + headline */
@@ -50,7 +53,7 @@
 .teams-headline {
   font-size: 1.8rem;
   margin: 0;
-  color: #2d3748;
+  color: #fff;
   font-weight: 600;
 }
 
@@ -62,8 +65,8 @@
   padding: 2rem 3rem;
   flex: 1;
   overflow-y: auto;
-  background: #ffffff;
-  border: 1px solid #ddd;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 50px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   margin: 1rem;
@@ -243,10 +246,11 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  transition: transform 0.2s;
+  transition: all 0.2s ease-in-out;
 }
 .add-card:hover {
   transform: translateY(-2px);
+  border: 2px dashed #0052d4;
 }
 .add-card-content {
   display: flex;

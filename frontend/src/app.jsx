@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ReactDOM from "react-dom/client";
 import "./app.css";
+import Landing from "./components/landing";
 import CalendarPage from "./components/CalendarPage";
 import ChatPage from "./components/ChatPage";
 import Dashboard from "./components/Dashboard";
@@ -14,13 +15,14 @@ import Profile from "./components/Profile";
 import FilePage from "./components/File";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState("login");
-  // Toggle for the left (collapsible) sidebar
+  // Set the default view to 'landing'
+  const [currentPage, setCurrentPage] = useState("landing");
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
       {currentPage !== "teams" &&
+        currentPage !== "landing" && // hide sidebar on landing page
         currentPage !== "login" &&
         currentPage !== "register" && (
           <Sidebar
@@ -31,6 +33,9 @@ export default function App() {
           />
         )}
       <div style={{ flex: 1 }}>
+        {currentPage === "landing" && (
+          <Landing setCurrentPage={setCurrentPage} />
+        )}
         {currentPage === "login" && <Login setCurrentPage={setCurrentPage} />}
         {currentPage === "register" && (
           <Register setCurrentPage={setCurrentPage} />
@@ -40,10 +45,6 @@ export default function App() {
         {currentPage === "Tasks" && <TasksPage />}
         {currentPage === "Calendar" && <CalendarPage />}
         {currentPage === "File" && <FilePage />}
-        {/*
-          Note: The AI page now receives the left sidebar setter (setSidebarOpen)
-          so that it can close the left sidebar automatically.
-        */}
         {currentPage === "AI" && <AIPage setLeftSidebarOpen={setSidebarOpen} />}
         {currentPage === "teams" && <Teams setCurrentPage={setCurrentPage} />}
         {currentPage === "Profile" && (

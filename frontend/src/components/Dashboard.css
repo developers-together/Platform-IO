@@ -159,7 +159,7 @@
 /* AI Card Styling */
 .ai-card {
   /* background: linear-gradient(135deg, #0052d4, #4364f7); */
-  background: linear-gradient(135deg, #4364f7, #840094);
+  background: linear-gradient(135deg, #2b5ce7, #8e44ad);
   color: white;
   grid-row: span 2;
   grid-column: -2; /* Positions card in the second last column */
