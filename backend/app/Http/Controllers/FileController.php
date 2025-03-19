@@ -106,7 +106,8 @@ class FileController extends Controller
             return response($content)
                 ->header('Content-Type', $mimeType)
                 ->header('Content-Length', $fileSize)
-                ->header('Content-Disposition', 'inline; filename="' . $validated['path'] . '"');
+                ->header('Content-Disposition', 'inline; filename="' . $validated['path'] . '"')
+                ->header('X-File-Type', $fileType);
 
         } catch (\Exception $e) {
             Log::error("File content retrieval failed: {$e->getMessage()}");
@@ -192,9 +193,14 @@ class FileController extends Controller
         // Rename the file
         $disk->move($validated['path'], $newPath);
 
+        $mimeType = $disk->mimeType($newPath);
+        $fileType = explode('/', $mimeType)[1] ?? 'unknown';
+
         return response()->json([
             'message' => 'File updated successfully',
             'new_path' => $newPath,
+            'mime_type' => $mimeType,
+            'file_type' => $fileType,
         ]);
 
     }
@@ -274,7 +280,7 @@ class FileController extends Controller
         return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
     }
 }
-    
+
 
     public function createFileWithGemini(Request $request, Team $team)
 {

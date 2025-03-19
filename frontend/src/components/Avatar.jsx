@@ -1,5 +1,3 @@
-// resources/js/components/Avatar.jsx
-
 /**
  * Returns a UI Avatars API URL based on the provided name and options.
  * @param {string} name - The full name.
