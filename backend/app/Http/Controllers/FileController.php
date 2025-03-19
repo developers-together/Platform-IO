@@ -43,7 +43,7 @@ class FileController extends Controller
         // Create a dedicated disk configuration for the team
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('app/public/teams/' . $team->id), // Fixed path
+            'root' => storage_path("app/public/teams/{$team->id}"), // Fixed path
             'visibility' => 'public'
         ]);
 
@@ -85,7 +85,7 @@ class FileController extends Controller
     // Rebuild the team-specific disk
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('app/public/teams/' . $team->id),
+            'root' => storage_path("app/public/teams/{$team->id}"),
             'visibility' => 'public'
         ]);
 
@@ -123,7 +123,7 @@ class FileController extends Controller
         // Rebuild the team-specific disk
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('app/public/teams/' . $team->id),
+            'root' => storage_path("app/public/teams/{$team->id}"),
             'visibility' => 'public'
         ]);
 
@@ -168,7 +168,7 @@ class FileController extends Controller
 
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('app/public/teams/' . $team->id),
+            'root' => storage_path("app/public/teams/{$team->id}"),
             'visibility' => 'public'
         ]);
 
@@ -210,7 +210,7 @@ class FileController extends Controller
             // Rebuild the team-specific disk
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('app/public/teams/' . $team->id),
+            'root' => storage_path("app/public/teams/{$team->id}"),
             'visibility' => 'public'
         ]);
 
@@ -252,7 +252,7 @@ class FileController extends Controller
 
     $disk = Storage::build([
         'driver' => 'local',
-        'root' => storage_path('app/public/teams/' . $team->id),
+        'root' => storage_path("app/public/teams/{$team->id}"),
         'visibility' => 'public'
     ]);
 
@@ -277,7 +277,7 @@ public function editFileWithGemini(Request $request, Team $team)
 
     $disk = Storage::build([
         'driver' => 'local',
-        'root' => storage_path('app/public/teams/' . $team->id),
+        'root' => storage_path("app/public/teams/{$team->id}"),
         'visibility' => 'public'
     ]);
 
@@ -344,7 +344,7 @@ public function getFileUrl(Request $request, Team $team)
 
     $disk = Storage::build([
         'driver' => 'local',
-        'root' => storage_path('app/public/teams/' . $team->id),
+        'root' => storage_path("app/public/teams/{$team->id}"),
         'visibility' => 'public'
     ]);
 

@@ -8,6 +8,7 @@ use App\Models\Team;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Gate;
 
 
 
@@ -30,8 +31,8 @@ class FolderController extends Controller
     
             $disk = Storage::build([
                 'driver' => 'local',
-                'root' => $rootPath,
-                'throw' => true,
+                'root' => storage_path("app/public/teams/{$team->id}"),
+                'throw' => true, // Throw exceptions on errors
             ]);
     
             $folders = $disk->allFiles();
@@ -41,7 +42,8 @@ class FolderController extends Controller
             return response()->json([
                 'status' => 'success',
                 'team_id' => $team->id,
-                'directory' => $rootPath,
+                'directory' => $disk->allDirectories(),
+                'allfiles' => $disk->files(),
                 'files' => $folders,
             ]);
     
@@ -103,7 +105,7 @@ class FolderController extends Controller
         // Build team-specific disk
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('app/public/teams/'.$team->id),
+            'root' => storage_path("app/public/teams/{$team->id}"),
             'throw' => true, // Throw exceptions on errors
         ]);
     
@@ -174,7 +176,7 @@ class FolderController extends Controller
 
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('app/public/teams/' . $team->id),
+            'root' => storage_path("app/public/teams/{$team->id}"),
             'visibility' => 'public'
         ]);
 
@@ -183,7 +185,7 @@ class FolderController extends Controller
         }
         return response()->json([
             'success' => true,
-            'folder' => $folder,
+            // 'folder' => $folder,
             'files' => $disk->allFiles($validated['path'])
         ]);
 
@@ -220,7 +222,7 @@ class FolderController extends Controller
 
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path('app/public/teams/' . $team->id),
+            'root' => storage_path("app/public/teams/{$team->id}"),
         ]);
 
         try {

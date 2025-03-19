@@ -31,10 +31,7 @@ export default function Sidebar({
     { icon: <FaFan />, label: "AI", page: "AI" },
   ];
 
-  const bottomMenu = [
-    { icon: <FiUsers />, label: "Team Profile", page: "Team" },
-    { icon: <FiUser />, label: "Profile", page: "Profile" },
-  ];
+  const bottomMenu = [{ icon: <FiUser />, label: "Profile", page: "Profile" }];
 
   const handleNav = (item) => {
     if (item.label === "Menu") {
