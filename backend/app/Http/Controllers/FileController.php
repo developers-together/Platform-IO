@@ -239,4 +239,99 @@ class FileController extends Controller
             return response()->json(['error' => 'Server error while deleting file'], 500);
         }
     }
+
+    public function createFileWithGemini(Request $request, Team $team)
+{
+    Gate::authorize('create', Team::class);
+
+    $validated = $request->validate([
+        'filename' => 'required|string',
+        'path' => 'required|string',
+        'prompt' => 'required|string',
+    ]);
+
+    $disk = Storage::build([
+        'driver' => 'local',
+        'root' => storage_path('app/public/teams/' . $team->id),
+        'visibility' => 'public'
+    ]);
+
+    $content = sendtogemini($validated['prompt']);
+
+    $targetPath = ltrim($validated['path'], '/') . '/' . $validated['filename'];
+
+    $disk->put($targetPath, $content);
+
+    return response()->json(['message' => 'File created successfully', 'path' => $targetPath]);
+}
+
+public function editFileWithGemini(Request $request, Team $team)
+{
+    Gate::authorize('update', Team::class);
+
+    $validated = $request->validate([
+        'filename' => 'required|string',
+        'path' => 'required|string',
+        'prompt' => 'required|string',
+    ]);
+
+    $disk = Storage::build([
+        'driver' => 'local',
+        'root' => storage_path('app/public/teams/' . $team->id),
+        'visibility' => 'public'
+    ]);
+
+    $targetPath = ltrim($validated['path'], '/') . '/' . $validated['filename'];
+
+    if (!$disk->exists($targetPath)) {
+        return response()->json(['error' => 'File not found'], 404);
+    }
+
+    $existingContent = $disk->get($targetPath);
+
+    // Send request to Gemini with both the content and the prompt
+    $newContent = $this->sendtogemini($validated['prompt'], $existingContent);
+
+    if (is_array($newContent)) {
+        return response()->json($newContent, 500); // If Gemini returns an error
+    }
+
+    $disk->put($targetPath, $newContent);
+
+    return response()->json(['message' => 'File updated successfully', 'path' => $targetPath]);
+}
+
+public function sendtogemini($prompt, $content = null)
+{
+    // Prepare the message for Gemini
+    $inputText = $content ? "Modify the following content:\n\n" . $content . "\n\nInstructions: " . $prompt : $prompt;
+
+    try {
+        // Call Gemini API
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+        ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=' . env('GEMINI_API_KEY'), [
+            'contents' => [
+                [
+                    'parts' => [
+                        ['text' => $inputText],
+                    ]
+                ]
+            ]
+        ]);
+
+        $responseData = $response->json();
+
+        // Check for errors or missing responses
+        if ($response->failed() || !isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
+            return response()->json(['error' => 'Failed to retrieve response from Gemini'], 500);
+        }
+
+        return $responseData['candidates'][0]['content']['parts'][0]['text'];
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+    }
+}
+
+
 }

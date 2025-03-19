@@ -10,7 +10,8 @@ use Gemini\Laravel\Facades\Gemini;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Models\Ai_Messages;
-
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class Ai_messagesController extends Controller
 {
@@ -81,6 +82,24 @@ class Ai_messagesController extends Controller
                              ->get();
 
         return response()->json($history);
+    }
+
+
+    public function websearch(Request $request)
+    {
+        $apiKey = env('GEMINI_API_KEY');
+        $prompt = $request->input('prompt');
+
+        $pythonScript = storage_path('app/scripts/gemini_api.py');
+        $process = new Process(['python3', $pythonScript, $apiKey, $prompt]);
+        
+        $process->run();
+    
+        if (!$process->isSuccessful()) {
+            return response()->json(['error' => 'Script execution failed'], 500);
+        }
+    
+        return response()->json(json_decode($process->getOutput(), true));
     }
 
 }
