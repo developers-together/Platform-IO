@@ -6,6 +6,7 @@ import {
   FiMenu,
   FiMessageSquare,
   FiSettings,
+  FiUsers,
   FiUser,
 } from "react-icons/fi";
 import { IoFolderOutline } from "react-icons/io5";
@@ -31,8 +32,7 @@ export default function Sidebar({
   ];
 
   const bottomMenu = [
-    { icon: <FiBell />, label: "Notifications", page: "Notifications" },
-    { icon: <FiSettings />, label: "Settings", page: "settings" },
+    { icon: <FiUsers />, label: "Team Profile", page: "Team" },
     { icon: <FiUser />, label: "Profile", page: "Profile" },
   ];
 
