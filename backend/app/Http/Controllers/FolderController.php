@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 
+
 class FolderController extends Controller
 {
     /**
@@ -17,17 +18,45 @@ class FolderController extends Controller
      */
     public function index(Team $team)
     {
-        
-        $disk = Storage::build([
-            'driver' => 'local',
-            'root' => storage_path('app/public/teams/'.$team->id),
-            'throw' => true
-        ]);
-        $folders = $disk->allFiles();
-
-        return response()->json($folders);
+        try {
+            Log::info("Accessing storage for Team ID: {$team->id}");
+    
+            $rootPath = storage_path("app/public/teams/{$team->id}");
+            
+            if (!file_exists($rootPath)) {
+                Log::warning("Directory does not exist: {$rootPath}");
+                return response()->json(['error' => 'Directory not found'], 404);
+            }
+    
+            $disk = Storage::build([
+                'driver' => 'local',
+                'root' => $rootPath,
+                'throw' => true,
+            ]);
+    
+            $folders = $disk->allFiles();
+    
+            Log::info("Retrieved " . count($folders) . " files from: {$rootPath}");
+    
+            return response()->json([
+                'status' => 'success',
+                'team_id' => $team->id,
+                'directory' => $rootPath,
+                'files' => $folders,
+            ]);
+    
+        } catch (\Exception $e) {
+            Log::error("Error accessing storage for Team ID: {$team->id}", [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+    
+            return response()->json([
+                'error' => 'An error occurred while retrieving files',
+                'details' => $e->getMessage(),
+            ], 500);
+        }
     }
-
     /**
      * Show the form for creating a new resource.
      */
