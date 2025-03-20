@@ -176,31 +176,40 @@ class FolderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Team $team , Request $request)
-    {
-        Gate::authorize('view', $team);
+    // public function show(Team $team, Request $request)
+    // {
+    //     Gate::authorize('view', $team);
 
-        $validated = $request->validate([
-            'path' => 'required|string'
-        ]);
+    //     $validated = $request->validate([
+    //         'path' => 'required|string'
+    //     ]);
 
-        $disk = Storage::build([
-            'driver' => 'local',
-            'root' => storage_path("app/public/teams/{$team->id}"),
-            'visibility' => 'public'
-        ]);
+    //     $disk = Storage::build([
+    //         'driver' => 'local',
+    //         'root' => storage_path("app/public/teams/{$team->id}"),
+    //         'visibility' => 'public'
+    //     ]);
 
-        if (!$disk->exists($validated['path'])) {
-            abort(404, 'Folder not found');
-        }
-        return response()->json([
-            'success' => true,
-            // 'folder' => $folder,
-            'files' => $disk->allFiles($validated['path']),
-            'folders' =>$disk->directories($validated['path'])
-        ]);
+    //     if (!$disk->directoryExists($validated['path'])) {
+    //         return response()->json(['error' => 'Folder not found'], 404);
+    //     }
 
-    }
+
+
+    //     $files = $disk->allFiles($validated['path']);
+
+    //     // Extract file types
+    //     $fileData = array_map(function ($file) {
+    //         return [
+    //             'path' => $file,
+    //             'type' => pathinfo($file, PATHINFO_EXTENSION)
+    //         ];
+    //     }, $files);
+
+    //     return response()->json($fileData);
+    // }
+
+
 
     /**
      * Show the form for editing the specified resource.

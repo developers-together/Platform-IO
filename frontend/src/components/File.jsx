@@ -7,6 +7,8 @@ import {
   FiMoreVertical,
   FiMenu,
   FiFile as FiGenericFile,
+  FiImage,
+  FiArrowLeft,
 } from "react-icons/fi";
 import { FaFileMedical } from "react-icons/fa6";
 import { IoMdDownload } from "react-icons/io";
@@ -14,17 +16,19 @@ import { FaFolderPlus } from "react-icons/fa";
 import { AiFillFilePdf } from "react-icons/ai";
 import { IoEnter } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
+import { MdCheck, MdClose } from "react-icons/md";
 import "./File.css";
 
 export default function FileShareSystem() {
-  // States for items, menus, messages, and current path
+  // State variables
   const [items, setItems] = useState([]);
   const [menuItemPath, setMenuItemPath] = useState(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  // Track current directory path (default root)
   const [currentPath, setCurrentPath] = useState("/");
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
 
   const helpRef = useRef(null);
   const tooltipRef = useRef(null);
@@ -34,7 +38,6 @@ export default function FileShareSystem() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    // Handle click outside (if you add a tooltip later)
     const handleClickOutside = (e) => {
       if (
         tooltipRef.current &&
@@ -46,11 +49,10 @@ export default function FileShareSystem() {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [token]);
 
-  // API call to fetch directory data based on currentPath
+  // Fetch directory data
   async function getdirsroot() {
     try {
       const response = await axios.get(
@@ -137,23 +139,20 @@ export default function FileShareSystem() {
   useEffect(() => {
     async function fetchData() {
       const data = await getdirsroot();
-      console.log("index: ", data);
       setItems(data);
     }
     fetchData();
   }, [teamId, token, currentPath]);
 
-  // Create a new folder using the API
+  // Create folder
   const handleCreateFolder = async () => {
-    const folderName = window.prompt("Enter a folder name:");
-    if (!folderName) return;
-  
+    if (!newFolderName.trim()) return;
     try {
       const response = await axios.post(
         `http://localhost:8000/api/folders/${teamId}/store`,
         {
-          name: folderName,
-          path: currentPath, // create folder inside currentPath
+          name: newFolderName,
+          path: currentPath,
         },
         {
           headers: {
@@ -163,16 +162,19 @@ export default function FileShareSystem() {
         }
       );
       let path = currentPath;
-      if (path === "/") path += folderName;
-      else path = path + "/" + folderName;
-      setConfirmationMessage(response.data.message || "Folder created successfully!");
+      if (path === "/") path += newFolderName;
+      else path += "/" + newFolderName;
+      setConfirmationMessage(
+        response.data.message || "Folder created successfully!"
+      );
       const newFolder = {
         path: path,
-        name: folderName,
+        name: newFolderName,
         type: "folder",
       };
-      // Add the new folder to the list.
       setItems((prevItems) => [...prevItems, newFolder]);
+      setNewFolderName("");
+      setIsCreatingFolder(false);
     } catch (error) {
       console.error("Error creating folder:", error);
       setErrorMessage(
@@ -200,7 +202,6 @@ export default function FileShareSystem() {
   
   const handleDelete = async (itemPath) => {
     if (!window.confirm("Are you sure you want to delete this folder?")) return;
-
     try {
       await axios.delete(`http://localhost:8000/api/folders/${teamId}/delete`, {
         headers: {
@@ -209,7 +210,6 @@ export default function FileShareSystem() {
         },
         data: { path: itemPath },
       });
-
       setItems((prevItems) =>
         prevItems.filter((item) => item.path !== itemPath)
       );
@@ -221,7 +221,7 @@ export default function FileShareSystem() {
 
   // "Back" button: navigate to the parent directory
   const handleBack = () => {
-    if (currentPath === "/") return; // already at root
+    if (currentPath === "/") return;
     let p = currentPath.split("/");
     p.pop();
     let newPath = p.join("/");
@@ -281,27 +281,67 @@ export default function FileShareSystem() {
     setShowAddDialog((prev) => !prev);
     setConfirmationMessage("");
     setErrorMessage("");
+    setIsCreatingFolder(false);
+    setNewFolderName("");
   };
 
-  // Helper function to choose an icon based on item type
+  // Render icon
   function renderItemIcon(item) {
     if (item.type === "folder") return <FiFolder size={28} color="#4dabf7" />;
     if (item.type === "video") return <FiVideo size={28} color="#4dabf7" />;
     if (item.type === "pdf") return <AiFillFilePdf size={28} color="#4dabf7" />;
     if (item.type === "text") return <FiFileText size={28} color="#4dabf7" />;
+    if (item.type === "image") return <FiImage size={28} color="#4dabf7" />;
     return <FiGenericFile size={28} color="#4dabf7" />;
+  }
+
+  // Render breadcrumb
+  function renderBreadcrumb() {
+    if (currentPath === "/") {
+      return <span className="breadcrumb-part">Root</span>;
+    } else {
+      const parts = currentPath.split("/").filter(Boolean);
+      return (
+        <div className="breadcrumb">
+          <span className="breadcrumb-part" onClick={() => setCurrentPath("/")}>
+            Root
+          </span>
+          {parts.map((part, index) => (
+            <React.Fragment key={index}>
+              <span className="breadcrumb-separator">›</span>
+              <span
+                className="breadcrumb-part"
+                onClick={() => {
+                  const newPath = "/" + parts.slice(0, index + 1).join("/");
+                  setCurrentPath(newPath);
+                }}
+              >
+                {part}
+              </span>
+            </React.Fragment>
+          ))}
+        </div>
+      );
+    }
   }
 
   return (
     <div className="file-page">
+      {confirmationMessage && (
+        <div className="global-confirmation-message">{confirmationMessage}</div>
+      )}
+      {errorMessage && (
+        <div className="global-error-message">{errorMessage}</div>
+      )}
+
       <header className="file-header">
         <div className="header-left">
           <h2 className="file-headline">File Share System</h2>
-          {/* Display the current path */}
-          <p className="current-path">Current Path: {currentPath}</p>
+          {renderBreadcrumb()}
           {currentPath !== "/" && (
             <button className="back-button" onClick={handleBack}>
-              Back
+              <FiArrowLeft size={18} />
+              <span>Back</span>
             </button>
           )}
         </div>
@@ -314,14 +354,36 @@ export default function FileShareSystem() {
               <button className="add-dialog-item3" onClick={triggerFileInput}>
                 <FaFileMedical /> Upload File
               </button>
-              <button className="add-dialog-item2" onClick={handleCreateFolder}>
-                <FaFolderPlus /> Create Folder
-              </button>
-              {confirmationMessage && (
-                <div className="confirmation-message">{confirmationMessage}</div>
-              )}
-              {errorMessage && (
-                <div className="error-message">{errorMessage}</div>
+              {isCreatingFolder ? (
+                <div className="folder-create-container" tabIndex={0}>
+                  <input
+                    type="text"
+                    className="folder-create-input"
+                    placeholder="Enter folder name..."
+                    value={newFolderName}
+                    onChange={(e) => setNewFolderName(e.target.value)}
+                    autoFocus
+                  />
+                  <button
+                    className="folder-save-button"
+                    onClick={handleCreateFolder}
+                  >
+                    <MdCheck size={20} />
+                  </button>
+                  <button
+                    className="folder-cancel-button"
+                    onClick={() => setIsCreatingFolder(false)}
+                  >
+                    <MdClose size={20} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className="add-dialog-item2"
+                  onClick={() => setIsCreatingFolder(true)}
+                >
+                  <FaFolderPlus /> Create Folder
+                </button>
               )}
             </div>
           )}
@@ -337,7 +399,9 @@ export default function FileShareSystem() {
               onClick={() => handleOpen(item.path, item.type)}
             >
               <div className="item-icon">{renderItemIcon(item)}</div>
-              <p className="item-name">{item.name}</p>
+              <p className="item-name" title={item.name}>
+                {item.name}
+              </p>
               <button
                 className="item-menu-btn"
                 onClick={(e) => toggleMenu(item.path, e)}
