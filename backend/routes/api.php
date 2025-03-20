@@ -87,7 +87,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/folders/{team}/delete', [FolderController::class, 'destroy']);
     // Route::put('/folders/{team}/update', [FolderController::class, 'update']);
 
-    Route::post('/vsftp/{team}/connect',[FtpUserController::class,'createFtpUser']);
+    // Route::post('/vsftp/{team}/connect',[FtpUserController::class,'createFtpUser']);
 
 });
 
