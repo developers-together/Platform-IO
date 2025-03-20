@@ -1,0 +1,492 @@
+/* Root Variables */
+:root {
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
+  --secondary-color: #f1f5f9;
+  --text-color: #1e293b;
+  --error-color: #ef4444;
+  --background-color: #f8fafc;
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base Layout */
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background: var(--background-color);
+  color: var(--text-color);
+}
+
+/* Header */
+.profile-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: none;
+  box-shadow: none;
+}
+.profile-header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+/* Main Content */
+.profile-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* Grid Layout: 2/3 and 1/3 */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: stretch;
+}
+
+/* Profile Card (Left Card) */
+.profile-card {
+  animation: fadeIn 0.3s ease-out;
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 250px 1fr; /* left col for avatar, right col for fields */
+  align-items: flex-start;
+  gap: 2rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid #f1f5f9;
+  transition: var(--transition);
+  min-height: 500px; /* helps prevent height collapse when editing */
+}
+.profile-card.editing {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Avatar Section (Left Column) */
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+.avatar-container {
+  text-align: center;
+}
+.profile-avatar {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
+}
+
+/* Buttons for Upload / Magic Avatar */
+.avatar-controls {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+.avatar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.9rem;
+}
+.avatar-btn:hover {
+  background: var(--primary-hover);
+  transform: scale(1.05);
+}
+.magic-btn {
+  background: #a78bfa; /* Purple-ish color for "Magic Avatar" */
+}
+.magic-btn:hover {
+  background: #8b5cf6;
+}
+
+/* Mini-info under avatar */
+.mini-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 1rem; /* space below the avatar */
+}
+.mini-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--secondary-color);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+}
+
+/* Profile Details (Right Column) */
+.profile-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+.profile-fields {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.form-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #64748b;
+}
+.form-group input,
+.form-group select {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  transition: var(--transition);
+}
+input:focus,
+select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+.field-value {
+  padding: 0.75rem;
+  background: var(--secondary-color);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+}
+.error {
+  color: var(--error-color);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+/* Teams Section in Right Column */
+.teams-section2 {
+  margin-top: 1rem;
+}
+.teams-section2 h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+  font-size: 1.1rem;
+}
+.teams-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.team-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: var(--secondary-color);
+  border-radius: 20px;
+  font-size: 0.875rem;
+  color: #475569;
+  transition: var(--transition);
+}
+.team-chip:hover {
+  background: #e2e8f0;
+}
+.delete-team-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 0.5rem;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+.delete-team-btn:hover {
+  background: #f8fafc;
+  color: var(--error-color);
+}
+.add-team-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.add-team-btn:hover {
+  background: var(--primary-hover);
+  transform: scale(1.1);
+}
+.add-team-inline {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.add-team-inline input {
+  padding: 0.5rem;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius-md);
+}
+.inline-confirm,
+.inline-cancel {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.inline-confirm {
+  background: var(--primary-color);
+  color: white;
+}
+.inline-confirm:hover {
+  background: var(--primary-hover);
+}
+.inline-cancel {
+  background: var(--secondary-color);
+  color: var(--text-color);
+}
+.inline-cancel:hover {
+  background: #e2e8f0;
+}
+
+/* Save & Cancel Buttons when editing */
+.edit-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.save-changes-btn,
+.cancel-changes-btn {
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  padding: 0.6rem 1.2rem;
+  transition: var(--transition);
+  font-size: 0.9rem;
+}
+.save-changes-btn {
+  background: var(--primary-color);
+  color: #fff;
+}
+.save-changes-btn:hover {
+  background: var(--primary-hover);
+  transform: scale(1.05);
+}
+.cancel-changes-btn {
+  background: var(--secondary-color);
+  color: var(--text-color);
+}
+.cancel-changes-btn:hover {
+  background: #e2e8f0;
+  transform: scale(1.05);
+}
+
+/* Options Card (Right Card) */
+.options-card {
+  animation: fadeIn 0.3s ease-out;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.options-card h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+}
+.separator {
+  border: none;
+  border-top: 1px solid #e2e3e5;
+  margin: 1rem 0;
+}
+.option-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--secondary-color);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-color);
+  transition: var(--transition);
+  margin-bottom: 0.5rem;
+}
+.option-btn:hover {
+  background: #e2e8f0;
+  transform: translateY(-1px);
+}
+.red-btn {
+  background: #ffe4e6;
+  color: var(--error-color);
+}
+.red-btn:hover {
+  background: #fecaca;
+}
+
+/* Tooltip Styles */
+.tooltip-container {
+  position: relative;
+  /* If you want the entire block to show a tooltip, ensure it has inline or block display. */
+}
+.tooltip-container:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: 125%; /* show above the item */
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2000;
+  opacity: 0;
+  animation: fadeTooltip 0.2s forwards;
+}
+/* optional fade-in for the tooltip */
+@keyframes fadeTooltip {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+.modal-content h3 {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+  color: var(--text-color);
+}
+.modal-content p {
+  margin: 1rem 0;
+  color: #475569;
+}
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+.confirm-btn {
+  background: var(--error-color);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.confirm-btn:hover {
+  background: #b91c1c;
+}
+.cancel-btn {
+  background: var(--secondary-color);
+  color: var(--text-color);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.cancel-btn:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+/* FadeIn Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-card {
+    grid-template-columns: 1fr;
+    padding: 1.5rem;
+    min-height: auto; /* let it adapt on smaller screens */
+  }
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+  }
+  .modal-content {
+    width: 90%;
+    padding: 1.5rem;
+  }
+}

@@ -1,0 +1,405 @@
+/* Root container with light background */
+.teams-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f9fafc;
+  font-family: Arial, sans-serif;
+  padding: 1rem;
+  background: url(./bg.png) center center no-repeat;
+  background-size: cover;
+  display: flex;
+}
+
+/* Header area: rotating fan + headline */
+.teams-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  justify-content: center;
+  background: transparent;
+}
+
+.fan-icon-container svg path {
+  fill: #8e44ad !important;
+  stroke: #fff !important;
+  stroke-width: 0.5px !important;
+  stroke-linejoin: round !important;
+  stroke-linecap: round !important;
+  paint-order: fill stroke !important;
+  vector-effect: non-scaling-stroke;
+}
+
+.fan-icon-container {
+  width: 60px;
+  height: 60px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+.fan-icon-container:hover {
+  opacity: 0.8;
+}
+.fan-icon-container svg {
+  transition: filter 0.3s ease;
+}
+.fan-icon-container:hover svg {
+  filter: brightness(1.1);
+}
+
+.teams-headline {
+  font-size: 1.8rem;
+  margin: 0;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Cards container: grid with up to 3 columns, scrollable */
+.teams-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem 3rem;
+  flex: 1;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin: 1rem;
+}
+
+/* Each team card with fixed height */
+.team-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  height: 300px; /* fixed height for consistent cards */
+}
+
+/* Hover effect */
+.team-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 82, 212, 0.2);
+}
+
+/* Team Avatar Container: full-width square taking half the card height */
+.team-avatar-container {
+  position: relative;
+  height: 50%; /* half the height of the card */
+}
+.team-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Three-dots menu button: bold and positioned above the avatar */
+.team-menu-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.2s;
+}
+.team-menu-btn:hover {
+  color: #000;
+}
+
+/* Team Info with labels */
+.team-info {
+  padding: 0.5rem;
+  text-align: center;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.4rem 0;
+}
+
+.info-title {
+  font-size: 0.8rem;
+  font-weight: 400; /* Regular weight */
+  color: #4b5563;
+  min-width: 80px; /* Fixed width for alignment */
+  text-align: left;
+}
+
+.info-value {
+  font-size: 1rem;
+  font-weight: 700; /* Bold weight */
+  color: #2d3748;
+  text-align: center;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Three-dots menu dialog */
+.team-menu-dialog {
+  position: absolute;
+  top: 50px;
+  right: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.2s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 10;
+  width: 150px;
+}
+.team-menu-item,
+.team-menu-item2 {
+  background: #f3f4f6;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+  text-align: left;
+  color: #2d3748;
+}
+
+.team-menu-item:hover {
+  background: #e2e8f0;
+}
+
+.team-menu-item2 {
+  background: #ef4444;
+  color: #fff;
+}
+.team-menu-item2:hover {
+  background: #b91c1c;
+}
+
+/* Show code dialog */
+.team-code-dialog {
+  position: absolute;
+  top: 40px;
+  right: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 0.8rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.2s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+  z-index: 10;
+}
+.team-code-dialog p {
+  margin: 0;
+  font-weight: 600;
+  color: #333;
+}
+.team-code-dialog button {
+  padding: 6px 10px;
+  background: #0052d4;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.team-code-dialog button:hover {
+  background: #0041ac;
+}
+
+/* "Add" card */
+.add-card {
+  border: 2px dashed #d1d5db;
+  border-radius: 1rem;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+.add-card:hover {
+  transform: translateY(-2px);
+  border: 2px dashed #0052d4;
+}
+.add-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.9rem;
+}
+.plus-icon {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+  color: #999;
+}
+
+/* Add Dialog Overlay */
+.add-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out;
+  z-index: 9999;
+}
+
+/* Add Dialog Content */
+.add-dialog-content2 {
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  width: 600px;
+  max-width: 90%;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Close Dialog Button */
+.close-dialog-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #666;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.close-dialog-btn:hover {
+  color: #333;
+}
+
+/* Join/Create Options */
+.join-create-options {
+  display: flex;
+  flex-direction: row;
+  gap: 3rem;
+  justify-content: space-between;
+}
+.join-team-box,
+.create-team-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.join-team-box h3,
+.create-team-box h3 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1.1rem;
+  text-align: center;
+  font-weight: 600;
+}
+.join-input,
+.create-input {
+  padding: 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+.create-input:focus {
+  outline: none;
+  border-color: #4dabf7;
+  box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.1);
+}
+.join-input:focus {
+  outline: none;
+  border-color: #c98bff;
+  box-shadow: 0 0 0 2px hsl(272, 100%, 0.1);
+}
+.join-btn,
+.create-btn {
+  padding: 0.6rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s, transform 0.2s;
+  font-weight: 600;
+  color: #fff;
+}
+.join-btn {
+  background: #8e2de2;
+}
+.join-btn:hover {
+  background: #671da7;
+  transform: translateY(-2px);
+}
+.create-btn {
+  background: #0052d4;
+}
+.create-btn:hover {
+  background: #0041ac;
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.1);
+}
+
+/* Scrollbar for teams cards container */
+.teams-cards-container::-webkit-scrollbar {
+  width: 8px;
+}
+.teams-cards-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.teams-cards-container::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+.teams-cards-container::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* FadeIn Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
