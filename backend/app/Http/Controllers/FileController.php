@@ -35,85 +35,97 @@ class FileController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request, Team $team)
-    {
+{
+    try {
         Gate::authorize('create', Team::class);
+        Log::info("File upload initiated for team: {$team->id} by user: " . auth()->id());
 
+        // Validate the request
         $validated = $request->validate([
             'file' => 'required|file',
-            'path' => 'required',
+            'path' => 'required|string',
+            'name' => 'required|string'
         ]);
 
-        // Create a dedicated disk configuration for the team
-        $disk = Storage::build([
-            'driver' => 'local',
-            'root' => storage_path('app/public/teams/'.$team->id), // Fixed path
-            'visibility' => 'public'
-        ]);
+        Log::info("Validation successful", ['data' => $validated]);
+
+        // Define the storage path
+        $teamStoragePath = "teams/{$team->id}/" . trim($validated['path'], '/');
+        $fullStoragePath = storage_path("app/public/{$teamStoragePath}");
+
+        // Ensure the directory exists
+        if (!file_exists($fullStoragePath)) {
+            if (!mkdir($fullStoragePath, 0777, true) && !is_dir($fullStoragePath)) {
+                throw new \Exception("Failed to create directory: {$fullStoragePath}");
+            }
+            Log::info("Created directory: {$fullStoragePath}");
+        }
 
         $file = $request->file('file');
+        $filePath = "{$teamStoragePath}/{$validated['name']}";
 
-        // Clean and prepare the target directory path
-        $targetPath = ltrim($validated['path'], '/');  // Remove leading slashes
+        // Store the file using Laravel's storage system
+        Storage::disk('public')->putFileAs($teamStoragePath, $file, $validated['name']);
 
-        $path = $file->storeAs($targetPath, $file->getClientOriginalName(), $disk);
+        Log::info("File successfully stored", ['path' => $filePath]);
 
-
-
-        // Create file record with proper relationships
-        // File::create([
-        //     'name' => $file->getClientOriginalName(),
-        //     'path' => $path,
-        //     'user_id' => auth()->id(),
-        //     'team_id' => $team->id, // Associate with the team
-        // ]);
-
-        return response()->json($path);
+        return response()->json(['path' => "storage/{$filePath}"], 201);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        Log::error("Validation failed", ['errors' => $e->errors()]);
+        return response()->json(['error' => 'Validation failed', 'details' => $e->errors()], 422);
+    } catch (\Exception $e) {
+        Log::error("File upload failed", [
+            'message' => $e->getMessage(),
+            'team_id' => $team->id,
+            'user_id' => auth()->id(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        return response()->json(['error' => 'File upload failed'], 500);
     }
+}
+
 
     /**
      * Display the specified resource.
      */
-    public function show(Team $team, Request $request)
+    public function show(Team $team , Request $request)
     {
+
         Gate::authorize('view', $team);
 
         $validated = $request->validate([
             'path' => 'required|string'
         ]);
 
-        // Rebuild the team-specific disk
+    // Rebuild the team-specific disk
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path("app/public/teams/{$team->id}"),
+            'root' => storage_path('app/public/teams/{$team->id}'),
             'visibility' => 'public'
         ]);
 
         // Verify file exists
         if (!$disk->exists($validated['path'])) {
-            return response()->json(['error' => 'File not found'], 404);
+            abort(404, 'File not found');
         }
 
         try {
+            // Get file contents and metadata
             $content = $disk->get($validated['path']);
             $mimeType = $disk->mimeType($validated['path']);
             $fileSize = $disk->size($validated['path']);
-            $extension = pathinfo($validated['path'], PATHINFO_EXTENSION);
 
-            return response()->json([
-                'file_name' => basename($validated['path']),
-                'file_type' => $extension,
-                'mime_type' => $mimeType,
-                'file_size' => $fileSize,
-                'file_content' => $content
-            ]);
+            return response($content)
+                ->header('Content-Type', $mimeType)
+                ->header('Content-Length', $fileSize)
+                ->header('Content-Disposition', 'inline; filename="' . $validated['path'] . '"')
+                ->header('X-File-Type', $fileType);
 
         } catch (\Exception $e) {
-            Log::error("File retrieval failed: {$e->getMessage()}");
-            return response()->json(['error' => 'Could not retrieve file content'], 500);
+            Log::error("File content retrieval failed: {$e->getMessage()}");
+            abort(500, 'Could not retrieve file content');
         }
     }
-
-
 
     public function download(team $team, Request $request)
     {
@@ -193,9 +205,14 @@ class FileController extends Controller
         // Rename the file
         $disk->move($validated['path'], $newPath);
 
+        $mimeType = $disk->mimeType($newPath);
+        $fileType = explode('/', $mimeType)[1] ?? 'unknown';
+
         return response()->json([
             'message' => 'File updated successfully',
             'new_path' => $newPath,
+            'mime_type' => $mimeType,
+            'file_type' => $fileType,
         ]);
 
     }
