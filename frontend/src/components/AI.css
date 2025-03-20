@@ -822,3 +822,40 @@
 .action-btn.enabled .action-icon {
   color: white;
 }
+
+/* Rotating AI Icon - fixed size */
+.rotating-ai-icon {
+  max-width: 48px;
+  max-width: 48px;
+  min-width: 48px;
+  min-width: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  margin-top: 4px;
+  z-index: 100;
+}
+
+.rotating-ai-icon:hover {
+  opacity: 0.8;
+}
+
+.rotating-ai-icon svg {
+  transition: filter 0.3s ease;
+}
+
+.rotating-ai-icon svg path {
+  fill: #8e44ad !important;
+  stroke: #fff !important;
+  stroke-width: 0.5px !important;
+  stroke-linejoin: round !important;
+  stroke-linecap: round !important;
+  paint-order: fill stroke !important;
+  vector-effect: non-scaling-stroke;
+}
+
+.rotating-ai-icon:hover svg {
+  filter: brightness(1.1);
+}
