@@ -29,8 +29,8 @@ export default function FileShareSystem() {
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
 
-  // Overlays: registration always appears on load; tutorial appears after.
-  const [showRegisterOverlay, setShowRegisterOverlay] = useState(true);
+  // Overlays: initially hidden.
+  const [showRegisterOverlay, setShowRegisterOverlay] = useState(false);
   const [showTutorialOverlay, setShowTutorialOverlay] = useState(false);
 
   // Active OS for the tutorial overlay.
@@ -42,12 +42,21 @@ export default function FileShareSystem() {
     password: "",
   });
 
+  // Define fileInputRef for file uploads.
+  const fileInputRef = useRef(null);
+
   // Get token and teamId from localStorage
   let teamId = localStorage.getItem("teamId");
   let token = localStorage.getItem("token");
 
-  // Remove auto-forcing of registration based on localStorage.
-  // Registration overlay always shows on page load.
+  // On component mount, if no token exists, prompt the user.
+  useEffect(() => {
+    if (!token) {
+      
+        setShowRegisterOverlay(true);
+      
+    }
+  }, [token]);
 
   // Close item menu when clicking outside
   useEffect(() => {
@@ -83,33 +92,55 @@ export default function FileShareSystem() {
         }
       );
 
-      const allItems = response.data.directory;
-      let filtered = [];
-
+      // Directories filtering
+      const allDirs = response.data.directory;
+      let filteredDirs;
       if (currentPath === "/") {
-        filtered = allItems.filter((item) => !item.includes("/"));
+        filteredDirs = allDirs.filter((item) => !item.includes("/"));
       } else {
         const normalizedPath = currentPath.endsWith("/")
           ? currentPath
           : currentPath + "/";
-        filtered = allItems.filter((item) => {
+        filteredDirs = allDirs.filter((item) => {
           if (!item.startsWith(normalizedPath)) return false;
           const remainder = item.slice(normalizedPath.length);
           return !remainder.includes("/");
         });
       }
+      const fetchedDirectories = filteredDirs.map((fullPath) => {
+        const name = fullPath.split("/").pop();
+        return { path: fullPath, name, type: "folder" };
+      });
 
-      return filtered.map((fullPath) => ({
-        path: fullPath,
-        name: fullPath.split("/").pop(),
-        type: "folder",
-      }));
+      // Files filtering
+      const allFiles = response.data.files || [];
+      let filteredFiles;
+      if (currentPath === "/") {
+        filteredFiles = allFiles.filter((file) => !file.path.includes("/"));
+      } else {
+        const normalizedPath = currentPath.endsWith("/")
+          ? currentPath
+          : currentPath + "/";
+        filteredFiles = allFiles.filter((file) => {
+          if (!file.path.startsWith(normalizedPath)) return false;
+          const remainder = file.path.slice(normalizedPath.length);
+          return !remainder.includes("/");
+        });
+      }
+      const fetchedFiles = filteredFiles.map((file) => {
+        const name = file.path.split("/").pop();
+        return { path: file.path, name, type: file.type };
+      });
+
+      const fetchedItems = [...fetchedDirectories, ...fetchedFiles];
+      return fetchedItems;
     } catch (error) {
       console.error("Error fetching data:", error);
       return [];
     }
   }
 
+  // Fetch directory items on mount and whenever currentPath changes
   useEffect(() => {
     async function fetchData() {
       const data = await getdirsroot();
@@ -121,26 +152,19 @@ export default function FileShareSystem() {
   // Folder creation handler
   const handleCreateFolder = async () => {
     if (!newFolderName.trim()) return;
+    if (token === "guestToken") {
+      const newPath =
+        currentPath === "/" ? `${currentPath}${newFolderName}` : `${currentPath}/${newFolderName}`;
+      setItems((prev) => [
+        ...prev,
+        { path: newPath, name: newFolderName, type: "folder" },
+      ]);
+      setConfirmationMessage("Folder created (guest mode)!");
+      setNewFolderName("");
+      setIsCreatingFolder(false);
+      return;
+    }
     try {
-      if (token === "guestToken") {
-        const newPath =
-          currentPath === "/"
-            ? `${currentPath}${newFolderName}`
-            : `${currentPath}/${newFolderName}`;
-        setItems((prev) => [
-          ...prev,
-          {
-            path: newPath,
-            name: newFolderName,
-            type: "folder",
-          },
-        ]);
-        setConfirmationMessage("Folder created (guest mode)!");
-        setNewFolderName("");
-        setIsCreatingFolder(false);
-        return;
-      }
-
       const response = await axios.post(
         `http://localhost:8000/api/folders/${teamId}/store`,
         { name: newFolderName, path: currentPath },
@@ -152,9 +176,7 @@ export default function FileShareSystem() {
         }
       );
       const newPath =
-        currentPath === "/"
-          ? `${currentPath}${newFolderName}`
-          : `${currentPath}/${newFolderName}`;
+        currentPath === "/" ? `${currentPath}${newFolderName}` : `${currentPath}/${newFolderName}`;
       setConfirmationMessage(response.data.message || "Folder created!");
       setItems((prev) => [
         ...prev,
@@ -167,7 +189,7 @@ export default function FileShareSystem() {
     }
   };
 
-  // Registration handler (login button)
+  // Registration handler
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
@@ -184,12 +206,13 @@ export default function FileShareSystem() {
       setErrorMessage("");
     } catch (error) {
       setErrorMessage(
-        error.response?.data?.error || "Registration failed. Please try again."
+        error.response?.data?.error ||
+          "Registration failed. Please try again."
       );
     }
   };
 
-  // Skip button handler (guest mode)
+  // Guest mode handler
   const handleGuestEnter = () => {
     localStorage.setItem("hasRegistered", "true");
     localStorage.setItem("token", "guestToken");
@@ -207,25 +230,28 @@ export default function FileShareSystem() {
     setMenuItemPath((prev) => (prev === itemPath ? null : itemPath));
   };
 
-  // Open folder or item
-  const handleOpen = (itemPath) => {
-    if (itemPath === "/demo-folder") {
-      setCurrentPath("/demo-folder");
-    } else {
+  // Open folder or file (only folders change directory)
+  const handleOpen = (itemPath, itemType) => {
+    if (itemType === "folder") {
       setCurrentPath(itemPath);
     }
     setMenuItemPath(null);
   };
 
-  // Delete folder/item
-  const handleDelete = async (itemPath) => {
-    if (!window.confirm("Delete this folder permanently?")) return;
+  // Delete folder or file
+  const handleDelete = async (itemPath, itemType) => {
+    if (!window.confirm(`Are you sure you want to delete this ${itemType}?`))
+      return;
     try {
       if (token === "guestToken") {
         setItems((prev) => prev.filter((item) => item.path !== itemPath));
         return;
       }
-      await axios.delete(`http://localhost:8000/api/folders/${teamId}/delete`, {
+      const endpoint =
+        itemType === "folder"
+          ? `http://localhost:8000/api/folders/${teamId}/delete`
+          : `http://localhost:8000/api/files/${teamId}/delete`;
+      await axios.delete(endpoint, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -234,7 +260,8 @@ export default function FileShareSystem() {
       });
       setItems((prev) => prev.filter((item) => item.path !== itemPath));
     } catch (error) {
-      setErrorMessage("Error deleting folder.");
+      console.error(`Error deleting ${itemType}:`, error);
+      setErrorMessage(`An error occurred while deleting the ${itemType}.`);
     }
   };
 
@@ -245,7 +272,113 @@ export default function FileShareSystem() {
     setCurrentPath(newPath);
   };
 
-  // Render item icon based on type
+  // Download file feature (only for files)
+  const handleDownload = async (item) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/files/${teamId}/download`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: { path: item.path },
+          responseType: "blob",
+        }
+      );
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"],
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", item.name);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      setErrorMessage("An error occurred while downloading the file.");
+    }
+  };
+
+  // Upload file feature with duplicate checking
+  const handleUploadFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const originalName = file.name;
+    // Filter items in current directory
+    const currentItems = items.filter((item) => {
+      if (currentPath === "/") {
+        return !item.path.slice(1).includes("/");
+      } else {
+        const normalizedPath = currentPath.endsWith("/")
+          ? currentPath
+          : currentPath + "/";
+        const remainder = item.path.slice(normalizedPath.length);
+        return remainder && !remainder.includes("/");
+      }
+    });
+    if (currentItems.some((item) => item.name === originalName)) {
+      setErrorMessage("File already exists");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("path", currentPath);
+    formData.append("name", originalName);
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/api/files/${teamId}/store`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setConfirmationMessage(
+        response.data.message || "File uploaded successfully!"
+      );
+      const dotIndex = originalName.lastIndexOf(".");
+      let extension = "";
+      if (dotIndex !== -1) {
+        extension = originalName.substring(dotIndex);
+      }
+      const newFile = {
+        path:
+          currentPath === "/"
+            ? `/${originalName}`
+            : `${currentPath}/${originalName}`,
+        name: originalName,
+        type: extension.replace(".", "").toLowerCase(),
+      };
+      setItems((prev) => [...prev, newFile]);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      setErrorMessage(
+        error.response?.data?.error ||
+          "An error occurred while uploading the file."
+      );
+    }
+    e.target.value = "";
+  };
+
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Toggle add dialog and clear messages
+  const toggleAddDialog = () => {
+    setShowAddDialog((prev) => !prev);
+    setConfirmationMessage("");
+    setErrorMessage("");
+    setIsCreatingFolder(false);
+    setNewFolderName("");
+  };
+
+  // Render icon based on item type
   const renderItemIcon = (item) => {
     const iconProps = { size: 28, color: "#4dabf7" };
     switch (item.type) {
@@ -266,8 +399,7 @@ export default function FileShareSystem() {
 
   // Render breadcrumb navigation
   const renderBreadcrumb = () => {
-    if (currentPath === "/")
-      return <span className="breadcrumb-part">Root</span>;
+    if (currentPath === "/") return <span className="breadcrumb-part">Root</span>;
     const parts = currentPath.split("/").filter(Boolean);
     return (
       <div className="breadcrumb">
@@ -293,10 +425,9 @@ export default function FileShareSystem() {
 
   // --- Overlay Components ---
 
-  // Registration Overlay component
+  // Registration Overlay
   const RegisterOverlay = () => {
     const overlayRef = useRef(null);
-    // On first mount, remove the animation style so subsequent re-renders don't re-trigger it.
     useEffect(() => {
       if (overlayRef.current) {
         overlayRef.current.style.animation = "none";
@@ -346,7 +477,7 @@ export default function FileShareSystem() {
     );
   };
 
-  // Tutorial Overlay component
+  // Tutorial Overlay
   const TutorialOverlay = () => {
     const overlayRef = useRef(null);
     useEffect(() => {
@@ -401,10 +532,7 @@ export default function FileShareSystem() {
               </>
             )}
           </div>
-          <button
-            className="close-tutorial"
-            onClick={() => setShowTutorialOverlay(false)}
-          >
+          <button className="close-tutorial" onClick={() => setShowTutorialOverlay(false)}>
             Start Using
           </button>
         </div>
@@ -420,7 +548,9 @@ export default function FileShareSystem() {
       {showTutorialOverlay && <TutorialOverlay />}
 
       {confirmationMessage && (
-        <div className="global-confirmation-message">{confirmationMessage}</div>
+        <div className="global-confirmation-message">
+          {confirmationMessage}
+        </div>
       )}
       {errorMessage && (
         <div className="global-error-message">{errorMessage}</div>
@@ -438,18 +568,12 @@ export default function FileShareSystem() {
           )}
         </div>
         <div className="add-button-container2">
-          <button
-            className="add-button2"
-            onClick={() => setShowAddDialog(!showAddDialog)}
-          >
+          <button className="add-button2" onClick={toggleAddDialog}>
             <FiMenu size={24} />
           </button>
           {showAddDialog && (
             <div className="add-dialog-popup2">
-              <button
-                className="add-dialog-item3"
-                onClick={() => console.log("Upload File")}
-              >
+              <button className="add-dialog-item3" onClick={triggerFileInput}>
                 <FaFileMedical /> Upload File
               </button>
               {isCreatingFolder ? (
@@ -462,24 +586,15 @@ export default function FileShareSystem() {
                     onChange={(e) => setNewFolderName(e.target.value)}
                     autoFocus
                   />
-                  <button
-                    className="folder-save-button"
-                    onClick={handleCreateFolder}
-                  >
+                  <button className="folder-save-button" onClick={handleCreateFolder}>
                     <MdCheck size={20} />
                   </button>
-                  <button
-                    className="folder-cancel-button"
-                    onClick={() => setIsCreatingFolder(false)}
-                  >
+                  <button className="folder-cancel-button" onClick={() => setIsCreatingFolder(false)}>
                     <MdClose size={20} />
                   </button>
                 </div>
               ) : (
-                <button
-                  className="add-dialog-item2"
-                  onClick={() => setIsCreatingFolder(true)}
-                >
+                <button className="add-dialog-item2" onClick={() => setIsCreatingFolder(true)}>
                   <FaFolderPlus /> Create Folder
                 </button>
               )}
@@ -494,38 +609,36 @@ export default function FileShareSystem() {
             <div
               key={item.path}
               className="item-card"
-              onClick={() => handleOpen(item.path)}
+              onClick={() =>
+                item.type === "folder" && handleOpen(item.path, item.type)
+              }
             >
               <div className="item-icon">{renderItemIcon(item)}</div>
               <p className="item-name" title={item.name}>
                 {item.name}
               </p>
-              <button
-                className="item-menu-btn"
-                onClick={(e) => toggleMenu(item.path, e)}
-              >
+              <button className="item-menu-btn" onClick={(e) => toggleMenu(item.path, e)}>
                 <FiMoreVertical size={20} />
               </button>
               {menuItemPath === item.path && (
-                <div
-                  className="item-menu-dialog"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <div className="item-menu-dialog" onClick={(e) => e.stopPropagation()}>
                   <button
                     className="item-menu-item open-item"
-                    onClick={() => handleOpen(item.path)}
+                    onClick={() => handleOpen(item.path, item.type)}
                   >
                     <IoEnter /> Open
                   </button>
-                  <button
-                    className="item-menu-item open-item"
-                    onClick={() => console.log("Download:", item.path)}
-                  >
-                    <IoMdDownload /> Download
-                  </button>
+                  {item.type !== "folder" && (
+                    <button
+                      className="item-menu-item download-item"
+                      onClick={() => handleDownload(item)}
+                    >
+                      <IoMdDownload /> Download
+                    </button>
+                  )}
                   <button
                     className="item-menu-item delete-item"
-                    onClick={() => handleDelete(item.path)}
+                    onClick={() => handleDelete(item.path, item.type)}
                   >
                     <MdDelete /> Delete
                   </button>
@@ -535,6 +648,13 @@ export default function FileShareSystem() {
           ))}
         </div>
       </main>
+      {/* Hidden file input for uploading files */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={handleUploadFile}
+      />
     </div>
   );
 }
