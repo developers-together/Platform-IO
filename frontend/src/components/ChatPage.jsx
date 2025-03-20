@@ -133,7 +133,7 @@ export default function ChatPage() {
 
       const formattedMessages = response.data.data.map((msg) => ({
         id: msg.id,
-        user: msg.isai?"AI":msg.user_name,
+        user: msg.isAi?"AI":msg.user_name,
         avatar: "",
         time: new Date(msg.created_at).toLocaleTimeString([], {
           hour: "2-digit",
