@@ -35,7 +35,7 @@ class FolderController extends Controller
                 'throw' => true, // Throw exceptions on errors
             ]);
 
-            $allFiles = $disk->files();
+            $allFiles = $disk->allFiles();
             $directories = $disk->allDirectories();
 
             // Process files to include their file type
