@@ -40,12 +40,23 @@ export default function App() {
         {currentPage === "register" && (
           <Register setCurrentPage={setCurrentPage} />
         )}
-        {currentPage === "dashboard" && <Dashboard />}
-        {currentPage === "chat" && <ChatPage />}
-        {currentPage === "Tasks" && <TasksPage />}
-        {currentPage === "Calendar" && <CalendarPage />}
-        {currentPage === "File" && <FilePage />}
-        {currentPage === "AI" && <AIPage setLeftSidebarOpen={setSidebarOpen} />}
+        {currentPage === "dashboard" && (
+          <Dashboard setCurrentPage={setCurrentPage} />
+        )}
+        {currentPage === "chat" && <ChatPage setCurrentPage={setCurrentPage} />}
+        {currentPage === "Tasks" && (
+          <TasksPage setCurrentPage={setCurrentPage} />
+        )}
+        {currentPage === "Calendar" && (
+          <CalendarPage setCurrentPage={setCurrentPage} />
+        )}
+        {currentPage === "File" && <FilePage setCurrentPage={setCurrentPage} />}
+        {currentPage === "AI" && (
+          <AIPage
+            setLeftSidebarOpen={setSidebarOpen}
+            setCurrentPage={setCurrentPage}
+          />
+        )}
         {currentPage === "teams" && <Teams setCurrentPage={setCurrentPage} />}
         {currentPage === "Profile" && (
           <Profile setCurrentPage={setCurrentPage} />

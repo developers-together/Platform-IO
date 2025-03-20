@@ -56,8 +56,8 @@ export default function Landing({ setCurrentPage }) {
           <h1>Platform-IO</h1>
           <p>
             Where Ideas Sync, Teams Thrive, and Work Comes Alive <br />
-            <p>Your All-in-One Hub for Smarter Collaboration!</p>
           </p>
+          <p>Your All-in-One Hub for Smarter Collaboration!</p>
           <Magnet
             padding={10000}
             disabled={false}
