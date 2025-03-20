@@ -14,6 +14,8 @@ use App\Http\Controllers\SftpController;
 use App\Http\Controllers\FolderController;
 use App\Http\Controllers\FileController;
 
+use App\Http\Controllers\FtpUserController;
+
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -74,7 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/files/{team}/show', [FileController::class, 'show']);
     Route::post('/files/{team}/store', [FileController::class, 'store']);
     Route::delete('/files/{team}/delete', [FileController::class, 'destroy']);
-    Route::put('/files/{team}/update', [FileController::class, 'update']);
+    // Route::put('/files/{team}/update', [FileController::class, 'update']);
     Route::get('/files/{team}/download', [FileController::class, 'download']);
     Route::put('/files/{team}/aiedit', [FileController::class, 'editFileWithGemini']);
     Route::post('/files/{team}/aicreate', [FileController::class, 'createFileWithGemini']);
@@ -83,14 +85,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/folders/{team}/show/', [FolderController::class, 'show']);
     Route::post('/folders/{team}/store', [FolderController::class, 'store']);
     Route::delete('/folders/{team}/delete', [FolderController::class, 'destroy']);
-    Route::put('/folders/{team}/update', [FolderController::class, 'update']);
+    // Route::put('/folders/{team}/update', [FolderController::class, 'update']);
 
+    Route::post('/vsftp/{team}/connect',[FtpUserController::class,'createFtpUser']);
 
 });
 
-Route::post('/sftp/connect', [SftpController::class, 'connect']);
-Route::post('/sftp/{team}/command', [SftpController::class, 'handleSftpCommand'])
-    ->middleware(['signed', 'auth:sanctum', 'sftp']);
+// Route::post('/sftp/connect', [SftpController::class, 'connect']);
+// Route::post('/sftp/{team}/command', [SftpController::class, 'handleSftpCommand'])
+//     ->middleware(['signed', 'auth:sanctum', 'sftp']);
 
 Route::post('/register', [UserController::class, 'store']);
 
