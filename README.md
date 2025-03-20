@@ -3,7 +3,8 @@
 **Version**: V1  
 **Team**: DevSync  
 **Project Leader**: Adham Haitham Eid - adhamhaithameid@gmail.com
-**Hackathon**: Salam Hackathon (13 – 20 Ramadan 1446)
+
+**Hackathon**: Salam Hackathon (13 – 20 Ramadan 1446) / (13 - 20 March 2025)
 
 ---
 
