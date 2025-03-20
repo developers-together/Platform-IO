@@ -147,6 +147,7 @@ class MessageController extends Controller
         $message2 = Message::create([
             'user_id' => Auth::id(),
             'chat_id' => $chat->id,
+            'user_name' => 'Gemini',
             'message' => $aiResponse
         ]);
 
