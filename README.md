@@ -64,27 +64,27 @@ Front-End (React) -- API Calls --> Laravel/PHP -- Gemini AI --> FTP (Shared File
 > **Note**: Since this project is a prototype, the installation steps may be simplified. Adjust for your own environment as needed.
 
 1. **Clone the repository**:
-   ```bash
+
+2. ```bash
    git clone https://github.com/DevSync/Platform-IO.git
-   cd Platform-IO
-   cd frontend
-   npm install
-   npm run build
-   npm run start
+   ```
+   Front-End Setup (react/javascript)
+   ```bash
+   cd Platform-IO/frontend
+   npm install --force
+   npm run dev
     ```
-or for development:
 
 Back-End Setup (Laravel/PHP):
 
 ```bash
-cd ../backend
+cd Platform-IO/backend
 composer install
-cp .env.example .env
-php artisan key:generate
 php artisan migrate
+pip install google-generativeai
 ```
 
-Update .env with your DB credentials (SQLite or other), FTP details, and Gemini AI keys
+Update .env with your DB credentials SQLite and Gemini AI keys
 
 Run the server:
 
@@ -101,8 +101,8 @@ Configure environment variables to connect to Gemini AI if needed.
 Usage
 Local Access:
 ```bash
-React dev server: http://144.24.195.74:3000 (by default).
-Laravel server: http://144.24.195.74:8000 (by default).
+React dev server: http://localhost:5173 (by default).
+Laravel server: http://localhost:8000 (by default).
 ```
 ## AI Features:
 
