@@ -49,7 +49,8 @@ export default function FileShareSystem() {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
   }, [token]);
 
   // Fetch directory data
@@ -66,11 +67,11 @@ export default function FileShareSystem() {
           params: { path: currentPath },
         }
       );
-  
+
       // Assume response.data.directory is an array of full paths, for example:
       // ["1", "1/2", "1/2/gg"]
       const allDirs = response.data.directory;
-  
+
       let filteredDirs;
       if (currentPath === "/") {
         // At root, only direct children (no slash) are kept.
@@ -87,7 +88,7 @@ export default function FileShareSystem() {
           return !remainder.includes("/");
         });
       }
-  
+
       // Map the filtered directories to folder objects.
       const fetchedDirectories = filteredDirs.map((fullPath) => {
         const name = fullPath.split("/").pop();
@@ -97,7 +98,7 @@ export default function FileShareSystem() {
           type: "folder",
         };
       });
-  
+
       // Filtering files similarly:
       const allFiles = response.data.files || [];
       let filteredFiles;
@@ -114,7 +115,7 @@ export default function FileShareSystem() {
           return !remainder.includes("/");
         });
       }
-  
+
       // Map the filtered files to file objects.
       const fetchedFiles = filteredFiles.map((file) => {
         const name = file.path.split("/").pop();
@@ -124,7 +125,7 @@ export default function FileShareSystem() {
           type: file.type, // e.g., "txt", "pdf", etc.
         };
       });
-  
+
       // Combine directories and files into one array.
       const fetchedItems = [...fetchedDirectories, ...fetchedFiles];
       return fetchedItems;
@@ -133,8 +134,7 @@ export default function FileShareSystem() {
       return [];
     }
   }
-  
-  
+
   // Fetch directory items on mount and whenever currentPath changes
   useEffect(() => {
     async function fetchData() {
@@ -183,7 +183,7 @@ export default function FileShareSystem() {
       );
     }
   };
-  
+
   // Three-dots menu functions
   const toggleMenu = (itemPath, e) => {
     e.stopPropagation();
@@ -198,24 +198,33 @@ export default function FileShareSystem() {
       setMenuItemPath(null);
     }
   };
-  
-  
-  const handleDelete = async (itemPath) => {
-    if (!window.confirm("Are you sure you want to delete this folder?")) return;
+
+  const handleDelete = async (itemPath, itemType) => {
+    if (!window.confirm(`Are you sure you want to delete this ${itemType}?`))
+      return;
+
     try {
-      await axios.delete(`http://localhost:8000/api/folders/${teamId}/delete`, {
+      const endpoint =
+        itemType === "folder"
+          ? `http://localhost:8000/api/folders/${teamId}/delete`
+          : `http://localhost:8000/api/files/${teamId}/delete`;
+
+      await axios.delete(endpoint, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         data: { path: itemPath },
       });
+
       setItems((prevItems) =>
-        prevItems.filter((item) => item.path !== itemPath)
+        prevItems.filter((i) => i.path !== itemPath)
       );
     } catch (error) {
-      console.error("Error deleting folder:", error);
-      setErrorMessage("An error occurred while deleting the folder.");
+      console.error(`Error deleting ${itemType}:`, error);
+      setErrorMessage(
+        `An error occurred while deleting the ${itemType}.`
+      );
     }
   };
 
@@ -225,20 +234,76 @@ export default function FileShareSystem() {
     let p = currentPath.split("/");
     p.pop();
     let newPath = p.join("/");
-    if(newPath === ""){
+    if (newPath === "") {
       newPath = "/";
     }
     setCurrentPath(newPath);
   };
 
-  // Upload file feature (only changes in this section)
+  // Download file feature
+  const handleDownload = async (item) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/files/${teamId}/download`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: { path: item.path },
+          responseType: "blob", // Important for downloading files
+        }
+      );
+      // Create a blob from the response data
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"],
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", item.name);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      setErrorMessage("An error occurred while downloading the file.");
+    }
+  };
+
+  // Upload file feature
   const handleUploadFile = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Determine original file name
+    const originalName = file.name;
+
+    // Filter items in the current directory
+    const currentItems = items.filter((item) => {
+      if (currentPath === "/") {
+        return !item.path.slice(1).includes("/");
+      } else {
+        const normalizedPath = currentPath.endsWith("/")
+          ? currentPath
+          : currentPath + "/";
+        const remainder = item.path.slice(normalizedPath.length);
+        return remainder && !remainder.includes("/");
+      }
+    });
+
+    // Check for duplicate by comparing file names
+    if (currentItems.some((item) => item.name === originalName)) {
+      setErrorMessage("File already exists");
+      return;
+    }
+
+    // Build formData including the original file name
     const formData = new FormData();
     formData.append("file", file);
     formData.append("path", currentPath); // Send the current directory path
-    console.log(file,currentPath);
+    formData.append("name", originalName); // Send the original file name to the API
+    console.log(file, currentPath, originalName);
+
     try {
       const response = await axios.post(
         `http://localhost:8000/api/files/${teamId}/store`,
@@ -250,13 +315,25 @@ export default function FileShareSystem() {
           },
         }
       );
-      setConfirmationMessage(response.data.message || "File uploaded successfully!");
-      // Optionally, update your items state to include the new file.
+      setConfirmationMessage(
+        response.data.message || "File uploaded successfully!"
+      );
+
+      // Manually construct the file object using the original file name
+      const dotIndex = originalName.lastIndexOf(".");
+      let extension = "";
+      if (dotIndex !== -1) {
+        extension = originalName.substring(dotIndex);
+      }
       const newFile = {
-        path: response.data.file.path, // assuming the API returns the file object
-        name: response.data.file.path.split("/").pop(),
-        type: response.data.file.type,
+        path:
+          currentPath === "/"
+            ? `/${originalName}`
+            : `${currentPath}/${originalName}`,
+        name: originalName,
+        type: extension.replace(".", "").toLowerCase(), // e.g., "pdf" or "txt"
       };
+
       setItems((prevItems) => [...prevItems, newFile]);
     } catch (error) {
       console.error("Error uploading file:", error);
@@ -275,7 +352,6 @@ export default function FileShareSystem() {
     }
   };
 
-
   // Toggle the add dialog and clear messages
   const toggleAddDialog = () => {
     setShowAddDialog((prev) => !prev);
@@ -285,7 +361,7 @@ export default function FileShareSystem() {
     setNewFolderName("");
   };
 
-  // Render icon
+  // Render icon based on type
   function renderItemIcon(item) {
     if (item.type === "folder") return <FiFolder size={28} color="#4dabf7" />;
     if (item.type === "video") return <FiVideo size={28} color="#4dabf7" />;
@@ -328,7 +404,9 @@ export default function FileShareSystem() {
   return (
     <div className="file-page">
       {confirmationMessage && (
-        <div className="global-confirmation-message">{confirmationMessage}</div>
+        <div className="global-confirmation-message">
+          {confirmationMessage}
+        </div>
       )}
       {errorMessage && (
         <div className="global-error-message">{errorMessage}</div>
@@ -415,19 +493,21 @@ export default function FileShareSystem() {
                 >
                   <button
                     className="item-menu-item open-item"
-                    onClick={() => handleOpen(item.path)}
+                    onClick={() => handleOpen(item.path, item.type)}
                   >
                     <IoEnter /> Open
                   </button>
-                  <button
-                    className="item-menu-item open-item"
-                    onClick={() => console.log("Download item:", item.path)}
-                  >
-                    <IoMdDownload /> Download
-                  </button>
+                  {item.type !== "folder" && (
+                    <button
+                      className="item-menu-item download-item"
+                      onClick={() => handleDownload(item)}
+                    >
+                      <IoMdDownload /> Download
+                    </button>
+                  )}
                   <button
                     className="item-menu-item delete-item"
-                    onClick={() => handleDelete(item.path)}
+                    onClick={() => handleDelete(item.path, item.type)}
                   >
                     <MdDelete /> Delete
                   </button>
