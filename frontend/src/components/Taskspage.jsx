@@ -80,7 +80,7 @@ export default function TasksPage() {
             title: task.title || "Untitled Task",
             description: task.description || "",
             dueDate: task.end || "",
-            createdAt: task.start || "",
+            createdAt: task.created_at || "",
             completed: task.completed ?? false,
             starred: task.stared ?? false,
           }))
