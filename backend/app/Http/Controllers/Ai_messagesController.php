@@ -48,11 +48,18 @@ class Ai_messagesController extends Controller
             ];
         }
 
+        $history = Ai_Messages::where('ai_chats_id', $chat)
+        ->orderBy('created_at', 'desc') // Latest first
+        ->take(5) // Get only 5 records
+        ->get();
+        
+        $inputtext = "use the following history to help the user with ther problem". $history . "here is the prompt: " . $contents;
+
        // Call Gemini API
        $response = Http::withHeaders([
            'Content-Type' => 'application/json',
        ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=' . env('GEMINI_API_KEY'), [
-            'contents' => $contents
+            'contents' => $inputtext
        ]);
 
        $responseData = $response->json();
