@@ -83,6 +83,7 @@ class MessageController extends Controller
                 'image_url' => $message->path ? Storage::url($message->path) : null,
                 'replyTo' => $message->replyTo,
                 'created_at' => $message->created_at->toDateTimeString(),
+                'isAi' => $message->isAi,
             ];
         });
 
