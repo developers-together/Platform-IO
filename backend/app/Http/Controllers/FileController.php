@@ -294,30 +294,79 @@ class FileController extends Controller
 }
 
 
+//     public function createFileWithGemini(Request $request, Team $team)
+// {
+//     Gate::authorize('create', Team::class);
+
+//     $validated = $request->validate([
+//         'filename' => 'required|string',
+//         'path' => 'required|string',
+//         'prompt' => 'required|string',
+//     ]);
+
+//     $disk = Storage::build([
+//         'driver' => 'local',
+//         'root' => storage_path("app/public/teams/{$team->id}"),
+//         'visibility' => 'public'
+//     ]);
+
+//     $content = $this->sendtogemini($validated['prompt']);
+
+//     $targetPath = ltrim($validated['path'], '/') . '/' . $validated['filename'];
+
+//     $disk->put($targetPath, $content);
+
+//     return response()->json(['message' => 'File created successfully', 'path' => $targetPath]);
+// }
+
+    private function generateFilenameFromGemini(string $prompt): string
+    {
+        // Call your AI model to generate a filename based on the prompt
+        return $this->sendtogemini("Generate a meaningful filename based on this content: {$prompt}");
+    }
+
     public function createFileWithGemini(Request $request, Team $team)
-{
-    Gate::authorize('create', Team::class);
+    {
+        Gate::authorize('create', Team::class);
 
-    $validated = $request->validate([
-        'filename' => 'required|string',
-        'path' => 'required|string',
-        'prompt' => 'required|string',
-    ]);
+        $validated = $request->validate([
+            'path' => 'required|string',
+            'prompt' => 'required|string',
+        ]);
 
-    $disk = Storage::build([
-        'driver' => 'local',
-        'root' => storage_path("app/public/teams/{$team->id}"),
-        'visibility' => 'public'
-    ]);
+        $disk = Storage::build([
+            'driver' => 'local',
+            'root' => storage_path("app/public/teams/{$team->id}"),
+            'visibility' => 'public'
+        ]);
 
-    $content = $this->sendtogemini($validated['prompt']);
+        // Generate file content and name from Gemini
+        $content = $this->sendtogemini($validated['prompt']);
+        $filename = $this->generateFilenameFromGemini($validated['prompt']);
 
-    $targetPath = ltrim($validated['path'], '/') . '/' . $validated['filename'];
+        // 🔹 Sanitize filename
+        $filename = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $filename);
+        if (!str_contains($filename, '.')) {
+            $filename .= '.txt'; // Default extension
+        }
 
-    $disk->put($targetPath, $content);
+        // 🔹 Trim and sanitize the path
+        $path = trim($validated['path'], '/');
 
-    return response()->json(['message' => 'File created successfully', 'path' => $targetPath]);
-}
+        // 🔹 Ensure unique filename if it already exists
+        $targetPath = "{$path}/{$filename}";
+        while ($disk->exists($targetPath)) {
+            $filename = pathinfo($filename, PATHINFO_FILENAME) . '_' . time() . '.' . pathinfo($filename, PATHINFO_EXTENSION);
+            $targetPath = "{$path}/{$filename}";
+        }
+
+        // Save file
+        $disk->put($targetPath, $content);
+
+        return response()->json(['message' => 'File created successfully', 'filename' => $filename]);
+    }
+
+
 
 public function editFileWithGemini(Request $request, Team $team)
 {
