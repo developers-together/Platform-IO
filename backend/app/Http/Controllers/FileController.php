@@ -57,7 +57,7 @@ class FileController extends Controller
 
         // Store the file using the custom disk
         $path = $disk->putFileAs(
-            $targetPath,
+            $validated['path'],
             $file,
             $file->getClientOriginalName()
         );
@@ -76,47 +76,44 @@ class FileController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Team $team, Request $request)
+    public function show(Team $team , Request $request)
     {
+
         Gate::authorize('view', $team);
 
         $validated = $request->validate([
             'path' => 'required|string'
         ]);
 
-        // Rebuild the team-specific disk
+    // Rebuild the team-specific disk
         $disk = Storage::build([
             'driver' => 'local',
-            'root' => storage_path("app/public/teams/{$team->id}"),
+            'root' => storage_path('app/public/teams/{$team->id}'),
             'visibility' => 'public'
         ]);
 
         // Verify file exists
         if (!$disk->exists($validated['path'])) {
-            return response()->json(['error' => 'File not found'], 404);
+            abort(404, 'File not found');
         }
 
         try {
+            // Get file contents and metadata
             $content = $disk->get($validated['path']);
             $mimeType = $disk->mimeType($validated['path']);
             $fileSize = $disk->size($validated['path']);
-            $extension = pathinfo($validated['path'], PATHINFO_EXTENSION);
 
-            return response()->json([
-                'file_name' => basename($validated['path']),
-                'file_type' => $extension,
-                'mime_type' => $mimeType,
-                'file_size' => $fileSize,
-                'file_content' => $content
-            ]);
+            return response($content)
+                ->header('Content-Type', $mimeType)
+                ->header('Content-Length', $fileSize)
+                ->header('Content-Disposition', 'inline; filename="' . $validated['path'] . '"')
+                ->header('X-File-Type', $fileType);
 
         } catch (\Exception $e) {
-            Log::error("File retrieval failed: {$e->getMessage()}");
-            return response()->json(['error' => 'Could not retrieve file content'], 500);
+            Log::error("File content retrieval failed: {$e->getMessage()}");
+            abort(500, 'Could not retrieve file content');
         }
     }
-
-
 
     public function download(team $team, Request $request)
     {
@@ -196,9 +193,14 @@ class FileController extends Controller
         // Rename the file
         $disk->move($validated['path'], $newPath);
 
+        $mimeType = $disk->mimeType($newPath);
+        $fileType = explode('/', $mimeType)[1] ?? 'unknown';
+
         return response()->json([
             'message' => 'File updated successfully',
             'new_path' => $newPath,
+            'mime_type' => $mimeType,
+            'file_type' => $fileType,
         ]);
 
     }

@@ -1,6 +1,4 @@
 /* File.css */
-
-/* Root container */
 .file-page {
   display: flex;
   flex-direction: column;
@@ -9,19 +7,22 @@
   font-family: "Arial", sans-serif;
 }
 
-/* Header */
 .file-header {
   display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: 20px 20px 0;
   background: transparent;
+  position: relative;
 }
 
 .header-left {
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 80%;
 }
 
 .file-headline {
@@ -31,80 +32,61 @@
   font-weight: 600;
 }
 
-/* Help Circle – matching the AI page info button */
-.help-circle {
-  width: 24px;
-  height: 24px;
-  background: #6b7280;
-  color: #fff;
-  border-radius: 50%;
-  font-weight: 600;
-  display: flex;
+.breadcrumb {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  font-size: 0.9rem;
+  color: #4a5568;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.breadcrumb-part {
   cursor: pointer;
-  position: relative;
-  transition: all 0.2s ease;
-  z-index: 1000;
-}
-.help-circle:hover {
-  background: #4b5563;
-  transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(0, 82, 212, 0.2);
-}
-
-/* Tooltip */
-.help-tooltip {
-  position: absolute;
-  top: 130%;
-  left: 0;
-  width: 240px;
-  padding: 1rem;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-  animation: fadeIn 0.2s ease-out;
-  z-index: 999;
+  transition: all 0.2s;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Tooltip Tabs */
-.tooltip-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-  justify-content: center;
-}
-.tooltip-tab {
-  flex: 1;
+.breadcrumb-part:hover {
   background: #f3f4f6;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-size: 0.8rem;
-  padding: 0.3rem;
-  transition: background 0.2s;
-  color: #2d3748;
-}
-.tooltip-tab:hover {
-  background: #e2e8f0;
-}
-.tooltip-tab.active {
-  background: #4dabf7;
-  color: #fff;
-}
-.tooltip-content {
-  font-size: 0.85rem;
-  color: #2d3748;
-  line-height: 1.4;
+  color: #0052d4;
 }
 
-/* Add Button Container */
+.breadcrumb-separator {
+  color: #cbd5e0;
+  margin: 0 2px;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  background: #4dabf7;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  gap: 6px;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.back-button:hover {
+  background: #0052d4;
+  transform: translateY(-1px);
+}
+
 .add-button-container2 {
   position: relative;
   display: inline-block;
 }
 
-/* Add Button – styled like the sidebar toggle icon */
 .add-button2 {
   background: #0052d4;
   color: white;
@@ -116,23 +98,15 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.2s;
   box-shadow: 0 6px 20px rgba(0, 82, 212, 0.4);
-  position: relative;
-  cursor: pointer;
 }
 
 .add-button2:hover {
   background: #0041ac;
   transform: scale(1.1);
-  box-shadow: 0px 0px 20px rgba(0, 81, 212, 0.8);
 }
 
-.add-button2:active {
-  transform: scale(0.9);
-}
-
-/* Add Dialog Popup (dropdown style) */
 .add-dialog-popup2 {
   position: absolute;
   top: 110%;
@@ -144,10 +118,9 @@
   padding: 0.5rem 0;
   width: 220px;
   z-index: 100;
-  animation: all 0.2s ease-in-out;
+  animation: fadeIn 0.2s ease-in-out;
 }
 
-/* Add Dialog Items */
 .add-dialog-item2,
 .add-dialog-item3 {
   background: #f3f4f6;
@@ -157,46 +130,61 @@
   text-align: left;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
   width: 90%;
-  margin-left: 0.5rem;
-  margin-right: 0.5rem;
-  margin-top: 0.5rem;
+  margin: 0.5rem auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .add-dialog-item2:hover,
 .add-dialog-item3:hover {
   background: #e2e8f0;
-  transform: scale(1.02);
 }
 
-/* Add Dialog Items */
-.add-dialog-item3 {
-  margin-top: 0px;
+.folder-create-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9fafc;
+  width: 90%;
+  margin: 0.5rem auto;
 }
 
-.add-dialog-separator2 {
-  height: 1px;
-  background: #ddd;
-  margin: 0.5rem 1rem;
+.folder-create-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 0.4rem;
+  font-size: 0.9rem;
+  background: transparent;
 }
 
-/* Enhanced styling for icons in the add-dialog-popup2 */
-.add-dialog-popup2 button svg {
-  width: 22px;
-  height: 22px;
-  margin-right: 8px;
-  vertical-align: middle;
-  transition: transform 0.2s ease, color 0.2s ease;
-  color: #4dabf7; /* primary color matching the add button */
+.folder-save-button,
+.folder-cancel-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
 }
 
-.add-dialog-popup2 button:hover svg {
-  transform: scale(1.1);
-  color: #0041ac;
+.folder-save-button {
+  color: #4dabf7;
+}
+.folder-save-button:hover {
+  color: #0052d4;
+}
+.folder-cancel-button {
+  color: #e53e3e;
+}
+.folder-cancel-button:hover {
+  color: #c53030;
 }
 
-/* Main Content Area */
 .file-main {
   flex: 1;
   padding: 2rem;
@@ -204,28 +192,28 @@
   justify-content: center;
 }
 
-/* Items List */
 .items-list {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 1.5rem;
-  max-width: 1200px;
+  padding: 1rem;
   width: 100%;
-  height: 100%;
-  justify-content: baseline;
 }
 
-/* Item Card */
 .item-card {
   background: #fff;
-  border-radius: 1rem;
+  border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   padding: 1.5rem;
   text-align: center;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.2s;
   position: relative;
-  width: 160px;
+  max-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .item-card:hover {
@@ -233,37 +221,36 @@
   box-shadow: 0 6px 20px rgba(0, 82, 212, 0.15);
 }
 
-/* Item Icon */
 .item-icon {
   margin-bottom: 1rem;
 }
 
-/* Item Name */
 .item-name {
   font-size: 0.9rem;
   font-weight: 500;
   color: #2d3748;
   margin: 0;
-  word-break: break-all;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Three-Dots Menu Button */
 .item-menu-btn {
   position: absolute;
   top: 8px;
   right: 8px;
   background: transparent;
   border: none;
-  font-size: 1.2rem;
   color: #999;
   cursor: pointer;
   transition: color 0.2s;
 }
+
 .item-menu-btn:hover {
   color: #555;
 }
 
-/* Enhanced Menu Dialog */
 .item-menu-dialog {
   position: absolute;
   top: 40px;
@@ -277,6 +264,7 @@
   flex-direction: column;
   gap: 4px;
   z-index: 10;
+  min-width: 160px;
 }
 
 .item-menu-item {
@@ -288,37 +276,45 @@
   color: #4dabf7;
   cursor: pointer;
   transition: background 0.2s;
-}
-
-.item-menu-item svg {
-  color: #4dabf7;
-  width: 22px;
-  height: 22px;
-  margin-right: 4px;
-  margin-left: 4px;
-  margin-top: -2px;
-  vertical-align: middle;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .item-menu-item:hover {
   background: #f3f4f6;
 }
-.open-item {
-  color: #2d3748;
-}
-.delete-item {
-  color: #2d3748;
+
+.global-confirmation-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ecfdf5;
+  color: #065f46;
+  padding: 0.8rem 1.5rem;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  animation: slideDown 0.3s ease-out;
 }
 
-.delete-item svg,
-.open-item svg {
-  color: #4dabf7;
-  width: 22px;
-  height: 22px;
-  vertical-align: middle;
+.global-error-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 0.8rem 1.5rem;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  animation: slideDown 0.3s ease-out;
 }
 
-/* fadeIn Animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -330,16 +326,46 @@
   }
 }
 
-/* Responsive */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
 @media (max-width: 768px) {
   .file-header {
-    flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
+    padding: 1rem;
   }
+
+  .file-headline {
+    font-size: 1.5rem;
+  }
+
+  .breadcrumb-part {
+    max-width: 120px;
+    padding: 0.25rem;
+  }
+
   .items-list {
-    justify-content: center;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    padding: 0.5rem;
   }
+
   .item-card {
-    width: 140px;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .add-dialog-popup2 {
+    right: auto;
+    left: 0;
   }
 }
