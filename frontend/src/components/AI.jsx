@@ -136,6 +136,9 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const [isCreatingNewChat, setIsCreatingNewChat] = useState(false);
   const [newChatName, setNewChatName] = useState("");
 
+  // NEW: State to save the action selected from the dialog
+  const [savedAction, setSavedAction] = useState("");
+
   // Close actions dialog on any click (with a timeout to avoid immediate closure on the opening click)
   useEffect(() => {
     if (selectedAction === "actions") {
@@ -320,24 +323,33 @@ export default function AIPage({ setLeftSidebarOpen }) {
 
   // ===== Action buttons (search, actions, upload) =====
   const handleAction = (action) => {
+    if (action === "actions") {
+      // If an action is already saved, reset to default state
+      if (savedAction) {
+        setSavedAction("");
+        setInput("");
+        return;
+      }
+      // Toggle the actions dialog
+      if (selectedAction === "actions") {
+        setSelectedAction("");
+        setInput("");
+        return;
+      }
+      setSelectedAction("actions");
+      return;
+    }
     if (selectedAction === action) {
       setSelectedAction("");
       setInput("");
       return;
     }
     setSelectedAction(action);
-    switch (action) {
-      case "search":
-        setInput("Search for: ");
-        break;
-      case "actions":
-        // Do nothing here; dialog will appear.
-        break;
-      case "upload":
-        fileInputRef.current.click();
-        break;
-      default:
-        break;
+    if (action === "search") {
+      setInput("Search for: ");
+    }
+    if (action === "upload") {
+      fileInputRef.current.click();
     }
   };
 
@@ -355,7 +367,8 @@ export default function AIPage({ setLeftSidebarOpen }) {
         break;
     }
     setInput(command);
-    setSelectedAction("");
+    setSavedAction(option); // Save the selected action (driving both text and icon)
+    setSelectedAction(""); // Close the dialog
   };
 
   // ===== Creating a new chat =====
@@ -657,10 +670,20 @@ export default function AIPage({ setLeftSidebarOpen }) {
             onClick={() => handleAction("actions")}
             className={`action-btn ${
               selectedAction === "actions" ? "selected" : ""
-            }`}
+            } ${savedAction ? "enabled" : ""}`}
           >
-            <FiCommand className="action-icon" />
-            Make Actions
+            {savedAction === "edit-file" ? (
+              <FiEdit2 className="action-icon" />
+            ) : savedAction === "create-file-folder" ? (
+              <FiFolder className="action-icon" />
+            ) : (
+              <FiCommand className="action-icon" />
+            )}
+            {savedAction
+              ? savedAction === "edit-file"
+                ? "Edit File"
+                : "Create File/Folder"
+              : "Make Actions"}
           </button>
         </div>
 
