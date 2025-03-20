@@ -15,12 +15,11 @@ import { IoMdDownload } from "react-icons/io";
 import { FaFolderPlus } from "react-icons/fa";
 import { AiFillFilePdf } from "react-icons/ai";
 import { IoEnter } from "react-icons/io5";
-import { MdDelete } from "react-icons/md";
-import { MdCheck, MdClose } from "react-icons/md";
+import { MdDelete, MdCheck, MdClose } from "react-icons/md";
 import "./File.css";
 
 export default function FileShareSystem() {
-  // State variables
+  // State variables for file system, overlays, etc.
   const [items, setItems] = useState([]);
   const [menuItemPath, setMenuItemPath] = useState(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -30,30 +29,48 @@ export default function FileShareSystem() {
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
 
-  const helpRef = useRef(null);
-  const tooltipRef = useRef(null);
-  const fileInputRef = useRef(null);
+  // Overlays: registration always appears on load; tutorial appears after.
+  const [showRegisterOverlay, setShowRegisterOverlay] = useState(true);
+  const [showTutorialOverlay, setShowTutorialOverlay] = useState(false);
 
-  const teamId = localStorage.getItem("teamId");
-  const token = localStorage.getItem("token");
+  // Active OS for the tutorial overlay.
+  const [activeOS, setActiveOS] = useState("windows");
 
+  // Registration data
+  const [registerData, setRegisterData] = useState({
+    username: "",
+    password: "",
+  });
+
+  // Get token and teamId from localStorage
+  let teamId = localStorage.getItem("teamId");
+  let token = localStorage.getItem("token");
+
+  // Remove auto-forcing of registration based on localStorage.
+  // Registration overlay always shows on page load.
+
+  // Close item menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
-        tooltipRef.current &&
-        !tooltipRef.current.contains(e.target) &&
-        helpRef.current &&
-        !helpRef.current.contains(e.target)
+        !e.target.closest(".item-menu-dialog") &&
+        !e.target.closest(".item-menu-btn")
       ) {
-        // Optionally hide tooltip
+        setMenuItemPath(null);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [token]);
+  }, []);
 
-  // Fetch directory data
+  // Fetch directory items (or return dummy data in guest mode)
   async function getdirsroot() {
+    if (!token || token === "guestToken") {
+      return [
+        { path: "/demo-folder", name: "Demo Folder", type: "folder" },
+        { path: "/demo-file.txt", name: "Demo File.txt", type: "text" },
+      ];
+    }
     try {
       const response = await axios.get(
         `http://localhost:8000/api/folders/${teamId}/index`,
@@ -62,80 +79,37 @@ export default function FileShareSystem() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          // Pass the currentPath as a parameter (if your backend uses it)
           params: { path: currentPath },
         }
       );
-  
-      // Assume response.data.directory is an array of full paths, for example:
-      // ["1", "1/2", "1/2/gg"]
-      const allDirs = response.data.directory;
-  
-      let filteredDirs;
+
+      const allItems = response.data.directory;
+      let filtered = [];
+
       if (currentPath === "/") {
-        // At root, only direct children (no slash) are kept.
-        filteredDirs = allDirs.filter((item) => !item.includes("/"));
+        filtered = allItems.filter((item) => !item.includes("/"));
       } else {
-        // For a non-root folder, first ensure currentPath ends with a slash.
         const normalizedPath = currentPath.endsWith("/")
           ? currentPath
           : currentPath + "/";
-        // Filter for items that start with the normalizedPath and have no additional slash
-        filteredDirs = allDirs.filter((item) => {
+        filtered = allItems.filter((item) => {
           if (!item.startsWith(normalizedPath)) return false;
           const remainder = item.slice(normalizedPath.length);
           return !remainder.includes("/");
         });
       }
-  
-      // Map the filtered directories to folder objects.
-      const fetchedDirectories = filteredDirs.map((fullPath) => {
-        const name = fullPath.split("/").pop();
-        return {
-          path: fullPath, // full path is our unique key
-          name,
-          type: "folder",
-        };
-      });
-  
-      // Filtering files similarly:
-      const allFiles = response.data.files || [];
-      let filteredFiles;
-      if (currentPath === "/") {
-        // At root, only include files with no slash in their path.
-        filteredFiles = allFiles.filter((file) => !file.path.includes("/"));
-      } else {
-        const normalizedPath = currentPath.endsWith("/")
-          ? currentPath
-          : currentPath + "/";
-        filteredFiles = allFiles.filter((file) => {
-          if (!file.path.startsWith(normalizedPath)) return false;
-          const remainder = file.path.slice(normalizedPath.length);
-          return !remainder.includes("/");
-        });
-      }
-  
-      // Map the filtered files to file objects.
-      const fetchedFiles = filteredFiles.map((file) => {
-        const name = file.path.split("/").pop();
-        return {
-          path: file.path,
-          name,
-          type: file.type, // e.g., "txt", "pdf", etc.
-        };
-      });
-  
-      // Combine directories and files into one array.
-      const fetchedItems = [...fetchedDirectories, ...fetchedFiles];
-      return fetchedItems;
+
+      return filtered.map((fullPath) => ({
+        path: fullPath,
+        name: fullPath.split("/").pop(),
+        type: "folder",
+      }));
     } catch (error) {
       console.error("Error fetching data:", error);
       return [];
     }
   }
-  
-  
-  // Fetch directory items on mount and whenever currentPath changes
+
   useEffect(() => {
     async function fetchData() {
       const data = await getdirsroot();
@@ -144,16 +118,32 @@ export default function FileShareSystem() {
     fetchData();
   }, [teamId, token, currentPath]);
 
-  // Create folder
+  // Folder creation handler
   const handleCreateFolder = async () => {
     if (!newFolderName.trim()) return;
     try {
+      if (token === "guestToken") {
+        const newPath =
+          currentPath === "/"
+            ? `${currentPath}${newFolderName}`
+            : `${currentPath}/${newFolderName}`;
+        setItems((prev) => [
+          ...prev,
+          {
+            path: newPath,
+            name: newFolderName,
+            type: "folder",
+          },
+        ]);
+        setConfirmationMessage("Folder created (guest mode)!");
+        setNewFolderName("");
+        setIsCreatingFolder(false);
+        return;
+      }
+
       const response = await axios.post(
         `http://localhost:8000/api/folders/${teamId}/store`,
-        {
-          name: newFolderName,
-          path: currentPath,
-        },
+        { name: newFolderName, path: currentPath },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -161,48 +151,80 @@ export default function FileShareSystem() {
           },
         }
       );
-      let path = currentPath;
-      if (path === "/") path += newFolderName;
-      else path += "/" + newFolderName;
-      setConfirmationMessage(
-        response.data.message || "Folder created successfully!"
-      );
-      const newFolder = {
-        path: path,
-        name: newFolderName,
-        type: "folder",
-      };
-      setItems((prevItems) => [...prevItems, newFolder]);
+      const newPath =
+        currentPath === "/"
+          ? `${currentPath}${newFolderName}`
+          : `${currentPath}/${newFolderName}`;
+      setConfirmationMessage(response.data.message || "Folder created!");
+      setItems((prev) => [
+        ...prev,
+        { path: newPath, name: newFolderName, type: "folder" },
+      ]);
       setNewFolderName("");
       setIsCreatingFolder(false);
     } catch (error) {
-      console.error("Error creating folder:", error);
+      setErrorMessage(error.response?.data?.error || "Error creating folder.");
+    }
+  };
+
+  // Registration handler (login button)
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/register",
+        registerData
+      );
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("teamId", response.data.teamId);
+      localStorage.setItem("hasRegistered", "true");
+
+      setShowRegisterOverlay(false);
+      setShowTutorialOverlay(true);
+      setErrorMessage("");
+    } catch (error) {
       setErrorMessage(
-        error.response?.data?.error ||
-          "An error occurred while creating the folder."
+        error.response?.data?.error || "Registration failed. Please try again."
       );
     }
   };
-  
-  // Three-dots menu functions
+
+  // Skip button handler (guest mode)
+  const handleGuestEnter = () => {
+    localStorage.setItem("hasRegistered", "true");
+    localStorage.setItem("token", "guestToken");
+    localStorage.setItem("teamId", "guestTeamId");
+    token = "guestToken";
+    teamId = "guestTeamId";
+
+    setShowRegisterOverlay(false);
+    setShowTutorialOverlay(true);
+  };
+
+  // Toggle item menu
   const toggleMenu = (itemPath, e) => {
     e.stopPropagation();
     setMenuItemPath((prev) => (prev === itemPath ? null : itemPath));
   };
 
-  // Open folder: use the "show" endpoint to fetch its contents.
-  // Even if the folder is empty, update the currentPath.
-  const handleOpen = async (itemPath, itemType) => {
-    if (itemType === "folder") {
+  // Open folder or item
+  const handleOpen = (itemPath) => {
+    if (itemPath === "/demo-folder") {
+      setCurrentPath("/demo-folder");
+    } else {
       setCurrentPath(itemPath);
-      setMenuItemPath(null);
     }
+    setMenuItemPath(null);
   };
-  
-  
+
+  // Delete folder/item
   const handleDelete = async (itemPath) => {
-    if (!window.confirm("Are you sure you want to delete this folder?")) return;
+    if (!window.confirm("Delete this folder permanently?")) return;
     try {
+      if (token === "guestToken") {
+        setItems((prev) => prev.filter((item) => item.path !== itemPath));
+        return;
+      }
       await axios.delete(`http://localhost:8000/api/folders/${teamId}/delete`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -210,123 +232,193 @@ export default function FileShareSystem() {
         },
         data: { path: itemPath },
       });
-      setItems((prevItems) =>
-        prevItems.filter((item) => item.path !== itemPath)
-      );
+      setItems((prev) => prev.filter((item) => item.path !== itemPath));
     } catch (error) {
-      console.error("Error deleting folder:", error);
-      setErrorMessage("An error occurred while deleting the folder.");
+      setErrorMessage("Error deleting folder.");
     }
   };
 
-  // "Back" button: navigate to the parent directory
+  // Navigate back in directory
   const handleBack = () => {
     if (currentPath === "/") return;
-    let p = currentPath.split("/");
-    p.pop();
-    let newPath = p.join("/");
-    if(newPath === ""){
-      newPath = "/";
-    }
+    const newPath = currentPath.split("/").slice(0, -1).join("/") || "/";
     setCurrentPath(newPath);
   };
 
-  // Upload file feature (only changes in this section)
-  const handleUploadFile = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("path", currentPath); // Send the current directory path
-    console.log(file,currentPath);
-    try {
-      const response = await axios.post(
-        `http://localhost:8000/api/files/${teamId}/store`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            // Let axios set the appropriate Content-Type for multipart/form-data
-          },
-        }
-      );
-      setConfirmationMessage(response.data.message || "File uploaded successfully!");
-      // Optionally, update your items state to include the new file.
-      const newFile = {
-        path: response.data.file.path, // assuming the API returns the file object
-        name: response.data.file.path.split("/").pop(),
-        type: response.data.file.type,
-      };
-      setItems((prevItems) => [...prevItems, newFile]);
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      setErrorMessage(
-        error.response?.data?.error ||
-          "An error occurred while uploading the file."
-      );
-    }
-    // Clear the file input so the same file can be re-uploaded if needed.
-    e.target.value = "";
-  };
-
-  const triggerFileInput = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+  // Render item icon based on type
+  const renderItemIcon = (item) => {
+    const iconProps = { size: 28, color: "#4dabf7" };
+    switch (item.type) {
+      case "folder":
+        return <FiFolder {...iconProps} />;
+      case "video":
+        return <FiVideo {...iconProps} />;
+      case "pdf":
+        return <AiFillFilePdf {...iconProps} />;
+      case "text":
+        return <FiFileText {...iconProps} />;
+      case "image":
+        return <FiImage {...iconProps} />;
+      default:
+        return <FiGenericFile {...iconProps} />;
     }
   };
 
-
-  // Toggle the add dialog and clear messages
-  const toggleAddDialog = () => {
-    setShowAddDialog((prev) => !prev);
-    setConfirmationMessage("");
-    setErrorMessage("");
-    setIsCreatingFolder(false);
-    setNewFolderName("");
-  };
-
-  // Render icon
-  function renderItemIcon(item) {
-    if (item.type === "folder") return <FiFolder size={28} color="#4dabf7" />;
-    if (item.type === "video") return <FiVideo size={28} color="#4dabf7" />;
-    if (item.type === "pdf") return <AiFillFilePdf size={28} color="#4dabf7" />;
-    if (item.type === "text") return <FiFileText size={28} color="#4dabf7" />;
-    if (item.type === "image") return <FiImage size={28} color="#4dabf7" />;
-    return <FiGenericFile size={28} color="#4dabf7" />;
-  }
-
-  // Render breadcrumb
-  function renderBreadcrumb() {
-    if (currentPath === "/") {
+  // Render breadcrumb navigation
+  const renderBreadcrumb = () => {
+    if (currentPath === "/")
       return <span className="breadcrumb-part">Root</span>;
-    } else {
-      const parts = currentPath.split("/").filter(Boolean);
-      return (
-        <div className="breadcrumb">
-          <span className="breadcrumb-part" onClick={() => setCurrentPath("/")}>
-            Root
-          </span>
-          {parts.map((part, index) => (
-            <React.Fragment key={index}>
-              <span className="breadcrumb-separator">›</span>
-              <span
-                className="breadcrumb-part"
-                onClick={() => {
-                  const newPath = "/" + parts.slice(0, index + 1).join("/");
-                  setCurrentPath(newPath);
-                }}
-              >
-                {part}
-              </span>
-            </React.Fragment>
-          ))}
+    const parts = currentPath.split("/").filter(Boolean);
+    return (
+      <div className="breadcrumb">
+        <span className="breadcrumb-part" onClick={() => setCurrentPath("/")}>
+          Root
+        </span>
+        {parts.map((part, index) => (
+          <React.Fragment key={index}>
+            <span className="breadcrumb-separator">›</span>
+            <span
+              className="breadcrumb-part"
+              onClick={() =>
+                setCurrentPath("/" + parts.slice(0, index + 1).join("/"))
+              }
+            >
+              {part}
+            </span>
+          </React.Fragment>
+        ))}
+      </div>
+    );
+  };
+
+  // --- Overlay Components ---
+
+  // Registration Overlay component
+  const RegisterOverlay = () => {
+    const overlayRef = useRef(null);
+    // On first mount, remove the animation style so subsequent re-renders don't re-trigger it.
+    useEffect(() => {
+      if (overlayRef.current) {
+        overlayRef.current.style.animation = "none";
+      }
+    }, []);
+    return (
+      <div className="overlay2">
+        <div className="register-overlay" ref={overlayRef}>
+          <h2>Create Your Account</h2>
+          <form onSubmit={handleRegister}>
+            <input
+              type="text"
+              placeholder="Username"
+              value={registerData.username}
+              onChange={(e) =>
+                setRegisterData((prev) => ({
+                  ...prev,
+                  username: e.target.value,
+                }))
+              }
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={registerData.password}
+              onChange={(e) =>
+                setRegisterData((prev) => ({
+                  ...prev,
+                  password: e.target.value,
+                }))
+              }
+              required
+            />
+            <button type="submit">Login</button>
+          </form>
+          <button
+            type="button"
+            onClick={handleGuestEnter}
+            style={{ marginTop: "1rem", fontSize: "0.9rem" }}
+          >
+            Skip Registration
+          </button>
+          {errorMessage && <div className="overlay-error">{errorMessage}</div>}
         </div>
-      );
-    }
-  }
+      </div>
+    );
+  };
+
+  // Tutorial Overlay component
+  const TutorialOverlay = () => {
+    const overlayRef = useRef(null);
+    useEffect(() => {
+      if (overlayRef.current) {
+        overlayRef.current.style.animation = "none";
+      }
+    }, []);
+    return (
+      <div className="overlay2">
+        <div className="tutorial-overlay" ref={overlayRef}>
+          <h2>Getting Started Guide</h2>
+          <div className="os-tabs">
+            {["windows", "mac", "linux"].map((os) => (
+              <button
+                key={os}
+                className={activeOS === os ? "active" : ""}
+                onClick={() => setActiveOS(os)}
+              >
+                {os.charAt(0).toUpperCase() + os.slice(1)}
+              </button>
+            ))}
+          </div>
+          <div className="tutorial-content">
+            {activeOS === "windows" && (
+              <>
+                <h3>Windows Instructions</h3>
+                <ol>
+                  <li>Right-click files/folders for context menu</li>
+                  <li>Drag-and-drop to organize items</li>
+                  <li>Double-click folders to navigate</li>
+                </ol>
+              </>
+            )}
+            {activeOS === "mac" && (
+              <>
+                <h3>macOS Instructions</h3>
+                <ol>
+                  <li>Control-click for context menus</li>
+                  <li>Use trackpad gestures to navigate</li>
+                  <li>Drag items between folders</li>
+                </ol>
+              </>
+            )}
+            {activeOS === "linux" && (
+              <>
+                <h3>Linux Instructions</h3>
+                <ol>
+                  <li>Right-click for context menus</li>
+                  <li>Use keyboard shortcuts (Ctrl+C/V)</li>
+                  <li>Drag items to move/copy</li>
+                </ol>
+              </>
+            )}
+          </div>
+          <button
+            className="close-tutorial"
+            onClick={() => setShowTutorialOverlay(false)}
+          >
+            Start Using
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // --- End Overlays ---
 
   return (
     <div className="file-page">
+      {showRegisterOverlay && <RegisterOverlay />}
+      {showTutorialOverlay && <TutorialOverlay />}
+
       {confirmationMessage && (
         <div className="global-confirmation-message">{confirmationMessage}</div>
       )}
@@ -346,20 +438,26 @@ export default function FileShareSystem() {
           )}
         </div>
         <div className="add-button-container2">
-          <button className="add-button2" onClick={toggleAddDialog}>
+          <button
+            className="add-button2"
+            onClick={() => setShowAddDialog(!showAddDialog)}
+          >
             <FiMenu size={24} />
           </button>
           {showAddDialog && (
             <div className="add-dialog-popup2">
-              <button className="add-dialog-item3" onClick={triggerFileInput}>
+              <button
+                className="add-dialog-item3"
+                onClick={() => console.log("Upload File")}
+              >
                 <FaFileMedical /> Upload File
               </button>
               {isCreatingFolder ? (
-                <div className="folder-create-container" tabIndex={0}>
+                <div className="folder-create-container">
                   <input
                     type="text"
                     className="folder-create-input"
-                    placeholder="Enter folder name..."
+                    placeholder="Folder name..."
                     value={newFolderName}
                     onChange={(e) => setNewFolderName(e.target.value)}
                     autoFocus
@@ -396,7 +494,7 @@ export default function FileShareSystem() {
             <div
               key={item.path}
               className="item-card"
-              onClick={() => handleOpen(item.path, item.type)}
+              onClick={() => handleOpen(item.path)}
             >
               <div className="item-icon">{renderItemIcon(item)}</div>
               <p className="item-name" title={item.name}>
@@ -421,7 +519,7 @@ export default function FileShareSystem() {
                   </button>
                   <button
                     className="item-menu-item open-item"
-                    onClick={() => console.log("Download item:", item.path)}
+                    onClick={() => console.log("Download:", item.path)}
                   >
                     <IoMdDownload /> Download
                   </button>
@@ -437,13 +535,6 @@ export default function FileShareSystem() {
           ))}
         </div>
       </main>
-      {/* Hidden file input for uploading files */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        style={{ display: "none" }}
-        onChange={handleUploadFile}
-      />
     </div>
   );
 }
