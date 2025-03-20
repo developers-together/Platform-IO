@@ -178,7 +178,6 @@ export default function ChatPage() {
           getChatMessages(channels[0]?.id);
         }
       } else {
-        console.log("else");
         setMessages([]);
         setSelectedChatId(null);
       }
@@ -282,6 +281,57 @@ export default function ChatPage() {
         "Error sending message:",
         error.response?.data || error.message
       );
+    }
+  };
+
+  // NEW: Function to ask AI. It sends a request to your AI endpoint,
+  // then adds the response to the chat and also saves it via the normal messages endpoint.
+  const askAI = async () => {
+    if (!inputText.trim() || !selectedChatId) return;
+    const prompt = inputText;
+    
+    // Append the user's message to the chat
+    const userMessage = {
+      id: Date.now(), // using timestamp as an example unique id
+      user: "You",
+      avatar: "",
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      message: prompt,
+      image: null,
+      replyTo: null,
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setInputText("");
+    try {
+      // Send the prompt to the AI endpoint
+      const response = await axios.post(
+        `http://localhost:8000/api/chats/${selectedChatId}/ask`,
+        { prompt},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const aiResponseText = response.data.messages[1].message;
+      // console.log(response.data.messages[0].id);
+      // Append the AI response to messages
+      const aiMessage = {
+        id: Date.now() + 1, // ensure a different id
+        user: "AI",
+        avatar: "",
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        message: aiResponseText,
+        image: null,
+        replyTo: response.data.messages[0].id,
+      };
+      setMessages((prev) => [...prev, aiMessage]);
+      
+      // Optionally clear the input text
+      
+    } catch (error) {
+      console.error("Error asking AI:", error);
     }
   };
 
@@ -565,7 +615,10 @@ export default function ChatPage() {
               />
               <button
                 className="remove-image-btn1"
-                onClick={() => {setSelectedImage(null);setImageUrl("");}}
+                onClick={() => {
+                  setSelectedImage(null);
+                  setImageUrl("");
+                }}
               >
                 <FiXCircle />
               </button>
@@ -589,6 +642,10 @@ export default function ChatPage() {
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
             />
+            {/* New Ask AI button */}
+            <button onClick={askAI} style={{ marginRight: "0.5rem" }}>
+              Ask AI
+            </button>
             <button onClick={sendMessage}>
               <FiSend />
             </button>

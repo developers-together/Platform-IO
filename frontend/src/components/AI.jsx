@@ -268,6 +268,22 @@ export default function AIPage({ setLeftSidebarOpen }) {
         return;
       }
     }
+    if(savedAction=="create-file-folder"){
+      console.log(newMessage.text);
+      const response = await axios.post(`http://localhost:8000/api/files/${teamId}/aicreate`,
+        { prompt: newMessage.text,
+          path:"/"
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("file created",response);
+      return;
+    }
     try {
       const endpoint =
         selectedAction === "search"
