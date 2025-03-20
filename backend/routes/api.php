@@ -70,7 +70,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/ai_chats/{chat}/history', [Ai_messagesController::class, 'getHistory']);
     Route::post('/ai_chats/{chat}/websearch', [Ai_messagesController::class, 'websearch']);
 
-    // Route::get('/files/{team}/index', [FileController::class, 'index']);
+    Route::get('/files/{team}/index', [FileController::class, 'index']);
     Route::get('/files/{team}/show', [FileController::class, 'show']);
     Route::post('/files/{team}/store', [FileController::class, 'store']);
     Route::delete('/files/{team}/delete', [FileController::class, 'destroy']);
