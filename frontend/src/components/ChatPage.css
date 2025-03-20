@@ -654,3 +654,32 @@
 .cancel-btn:hover {
   background: #cbd5e0;
 }
+
+/* Ask AI Button */
+.ask-ai-button {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: #0052d4;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.ask-ai-button:hover {
+  color: #003c9f;
+  transform: scale(1.1);
+}
+
+/* Rotating Fan Icon */
+.rotating-fan-icon {
+  animation: spin 2s linear infinite; /* 2s spin, infinite loop */
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

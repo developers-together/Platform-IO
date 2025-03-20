@@ -52,11 +52,14 @@ const TitleShuffler = () => {
   return <h2>{title}</h2>;
 };
 
-// ========== ROTATING AI ICON ==========
-function RotatingAIIcon({ size = 128, fast = false }) {
+// ========== ROTATING AI ICON (FIXED SIZE) ==========
+/**
+ * This component has a fixed 128×128 size.
+ * The `fast` prop toggles a faster rotation speed.
+ */
+function RotatingAIIcon({ fast = false }) {
   const [rotation, setRotation] = useState(0);
   const hoveredRef = useRef(false);
-  // Initialize fast mode if the "fast" prop is true
   const isFastModeRef = useRef(fast);
   const prevTimeRef = useRef(null);
   const requestRef = useRef(null);
@@ -66,15 +69,18 @@ function RotatingAIIcon({ size = 128, fast = false }) {
       if (!prevTimeRef.current) prevTimeRef.current = timestamp;
       const delta = timestamp - prevTimeRef.current;
       prevTimeRef.current = timestamp;
-      // Use faster speeds if fast is true
+
+      // Speeds are slightly faster if 'fast' is true.
       const baseSpeed = fast ? 360 / 1000 : 360 / 5000;
       const hoverSpeed = fast ? 360 / 500 : 360 / 2500;
       const clickSpeed = fast ? 360 / 500 : 360 / 1000;
+
       const currentSpeed = isFastModeRef.current
         ? clickSpeed
         : hoveredRef.current
         ? hoverSpeed
         : baseSpeed;
+
       setRotation((prev) => (prev + currentSpeed * delta) % 360);
       requestRef.current = requestAnimationFrame(animate);
     }
@@ -97,7 +103,6 @@ function RotatingAIIcon({ size = 128, fast = false }) {
   return (
     <div
       className="rotating-ai-icon"
-      style={{ width: size, height: size }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
@@ -413,7 +418,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
         break;
     }
     setInput(command);
-    setSavedAction(option); // Save the selected action (driving both text and icon)
+    setSavedAction(option); // Save the selected action
     setSelectedAction(""); // Close the dialog
   };
 
@@ -645,7 +650,8 @@ export default function AIPage({ setLeftSidebarOpen }) {
         {messages.length === 0 ? (
           <div className="starter-page">
             <div className="starter-content">
-              <RotatingAIIcon size={128} />
+              {/* Fixed-size icon usage (no size prop) */}
+              <RotatingAIIcon />
               <TitleShuffler />
               <p className="subtitle"></p>
             </div>
@@ -656,7 +662,8 @@ export default function AIPage({ setLeftSidebarOpen }) {
               if (msg.loading) {
                 return (
                   <div key={idx} className="message-container ai-container">
-                    <RotatingAIIcon size={40} fast={true} />
+                    {/* Faster spin for "thinking" */}
+                    <RotatingAIIcon fast={true} />
                     <div className="chat-message ai-message">
                       <span>thinking about your prompt...</span>
                     </div>
@@ -671,7 +678,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
                     }`}
                   >
                     {msg.sender === "ai" ? (
-                      <RotatingAIIcon size={40} />
+                      <RotatingAIIcon />
                     ) : (
                       <div className="user-avatar">
                         <Avatar

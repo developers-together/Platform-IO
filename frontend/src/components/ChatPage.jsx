@@ -11,6 +11,7 @@ import {
   FiPlus,
   FiEdit2,
 } from "react-icons/fi";
+import { FaFan } from "react-icons/fa"; // <-- Import rotating fan icon
 import Avatar from "./Avatar";
 import "./ChatPage.css";
 import axios from "axios";
@@ -289,24 +290,28 @@ export default function ChatPage() {
   const askAI = async () => {
     if (!inputText.trim() || !selectedChatId) return;
     const prompt = inputText;
-    
+
     // Append the user's message to the chat
     const userMessage = {
       id: Date.now(), // using timestamp as an example unique id
       user: "You",
       avatar: "",
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       message: prompt,
       image: null,
       replyTo: null,
     };
     setMessages((prev) => [...prev, userMessage]);
     setInputText("");
+
     try {
       // Send the prompt to the AI endpoint
       const response = await axios.post(
         `http://localhost:8000/api/chats/${selectedChatId}/ask`,
-        { prompt},
+        { prompt },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -315,21 +320,21 @@ export default function ChatPage() {
         }
       );
       const aiResponseText = response.data.messages[1].message;
-      // console.log(response.data.messages[0].id);
+
       // Append the AI response to messages
       const aiMessage = {
         id: Date.now() + 1, // ensure a different id
         user: "AI",
         avatar: "",
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
         message: aiResponseText,
         image: null,
         replyTo: null,
       };
       setMessages((prev) => [...prev, aiMessage]);
-      
-      // Optionally clear the input text
-      
     } catch (error) {
       console.error("Error asking AI:", error);
     }
@@ -642,9 +647,9 @@ export default function ChatPage() {
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
             />
-            {/* New Ask AI button */}
-            <button onClick={askAI} style={{ marginRight: "0.5rem" }}>
-              Ask AI
+            {/* New rotating-fan icon button on the LEFT, calls askAI */}
+            <button onClick={askAI} className="ask-ai-button">
+              <FaFan className="rotating-fan-icon" />
             </button>
             <button onClick={sendMessage}>
               <FiSend />
