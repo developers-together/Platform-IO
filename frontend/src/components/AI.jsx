@@ -13,6 +13,9 @@ import {
   FiMenu,
   FiX,
   FiCheck,
+  FiFolder,
+  FiClipboard,
+  FiCalendar,
 } from "react-icons/fi";
 import { HiOutlineGlobeAlt } from "react-icons/hi";
 
@@ -52,44 +55,33 @@ const TitleShuffler = () => {
 // ========== ROTATING AI ICON (FIXED) ==========
 function RotatingAIIcon({ size = 128 }) {
   const [rotation, setRotation] = useState(0);
-
-  // Instead of storing hovered/isFastMode in state, we keep them in refs
   const hoveredRef = useRef(false);
   const isFastModeRef = useRef(false);
-
-  // Keep track of previous animation time
   const prevTimeRef = useRef(null);
   const requestRef = useRef(null);
 
-  // Animation loop
   useEffect(() => {
     function animate(timestamp) {
       if (!prevTimeRef.current) prevTimeRef.current = timestamp;
       const delta = timestamp - prevTimeRef.current;
       prevTimeRef.current = timestamp;
-
-      // Speeds
       const baseSpeed = 360 / 5000;
       const hoverSpeed = 360 / 2500;
       const clickSpeed = 360 / 1000;
-
       const currentSpeed = isFastModeRef.current
         ? clickSpeed
         : hoveredRef.current
         ? hoverSpeed
         : baseSpeed;
-
       setRotation((prev) => (prev + currentSpeed * delta) % 360);
       requestRef.current = requestAnimationFrame(animate);
     }
-
     requestRef.current = requestAnimationFrame(animate);
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
   }, []);
 
-  // Event handlers that set ref values (no re-renders)
   const handleMouseEnter = () => {
     hoveredRef.current = true;
   };
@@ -126,7 +118,6 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const [input, setInput] = useState("");
   const fileInputRef = useRef();
   const [showTooltip, setShowTooltip] = useState(false);
-
   const token = localStorage.getItem("token");
   const teamId = localStorage.getItem("teamId");
 
@@ -145,7 +136,22 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const [isCreatingNewChat, setIsCreatingNewChat] = useState(false);
   const [newChatName, setNewChatName] = useState("");
 
-  // ===== Fetch chat data, show first chat automatically =====
+  // Close actions dialog on any click (with a timeout to avoid immediate closure on the opening click)
+  useEffect(() => {
+    if (selectedAction === "actions") {
+      const handleOutsideClick = () => {
+        setSelectedAction("");
+      };
+      const timer = setTimeout(() => {
+        document.addEventListener("click", handleOutsideClick);
+      }, 0);
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener("click", handleOutsideClick);
+      };
+    }
+  }, [selectedAction]);
+
   useEffect(() => {
     if (previousChats.length > 0) {
       setSelectedChatId(previousChats[0].id);
@@ -218,14 +224,10 @@ export default function AIPage({ setLeftSidebarOpen }) {
   // ===== Send message =====
   const handleSend = async () => {
     if (!input.trim()) return;
-
     const newMessage = { sender: "You", text: input.trim() };
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
-
     let chatId = selectedChatId;
-
-    // If no chat exists, create a new one
     if (previousChats.length === 0) {
       try {
         const response = await axios.post(
@@ -263,13 +265,17 @@ export default function AIPage({ setLeftSidebarOpen }) {
         return;
       }
     }
+<<<<<<< Updated upstream
  
     
     // Send the message now that a chat exists
+=======
+>>>>>>> Stashed changes
     try {
-      const endpoint =selectedAction=="search"?
-      `http://localhost:8000/api/ai_chats/${chatId}/websearch`:
-      `http://localhost:8000/api/ai_chats/${chatId}/send`;
+      const endpoint =
+        selectedAction === "search"
+          ? `http://localhost:8000/api/ai_chats/${chatId}/websearch`
+          : `http://localhost:8000/api/ai_chats/${chatId}/send`;
       console.log(endpoint);
       const response = await axios.post(
         endpoint,
@@ -318,7 +324,6 @@ export default function AIPage({ setLeftSidebarOpen }) {
     }
   };
 
-  
   // ===== Action buttons (search, actions, upload) =====
   const handleAction = (action) => {
     if (selectedAction === action) {
@@ -332,7 +337,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
         setInput("Search for: ");
         break;
       case "actions":
-        setInput("# ");
+        // Do nothing here; dialog will appear.
         break;
       case "upload":
         fileInputRef.current.click();
@@ -340,6 +345,23 @@ export default function AIPage({ setLeftSidebarOpen }) {
       default:
         break;
     }
+  };
+
+  // ===== Handle Action Dialog Option Click =====
+  const handleDialogOptionClick = (option) => {
+    let command = "";
+    switch (option) {
+      case "create-file-folder":
+        command = "create file/folder: ";
+        break;
+      case "edit-file":
+        command = "edit file: ";
+        break;
+      default:
+        break;
+    }
+    setInput(command);
+    setSelectedAction("");
   };
 
   // ===== Creating a new chat =====
@@ -585,11 +607,9 @@ export default function AIPage({ setLeftSidebarOpen }) {
                   msg.sender === "ai" ? "ai-container" : "user-container"
                 }`}
               >
-                {/* AI Avatar */}
                 {msg.sender === "ai" ? (
                   <RotatingAIIcon size={40} />
                 ) : (
-                  /* User Avatar from UI Avatars */
                   <div className="user-avatar">
                     <Avatar
                       name={msg.sender || "User"}
@@ -603,13 +623,11 @@ export default function AIPage({ setLeftSidebarOpen }) {
                     />
                   </div>
                 )}
-
                 <div
                   className={`chat-message ${
                     msg.sender === "ai" ? "ai-message" : "user-message"
                   }`}
                 >
-                  {/* If there's a file, show an image; else show text */}
                   {msg.file ? (
                     <img
                       src={msg.file}
@@ -653,7 +671,23 @@ export default function AIPage({ setLeftSidebarOpen }) {
           </button>
         </div>
 
-        <div className="input-container">
+        {/* Input container with relative positioning */}
+        <div className="input-container" style={{ position: "relative" }}>
+          {/* Render the actions dialog when "actions" is selected */}
+          {selectedAction === "actions" && (
+            <div className="actions-dialog">
+              <button
+                onClick={() => handleDialogOptionClick("create-file-folder")}
+              >
+                <FiFolder style={{ marginRight: "0.5rem" }} />
+                Create File/Folder
+              </button>
+              <button onClick={() => handleDialogOptionClick("edit-file")}>
+                <FiEdit2 style={{ marginRight: "0.5rem" }} />
+                Edit File
+              </button>
+            </div>
+          )}
           <div className="outer-input-bar">
             <button
               className="input-add-button"

@@ -722,3 +722,52 @@
   justify-content: center;
   margin-right: 0.5rem;
 }
+
+/* Actions dialog above the input bar */
+.actions-dialog {
+  position: absolute;
+  bottom: 110%; /* positions dialog just above the input bar */
+  left: 80%;
+  transform: translateX(-50%);
+  width: 200px; /* decreased width */
+  background: transparent;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  z-index: 200;
+}
+
+.actions-dialog button {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+  background: #f3f4f6;
+  color: #374151;
+  border: 0.5px solid #4dabf7;
+  display: flex;
+  align-items: center;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  transition: all 0.2s ease-in-out;
+}
+
+.actions-dialog button svg {
+  color: #0052d4;
+}
+
+.actions-dialog button:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+  box-shadow: 0 0px 20px rgba(0, 82, 212, 0.2);
+}
+
+.actions-dialog button:active {
+  background: #e5e7eb;
+  transform: scale(0.95);
+  border: 1px solid #4dabf7;
+  box-shadow: 0 0px 10px rgba(0, 82, 212, 0.4);
+}
