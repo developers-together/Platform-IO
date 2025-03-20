@@ -1,5 +1,20 @@
-import { useState, useEffect } from "react";
-import { FiCheck, FiChevronDown, FiChevronUp, FiX } from "react-icons/fi";
+import { useState, useEffect, useMemo, useRef } from "react";
+import {
+  FiCheck,
+  FiChevronDown,
+  FiChevronUp,
+  FiX,
+  FiCornerUpLeft,
+  FiImage,
+  FiMoreHorizontal,
+  FiPhone,
+  FiSend,
+  FiTrash2,
+  FiVideo,
+  FiXCircle,
+  FiPlus,
+  FiEdit2,
+} from "react-icons/fi";
 import "./Dashboard.css";
 import axios from "axios";
 
@@ -22,11 +37,14 @@ function AISuggestedActionsCard() {
             },
           }
         );
-        if (Array.isArray(response.data)) {
-          setSuggestions(response.data.slice(0, 8));
-        } else {
-          console.log("Unexpected AI suggestions response:", response.data);
-        }
+        console.log(response.data.data);
+        const formattedSuggestions = response.data.data.map((suggestion, ind) => ({
+          text: suggestion.title,
+          index: ind,
+        }));
+        
+        console.log(formattedSuggestions);
+        setSuggestions(formattedSuggestions);
       } catch (error) {
         console.error("Error fetching AI suggestions:", error);
       }
@@ -41,20 +59,14 @@ function AISuggestedActionsCard() {
         {suggestions.length === 0 ? (
           <li style={{ color: "white" }}>No suggestions yet</li>
         ) : (
-          suggestions.map((text, index) => (
+          suggestions.map((suggestion, index) => (
             <li key={index} className="ai-item">
-              <span>{text}</span>
+              <span>{suggestion.text}</span>
               <div className="ai-actions">
-                <button
-                  className="action-btn2 accept"
-                  title="Accept suggestion"
-                >
+                <button className="action-btn2 accept" title="Accept suggestion">
                   <FiCheck />
                 </button>
-                <button
-                  className="action-btn2 reject"
-                  title="Reject suggestion"
-                >
+                <button className="action-btn2 reject" title="Reject suggestion">
                   <FiX />
                 </button>
               </div>
