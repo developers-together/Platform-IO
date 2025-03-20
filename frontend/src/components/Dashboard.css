@@ -291,8 +291,10 @@
   bottom: 6px; /* slightly above the bottom edge */
   left: 50%;
   transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
+  max-width: 6px;
+  max-height: 6px;
+  min-width: 6px;
+  min-height: 6px;
   background-color: #f13e3c;
   border-radius: 50%;
   pointer-events: none; /* ignore mouse events, optional */
@@ -424,8 +426,10 @@
 
 /* The colored bullet */
 .dot {
-  width: 8px;
-  height: 8px;
+  max-width: 8px;
+  max-height: 8px;
+  min-width: 8px;
+  min-height: 8px;
   border-radius: 50%;
   background: #8e2de2; /* pick a color or random color per event */
 }

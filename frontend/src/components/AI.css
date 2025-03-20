@@ -168,7 +168,8 @@
 }
 
 .action-btn .search-icon,
-.action-btn .action-icon {
+.action-btn .action-icon,
+.action-icon2 {
   color: #0052d4;
 }
 
@@ -721,4 +722,140 @@
   align-items: center;
   justify-content: center;
   margin-right: 0.5rem;
+}
+
+/* Actions dialog above the input bar */
+.actions-dialog {
+  position: absolute;
+  bottom: 110%; /* positions dialog just above the input bar */
+  left: 82%;
+  transform: translateX(-50%);
+  width: 200px; /* decreased width */
+  background: transparent;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  z-index: 200;
+}
+
+.actions-dialog button {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+  background: #f3f4f6;
+  color: #374151;
+  border: 0.5px solid #4dabf7;
+  display: flex;
+  align-items: center;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  transition: all 0.2s ease-in-out;
+}
+
+.actions-dialog button svg {
+  color: #0052d4;
+}
+
+.actions-dialog button:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+  box-shadow: 0 0px 20px rgba(0, 82, 212, 0.2);
+}
+
+.actions-dialog button:active {
+  background: #e5e7eb;
+  transform: scale(0.95);
+  border: 1px solid #4dabf7;
+  box-shadow: 0 0px 10px rgba(0, 82, 212, 0.4);
+}
+
+/* Action Button - Consolidated Styles */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f3f4f6; /* default background */
+  border: 1px solid #4dabf7; /* default border */
+  border-radius: 12px;
+  color: #374151; /* default text color */
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.action-btn:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.action-btn:active {
+  background: #e5e7eb;
+  transform: scale(0.95);
+  border: 1px solid #4dabf7;
+}
+
+/* Selected/Enabled state */
+.action-btn.selected,
+.action-btn.enabled {
+  background: #0052d4;
+  color: white;
+  box-shadow: 0 0px 20px rgba(0, 82, 212, 0.8);
+}
+
+/* Icon colors */
+.action-btn .search-icon,
+.action-btn .action-icon {
+  /* For the default state, you can set these as desired.
+     In our example, we leave them to follow the parent color or set explicitly. */
+  color: #0052d4;
+}
+
+.action-btn.selected .search-icon,
+.action-btn.selected .action-icon,
+.action-btn.enabled .search-icon,
+.action-btn.enabled .action-icon {
+  color: white;
+}
+
+/* Rotating AI Icon - fixed size */
+.rotating-ai-icon {
+  max-width: 48px;
+  max-width: 48px;
+  min-width: 48px;
+  min-width: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  margin-top: 4px;
+  z-index: 100;
+}
+
+.rotating-ai-icon:hover {
+  opacity: 0.8;
+}
+
+.rotating-ai-icon svg {
+  transition: filter 0.3s ease;
+}
+
+.rotating-ai-icon svg path {
+  fill: #8e44ad !important;
+  stroke: #fff !important;
+  stroke-width: 0.5px !important;
+  stroke-linejoin: round !important;
+  stroke-linecap: round !important;
+  paint-order: fill stroke !important;
+  vector-effect: non-scaling-stroke;
+}
+
+.rotating-ai-icon:hover svg {
+  filter: brightness(1.1);
 }

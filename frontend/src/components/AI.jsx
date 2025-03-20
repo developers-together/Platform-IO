@@ -13,6 +13,9 @@ import {
   FiMenu,
   FiX,
   FiCheck,
+  FiFolder,
+  FiClipboard,
+  FiCalendar,
 } from "react-icons/fi";
 import { HiOutlineGlobeAlt } from "react-icons/hi";
 
@@ -49,29 +52,28 @@ const TitleShuffler = () => {
   return <h2>{title}</h2>;
 };
 
-// ========== ROTATING AI ICON (FIXED) ==========
-function RotatingAIIcon({ size = 128 }) {
+// ========== ROTATING AI ICON (FIXED SIZE) ==========
+/**
+ * This component has a fixed 128×128 size.
+ * The `fast` prop toggles a faster rotation speed.
+ */
+function RotatingAIIcon({ fast = false }) {
   const [rotation, setRotation] = useState(0);
-
-  // Instead of storing hovered/isFastMode in state, we keep them in refs
   const hoveredRef = useRef(false);
-  const isFastModeRef = useRef(false);
-
-  // Keep track of previous animation time
+  const isFastModeRef = useRef(fast);
   const prevTimeRef = useRef(null);
   const requestRef = useRef(null);
 
-  // Animation loop
   useEffect(() => {
     function animate(timestamp) {
       if (!prevTimeRef.current) prevTimeRef.current = timestamp;
       const delta = timestamp - prevTimeRef.current;
       prevTimeRef.current = timestamp;
 
-      // Speeds
-      const baseSpeed = 360 / 5000;
-      const hoverSpeed = 360 / 2500;
-      const clickSpeed = 360 / 1000;
+      // Speeds are slightly faster if 'fast' is true.
+      const baseSpeed = fast ? 360 / 1000 : 360 / 5000;
+      const hoverSpeed = fast ? 360 / 500 : 360 / 2500;
+      const clickSpeed = fast ? 360 / 500 : 360 / 1000;
 
       const currentSpeed = isFastModeRef.current
         ? clickSpeed
@@ -82,14 +84,12 @@ function RotatingAIIcon({ size = 128 }) {
       setRotation((prev) => (prev + currentSpeed * delta) % 360);
       requestRef.current = requestAnimationFrame(animate);
     }
-
     requestRef.current = requestAnimationFrame(animate);
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, []);
+  }, [fast]);
 
-  // Event handlers that set ref values (no re-renders)
   const handleMouseEnter = () => {
     hoveredRef.current = true;
   };
@@ -103,7 +103,6 @@ function RotatingAIIcon({ size = 128 }) {
   return (
     <div
       className="rotating-ai-icon"
-      style={{ width: size, height: size }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
@@ -126,7 +125,6 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const [input, setInput] = useState("");
   const fileInputRef = useRef();
   const [showTooltip, setShowTooltip] = useState(false);
-
   const token = localStorage.getItem("token");
   const teamId = localStorage.getItem("teamId");
 
@@ -145,7 +143,28 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const [isCreatingNewChat, setIsCreatingNewChat] = useState(false);
   const [newChatName, setNewChatName] = useState("");
 
-  // ===== Fetch chat data, show first chat automatically =====
+  // State to save the action selected from the dialog
+  const [savedAction, setSavedAction] = useState("");
+
+  // File/image related state (imageUrl holds the file object if needed)
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  // Close actions dialog on any click (with a timeout to avoid immediate closure on the opening click)
+  useEffect(() => {
+    if (selectedAction === "actions") {
+      const handleOutsideClick = () => {
+        setSelectedAction("");
+      };
+      const timer = setTimeout(() => {
+        document.addEventListener("click", handleOutsideClick);
+      }, 0);
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener("click", handleOutsideClick);
+      };
+    }
+  }, [selectedAction]);
+
   useEffect(() => {
     if (previousChats.length > 0) {
       setSelectedChatId(previousChats[0].id);
@@ -217,15 +236,15 @@ export default function AIPage({ setLeftSidebarOpen }) {
 
   // ===== Send message =====
   const handleSend = async () => {
-    if (!input.trim()) return;
-
+    if (!input.trim() && !selectedImage) return;
+    // Create a new message object. Attach image file if available.
     const newMessage = { sender: "You", text: input.trim() };
+    if (selectedImage) {
+      newMessage.file = selectedImage;
+    }
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
-
     let chatId = selectedChatId;
-
-    // If no chat exists, create a new one
     if (previousChats.length === 0) {
       try {
         const response = await axios.post(
@@ -263,16 +282,15 @@ export default function AIPage({ setLeftSidebarOpen }) {
         return;
       }
     }
-
-    // Send the message now that a chat exists
-    try {
-      const endpoint =selectedAction=="search"?
-      `http://localhost:8000/api/ai_chats/${chatId}/websearch`:
-      `http://localhost:8000/api/ai_chats/${chatId}/send`;
-      console.log(endpoint);
+    // Check if an action is saved for file creation
+    if (savedAction === "create-file-folder") {
+      console.log(newMessage.text);
       const response = await axios.post(
-        endpoint,
-        { prompt: newMessage.text },
+        `http://localhost:8000/api/files/${teamId}/aicreate`,
+        {
+          prompt: newMessage.text,
+          path: "/",
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -280,6 +298,33 @@ export default function AIPage({ setLeftSidebarOpen }) {
           },
         }
       );
+      console.log("file created", response);
+      return;
+    }
+    // Add a waiting/loading message
+    setMessages((prev) => [
+      ...prev,
+      { sender: "ai", text: "", loading: true },
+    ]);
+    try {
+      const endpoint =
+        selectedAction === "search"
+          ? `http://localhost:8000/api/ai_chats/${chatId}/websearch`
+          : `http://localhost:8000/api/ai_chats/${chatId}/send`;
+      console.log(endpoint);
+      // Build payload with prompt and image (if available)
+      const payload = {
+        prompt: newMessage.text,
+        image: selectedImage ? selectedImage : null,
+      };
+      const response = await axios.post(endpoint, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      // Remove waiting message and add the real response
+      setMessages((prev) => prev.filter((msg) => !msg.loading));
       if (response.status === 200) {
         setMessages((prev) => [
           ...prev,
@@ -294,10 +339,13 @@ export default function AIPage({ setLeftSidebarOpen }) {
       }
     } catch (error) {
       console.error("Network error:", error);
-      setMessages((prev) => [
-        ...prev,
-        { sender: "ai", text: "Failed to reach the server." },
-      ]);
+      setMessages((prev) => {
+        const newMessages = prev.filter((msg) => !msg.loading);
+        return [
+          ...newMessages,
+          { sender: "ai", text: "Failed to reach the server." },
+        ];
+      });
     }
   };
 
@@ -305,6 +353,13 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Display the file name as a message and store the file data (base64 string)
+      const reader = new FileReader();
+      reader.onload = () => {
+        setSelectedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+      // Optionally, show a temporary message that the image is being uploaded
       setMessages((prev) => [
         ...prev,
         {
@@ -317,28 +372,54 @@ export default function AIPage({ setLeftSidebarOpen }) {
     }
   };
 
-  
   // ===== Action buttons (search, actions, upload) =====
   const handleAction = (action) => {
+    if (action === "actions") {
+      // If an action is already saved, reset to default state
+      if (savedAction) {
+        setSavedAction("");
+        setInput("");
+        return;
+      }
+      // Toggle the actions dialog
+      if (selectedAction === "actions") {
+        setSelectedAction("");
+        setInput("");
+        return;
+      }
+      setSelectedAction("actions");
+      return;
+    }
     if (selectedAction === action) {
       setSelectedAction("");
       setInput("");
       return;
     }
     setSelectedAction(action);
-    switch (action) {
-      case "search":
-        setInput("Search for: ");
+    if (action === "search") {
+      setInput("Search for: ");
+    }
+    if (action === "upload") {
+      fileInputRef.current.click();
+    }
+  };
+
+  // ===== Handle Action Dialog Option Click =====
+  const handleDialogOptionClick = (option) => {
+    let command = "";
+    switch (option) {
+      case "create-file-folder":
+        command = "create file/folder: ";
         break;
-      case "actions":
-        setInput("# ");
-        break;
-      case "upload":
-        fileInputRef.current.click();
+      case "edit-file":
+        command = "edit file: ";
         break;
       default:
         break;
     }
+    setInput(command);
+    setSavedAction(option); // Save the selected action
+    setSelectedAction(""); // Close the dialog
   };
 
   // ===== Creating a new chat =====
@@ -381,7 +462,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
         previousChats.filter((chat) => chat.id !== chatToDelete)
       );
     } catch (error) {
-      console.error("Error creating chat:", error);
+      console.error("Error deleting chat:", error);
     }
     setChatToDelete(null);
   };
@@ -548,9 +629,8 @@ export default function AIPage({ setLeftSidebarOpen }) {
                   <div className="custom-actions-section">
                     <div className="actions-heading">Custom Actions</div>
                     <ul className="actions-list">
-                      <li className="action-item">Add tasks</li>
-                      <li className="action-item">Calendar events</li>
-                      <li className="action-item">File management</li>
+                      <li className="action-item">Create File</li>
+                      <li className="action-item">Create Folder</li>
                     </ul>
                   </div>
                   <div className="additional-capabilities">
@@ -570,61 +650,73 @@ export default function AIPage({ setLeftSidebarOpen }) {
         {messages.length === 0 ? (
           <div className="starter-page">
             <div className="starter-content">
-              <RotatingAIIcon size={128} />
+              {/* Fixed-size icon usage (no size prop) */}
+              <RotatingAIIcon />
               <TitleShuffler />
               <p className="subtitle"></p>
             </div>
           </div>
         ) : (
           <div className="chat-container">
-            {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`message-container ${
-                  msg.sender === "ai" ? "ai-container" : "user-container"
-                }`}
-              >
-                {/* AI Avatar */}
-                {msg.sender === "ai" ? (
-                  <RotatingAIIcon size={40} />
-                ) : (
-                  /* User Avatar from UI Avatars */
-                  <div className="user-avatar">
-                    <Avatar
-                      name={msg.sender || "User"}
-                      options={{
-                        size: 48,
-                        background: "0041ac",
-                        color: "fff",
-                        rounded: true,
-                      }}
-                      alt={msg.sender}
-                    />
-                  </div>
-                )}
-
-                <div
-                  className={`chat-message ${
-                    msg.sender === "ai" ? "ai-message" : "user-message"
-                  }`}
-                >
-                  {/* If there's a file, show an image; else show text */}
-                  {msg.file ? (
-                    <img
-                      src={msg.file}
-                      alt="Uploaded content"
-                      className="uploaded-image"
-                    />
-                  ) : msg.sender === "ai" ? (
-                    <div className="ai-markdown">
-                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+            {messages.map((msg, idx) => {
+              if (msg.loading) {
+                return (
+                  <div key={idx} className="message-container ai-container">
+                    {/* Faster spin for "thinking" */}
+                    <RotatingAIIcon fast={true} />
+                    <div className="chat-message ai-message">
+                      <span>thinking about your prompt...</span>
                     </div>
-                  ) : (
-                    msg.text
-                  )}
-                </div>
-              </div>
-            ))}
+                  </div>
+                );
+              } else {
+                return (
+                  <div
+                    key={idx}
+                    className={`message-container ${
+                      msg.sender === "ai" ? "ai-container" : "user-container"
+                    }`}
+                  >
+                    {msg.sender === "ai" ? (
+                      <RotatingAIIcon />
+                    ) : (
+                      <div className="user-avatar">
+                        <Avatar
+                          name={msg.sender || "User"}
+                          options={{
+                            size: 48,
+                            background: "0041ac",
+                            color: "fff",
+                            rounded: true,
+                          }}
+                          alt={msg.sender}
+                        />
+                      </div>
+                    )}
+                    <div
+                      className={`chat-message ${
+                        msg.sender === "ai" ? "ai-message" : "user-message"
+                      }`}
+                    >
+                      {msg.file ? (
+                        <img
+                          src={msg.file}
+                          alt="Uploaded content"
+                          className="uploaded-image loading"
+                          onLoad={(e) => e.target.classList.remove("loading")}
+                        />
+                      ) : msg.sender === "ai" ? (
+                        <div className="ai-markdown">
+                          <ReactMarkdown>{msg.text}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        msg.text
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+            })}
           </div>
         )}
       </main>
@@ -645,14 +737,40 @@ export default function AIPage({ setLeftSidebarOpen }) {
             onClick={() => handleAction("actions")}
             className={`action-btn ${
               selectedAction === "actions" ? "selected" : ""
-            }`}
+            } ${savedAction ? "enabled" : ""}`}
           >
-            <FiCommand className="action-icon" />
-            Make Actions
+            {savedAction === "edit-file" ? (
+              <FiEdit2 className="action-icon" />
+            ) : savedAction === "create-file-folder" ? (
+              <FiFolder className="action-icon" />
+            ) : (
+              <FiCommand className="action-icon" />
+            )}
+            {savedAction
+              ? savedAction === "edit-file"
+                ? "Edit File"
+                : "Create File/Folder"
+              : "Make Actions"}
           </button>
         </div>
 
-        <div className="input-container">
+        {/* Input container with relative positioning */}
+        <div className="input-container" style={{ position: "relative" }}>
+          {/* Render the actions dialog when "actions" is selected */}
+          {selectedAction === "actions" && (
+            <div className="actions-dialog">
+              <button
+                onClick={() => handleDialogOptionClick("create-file-folder")}
+              >
+                <FiFolder style={{ marginRight: "0.5rem" }} />
+                Create File/Folder
+              </button>
+              <button onClick={() => handleDialogOptionClick("edit-file")}>
+                <FiEdit2 style={{ marginRight: "0.5rem" }} />
+                Edit File
+              </button>
+            </div>
+          )}
           <div className="outer-input-bar">
             <button
               className="input-add-button"

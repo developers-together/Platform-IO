@@ -83,6 +83,7 @@ class MessageController extends Controller
                 'image_url' => $message->path ? Storage::url($message->path) : null,
                 'replyTo' => $message->replyTo,
                 'created_at' => $message->created_at->toDateTimeString(),
+                'isAi' => $message->isAi,
             ];
         });
 
@@ -109,6 +110,7 @@ class MessageController extends Controller
 
         return response()->json(['success' => true]);
     }
+
 
     public function sendtogemini($prompt){
 
@@ -141,6 +143,7 @@ class MessageController extends Controller
         $message1 = Message::create([
             'user_id' => Auth::id(),
             'chat_id' => $chat->id,
+            'user_name' => Auth::user()->name,
             'message' => $validated['prompt'],
             'replyTo' => $aiResponse
         ]);
@@ -148,7 +151,9 @@ class MessageController extends Controller
         $message2 = Message::create([
             'user_id' => Auth::id(),
             'chat_id' => $chat->id,
-            'message' => $aiResponse
+            'user_name' => 'Gemini',
+            'message' => $aiResponse,
+            'isAi' => true
         ]);
         // $message2 = Message::create([
         //     'user_id' => Auth::id(),
