@@ -7,6 +7,8 @@ import {
   FiMoreVertical,
   FiMenu,
   FiFile as FiGenericFile,
+  FiImage,
+  FiArrowLeft,
 } from "react-icons/fi";
 import { FaFileMedical } from "react-icons/fa6";
 import { IoMdDownload } from "react-icons/io";
@@ -14,25 +16,27 @@ import { FaFolderPlus } from "react-icons/fa";
 import { AiFillFilePdf } from "react-icons/ai";
 import { IoEnter } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
+import { MdCheck, MdClose } from "react-icons/md";
 import "./File.css";
 
 export default function FileShareSystem() {
-  // Initially set items to an empty array
+  // State variables
   const [items, setItems] = useState([]);
-  const [menuItemId, setMenuItemId] = useState(null);
+  const [menuItemPath, setMenuItemPath] = useState(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [tooltipTab, setTooltipTab] = useState("windows");
   const [confirmationMessage, setConfirmationMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [currentPath, setCurrentPath] = useState("/");
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+
   const helpRef = useRef(null);
   const tooltipRef = useRef(null);
 
   const teamId = localStorage.getItem("teamId");
-  // Assume token is stored somewhere as well
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    // Handle click outside the tooltip
     const handleClickOutside = (e) => {
       if (
         tooltipRef.current &&
@@ -40,15 +44,14 @@ export default function FileShareSystem() {
         helpRef.current &&
         !helpRef.current.contains(e.target)
       ) {
-        setShowTooltip(false);
+        // Optionally hide tooltip
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [token]);
 
-  // API call to fetch directory data
+  // Fetch directory data
   async function getdirsroot() {
     try {
       const response = await axios.get(
@@ -58,100 +61,199 @@ export default function FileShareSystem() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+          params: { path: currentPath },
         }
       );
-      console.log(response.data);
-      return response.data; // Assuming this returns an array of items
+
+      const allItems = response.data.directory;
+      let filtered = [];
+
+      if (currentPath === "/") {
+        filtered = allItems.filter((item) => !item.includes("/"));
+      } else {
+        const normalizedPath = currentPath.endsWith("/")
+          ? currentPath
+          : currentPath + "/";
+        filtered = allItems.filter((item) => {
+          if (!item.startsWith(normalizedPath)) return false;
+          const remainder = item.slice(normalizedPath.length);
+          return !remainder.includes("/");
+        });
+      }
+
+      const fetchedItems = filtered.map((fullPath) => {
+        const name = fullPath.split("/").pop();
+        return {
+          path: fullPath,
+          name,
+          type: "folder",
+        };
+      });
+
+      return fetchedItems;
     } catch (error) {
       console.error("Error fetching data:", error);
       return [];
     }
   }
 
-  // Call API on component mount
   useEffect(() => {
     async function fetchData() {
       const data = await getdirsroot();
-      console.log("API Response:", data); // Log response to check structure
-      setItems(Array.isArray(data) ? data : []); // Ensure it's an array
+      setItems(data);
     }
     fetchData();
-  }, [teamId, token]);
+  }, [teamId, token, currentPath]);
 
-  // Three-dots menu functions
-  const toggleMenu = (itemId, e) => {
-    e.stopPropagation();
-    setMenuItemId((prev) => (prev === itemId ? null : itemId));
-  };
-
-  const handleOpen = (itemId) => {
-    console.log("Open item:", itemId);
-    setMenuItemId(null);
-  };
-
-  /**
-   * Delete the folder using the DELETE endpoint.
-   * We assume that for folder items, item.name is the path (adjust accordingly).
-   */
-  const handleDelete = async (item) => {
-    // Only allow deletion if the item is a folder.
-    if (item.type !== "folder") return;
-
+  // Create folder
+  const handleCreateFolder = async () => {
+    if (!newFolderName.trim()) return;
     try {
-      const response = await axios.delete(
-        `http://localhost:8000/api/folders/${teamId}/delete`,
+      const response = await axios.post(
+        `http://localhost:8000/api/folders/${teamId}/store`,
+        {
+          name: newFolderName,
+          path: currentPath,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          // Axios allows a request body for DELETE via the "data" property
-          data: {
-            path: item.name, // Adjust this if your folder path is stored differently
-          },
         }
       );
-      console.log("Folder deleted:", response.data);
-      // Remove the deleted folder from the state
-      setItems((prevItems) => prevItems.filter((i) => i.id !== item.id));
-      // Display a confirmation message (replace with your custom UI as needed)
-      setConfirmationMessage("Folder deleted successfully.");
-      setMenuItemId(null);
-      // Optionally clear the message after a few seconds
-      setTimeout(() => setConfirmationMessage(""), 3000);
-    } catch (error) {
-      console.error(
-        "Error deleting folder:",
-        error.response ? error.response.data : error.message
+      let path = currentPath;
+      if (path === "/") path += newFolderName;
+      else path += "/" + newFolderName;
+      setConfirmationMessage(
+        response.data.message || "Folder created successfully!"
       );
-      setConfirmationMessage("Failed to delete folder.");
-      setTimeout(() => setConfirmationMessage(""), 3000);
+      const newFolder = {
+        path: path,
+        name: newFolderName,
+        type: "folder",
+      };
+      setItems((prevItems) => [...prevItems, newFolder]);
+      setNewFolderName("");
+      setIsCreatingFolder(false);
+    } catch (error) {
+      console.error("Error creating folder:", error);
+      setErrorMessage(
+        error.response?.data?.error ||
+          "An error occurred while creating the folder."
+      );
     }
   };
 
-  // Toggle the add dialog pop-up
-  const toggleAddDialog = () => {
-    setShowAddDialog((prev) => !prev);
+  // Toggle menu
+  const toggleMenu = (itemPath, e) => {
+    e.stopPropagation();
+    setMenuItemPath((prev) => (prev === itemPath ? null : itemPath));
   };
 
-  // Helper function to choose an icon based on item type
+  // Open folder
+  const handleOpen = (itemPath) => {
+    setCurrentPath(itemPath);
+    setMenuItemPath(null);
+  };
+
+  // Delete folder
+  const handleDelete = async (itemPath) => {
+    if (!window.confirm("Are you sure you want to delete this folder?")) return;
+    try {
+      await axios.delete(`http://localhost:8000/api/folders/${teamId}/delete`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        data: { path: itemPath },
+      });
+      setItems((prevItems) =>
+        prevItems.filter((item) => item.path !== itemPath)
+      );
+    } catch (error) {
+      console.error("Error deleting folder:", error);
+      setErrorMessage("An error occurred while deleting the folder.");
+    }
+  };
+
+  // Navigate back
+  const handleBack = () => {
+    if (currentPath === "/") return;
+    let p = currentPath.split("/");
+    p.pop();
+    let newPath = p.join("/");
+    if (newPath === "") newPath = "/";
+    setCurrentPath(newPath);
+  };
+
+  const toggleAddDialog = () => {
+    setShowAddDialog((prev) => !prev);
+    setConfirmationMessage("");
+    setErrorMessage("");
+    setIsCreatingFolder(false);
+    setNewFolderName("");
+  };
+
+  // Render icon
   function renderItemIcon(item) {
     if (item.type === "folder") return <FiFolder size={28} color="#4dabf7" />;
     if (item.type === "video") return <FiVideo size={28} color="#4dabf7" />;
     if (item.type === "pdf") return <AiFillFilePdf size={28} color="#4dabf7" />;
     if (item.type === "text") return <FiFileText size={28} color="#4dabf7" />;
+    if (item.type === "image") return <FiImage size={28} color="#4dabf7" />;
     return <FiGenericFile size={28} color="#4dabf7" />;
+  }
+
+  // Render breadcrumb
+  function renderBreadcrumb() {
+    if (currentPath === "/") {
+      return <span className="breadcrumb-part">Root</span>;
+    } else {
+      const parts = currentPath.split("/").filter(Boolean);
+      return (
+        <div className="breadcrumb">
+          <span className="breadcrumb-part" onClick={() => setCurrentPath("/")}>
+            Root
+          </span>
+          {parts.map((part, index) => (
+            <React.Fragment key={index}>
+              <span className="breadcrumb-separator">›</span>
+              <span
+                className="breadcrumb-part"
+                onClick={() => {
+                  const newPath = "/" + parts.slice(0, index + 1).join("/");
+                  setCurrentPath(newPath);
+                }}
+              >
+                {part}
+              </span>
+            </React.Fragment>
+          ))}
+        </div>
+      );
+    }
   }
 
   return (
     <div className="file-page">
+      {confirmationMessage && (
+        <div className="global-confirmation-message">{confirmationMessage}</div>
+      )}
+      {errorMessage && (
+        <div className="global-error-message">{errorMessage}</div>
+      )}
+
       <header className="file-header">
         <div className="header-left">
           <h2 className="file-headline">File Share System</h2>
-          {confirmationMessage && (
-            <div className="confirmation-message">{confirmationMessage}</div>
+          {renderBreadcrumb()}
+          {currentPath !== "/" && (
+            <button className="back-button" onClick={handleBack}>
+              <FiArrowLeft size={18} />
+              <span>Back</span>
+            </button>
           )}
-          {/* Tooltip code can be added back here if needed */}
         </div>
         <div className="add-button-container2">
           <button className="add-button2" onClick={toggleAddDialog}>
@@ -165,12 +267,37 @@ export default function FileShareSystem() {
               >
                 <FaFileMedical /> Upload File
               </button>
-              <button
-                className="add-dialog-item2"
-                onClick={() => console.log("Create Folder")}
-              >
-                <FaFolderPlus /> Create Folder
-              </button>
+              {isCreatingFolder ? (
+                <div className="folder-create-container" tabIndex={0}>
+                  <input
+                    type="text"
+                    className="folder-create-input"
+                    placeholder="Enter folder name..."
+                    value={newFolderName}
+                    onChange={(e) => setNewFolderName(e.target.value)}
+                    autoFocus
+                  />
+                  <button
+                    className="folder-save-button"
+                    onClick={handleCreateFolder}
+                  >
+                    <MdCheck size={20} />
+                  </button>
+                  <button
+                    className="folder-cancel-button"
+                    onClick={() => setIsCreatingFolder(false)}
+                  >
+                    <MdClose size={20} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className="add-dialog-item2"
+                  onClick={() => setIsCreatingFolder(true)}
+                >
+                  <FaFolderPlus /> Create Folder
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -179,35 +306,41 @@ export default function FileShareSystem() {
       <main className="file-main">
         <div className="items-list">
           {items.map((item) => (
-            <div key={item.id} className="item-card">
+            <div
+              key={item.path}
+              className="item-card"
+              onClick={() => handleOpen(item.path)}
+            >
               <div className="item-icon">{renderItemIcon(item)}</div>
-              <p className="item-name">{item.name}</p>
+              <p className="item-name" title={item.name}>
+                {item.name}
+              </p>
               <button
                 className="item-menu-btn"
-                onClick={(e) => toggleMenu(item.id, e)}
+                onClick={(e) => toggleMenu(item.path, e)}
               >
                 <FiMoreVertical size={20} />
               </button>
-              {menuItemId === item.id && (
+              {menuItemPath === item.path && (
                 <div
                   className="item-menu-dialog"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
                     className="item-menu-item open-item"
-                    onClick={() => handleOpen(item.id)}
+                    onClick={() => handleOpen(item.path)}
                   >
                     <IoEnter /> Open
                   </button>
                   <button
                     className="item-menu-item open-item"
-                    onClick={() => console.log("Download item:", item.id)}
+                    onClick={() => console.log("Download item:", item.path)}
                   >
                     <IoMdDownload /> Download
                   </button>
                   <button
                     className="item-menu-item delete-item"
-                    onClick={() => handleDelete(item)}
+                    onClick={() => handleDelete(item.path)}
                   >
                     <MdDelete /> Delete
                   </button>

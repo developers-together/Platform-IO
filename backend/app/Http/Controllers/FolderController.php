@@ -21,46 +21,54 @@ class FolderController extends Controller
     {
         try {
             Log::info("Accessing storage for Team ID: {$team->id}");
-            
-            $rootPath= storage_path('app\public\teams\\'.$team->id);
-            
+
+            $rootPath = storage_path("app/public/teams/{$team->id}");
+
             if (!file_exists($rootPath)) {
                 Log::warning("Directory does not exist: {$rootPath}");
                 return response()->json(['error' => 'Directory not found'], 404);
             }
 
-            
-    
             $disk = Storage::build([
                 'driver' => 'local',
-                'root' => storage_path("app/public/teams/{$team->id}"),
+                'root' => $rootPath,
                 'throw' => true, // Throw exceptions on errors
             ]);
-    
-            $folders = $disk->allFiles();
-    
-            Log::info("Retrieved " . count($folders) . " files from: {$rootPath}");
-    
+
+            $allFiles = $disk->files();
+            $directories = $disk->allDirectories();
+
+            // Process files to include their file type
+            $files = array_map(function ($filePath) use ($disk) {
+                return [
+                    'path' => $filePath,
+                    'type' => pathinfo($filePath, PATHINFO_EXTENSION) // Get file extension
+                ];
+            }, $allFiles);
+
+            Log::info("Retrieved " . count($allFiles) . " files from: {$rootPath}");
+
             return response()->json([
                 'status' => 'success',
                 'team_id' => $team->id,
-                'directory' => $disk->allDirectories(),
-                'allfiles' => $disk->files(),
-                'files' => $folders,
+                'directory' => $directories,
+                'allfiles' => $allFiles,
+                'files' => $files, // Now contains file type
             ]);
-    
+
         } catch (\Exception $e) {
             Log::error("Error accessing storage for Team ID: {$team->id}", [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-    
+
             return response()->json([
                 'error' => 'An error occurred while retrieving files',
                 'details' => $e->getMessage(),
             ], 500);
         }
     }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -76,7 +84,7 @@ class FolderController extends Controller
     {
         // Authorization check
         Gate::authorize('create', $team);
-    
+
         $validated = $request->validate([
             'name' => [
                 'required',
@@ -103,22 +111,22 @@ class FolderController extends Controller
                 }
             ]
         ]);
-    
+
         // Build team-specific disk
         $disk = Storage::build([
             'driver' => 'local',
             'root' => storage_path("app/public/teams/{$team->id}"),
             'throw' => true, // Throw exceptions on errors
         ]);
-    
+
         // Sanitize and prepare paths
         $folderName = trim($validated['name']);
-        $basePath = isset($validated['path']) ? 
-            str_replace(['../', '..'], '', trim($validated['path'], '/')) : 
+        $basePath = isset($validated['path']) ?
+            str_replace(['../', '..'], '', trim($validated['path'], '/')) :
             '';
-    
+
         $fullPath = implode('/', array_filter([$basePath, $folderName]));
-    
+
         try {
             // Check for existing directory
             if ($disk->directoryExists($fullPath)) {
@@ -126,10 +134,10 @@ class FolderController extends Controller
                     'error' => 'Folder already exists at this location'
                 ], 409);
             }
-    
+
             // Create directory with parent directories
             $disk->makeDirectory($fullPath);
-    
+
             // Create folder record
             // $folder = Folder::create([
             //     'name' => $folderName,
@@ -138,10 +146,10 @@ class FolderController extends Controller
             //     'user_id' => auth()->id(),
             //     'uuid' => Str::uuid(), // Add unique identifier
             // ]);
-    
+
             // Set proper permissions
             $disk->setVisibility($fullPath, 'public');
-    
+
             return response()->json([
                 'message' => 'Folder created successfully'
               //  'data' => $folder
@@ -149,7 +157,7 @@ class FolderController extends Controller
                     // 'self' => route('folders.show', [$team, $folder])
               //  ]
             ], 201);
-    
+
         } catch (\Exception $e) {
             Log::error('Folder creation failed', [
                 'team' => $team->id,
@@ -157,7 +165,7 @@ class FolderController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'error' => 'Folder creation failed',
                 'details' => config('app.debug') ? $e->getMessage() : null
@@ -168,31 +176,40 @@ class FolderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Team $team , Request $request)
-    {
-        Gate::authorize('view', $team);
+    // public function show(Team $team, Request $request)
+    // {
+    //     Gate::authorize('view', $team);
 
-        $validated = $request->validate([
-            'path' => 'required|string'
-        ]);
+    //     $validated = $request->validate([
+    //         'path' => 'required|string'
+    //     ]);
 
-        $disk = Storage::build([
-            'driver' => 'local',
-            'root' => storage_path("app/public/teams/{$team->id}"),
-            'visibility' => 'public'
-        ]);
+    //     $disk = Storage::build([
+    //         'driver' => 'local',
+    //         'root' => storage_path("app/public/teams/{$team->id}"),
+    //         'visibility' => 'public'
+    //     ]);
 
-        if (!$disk->exists($validated['path'])) {
-            abort(404, 'Folder not found');
-        }
-        return response()->json([
-            'success' => true,
-            // 'folder' => $folder,
-            'files' => $disk->allFiles($validated['path']),
-            'folders' =>$disk->directories($validated['path'])
-        ]);
+    //     if (!$disk->directoryExists($validated['path'])) {
+    //         return response()->json(['error' => 'Folder not found'], 404);
+    //     }
 
-    }
+
+
+    //     $files = $disk->allFiles($validated['path']);
+
+    //     // Extract file types
+    //     $fileData = array_map(function ($file) {
+    //         return [
+    //             'path' => $file,
+    //             'type' => pathinfo($file, PATHINFO_EXTENSION)
+    //         ];
+    //     }, $files);
+
+    //     return response()->json($fileData);
+    // }
+
+
 
     /**
      * Show the form for editing the specified resource.
