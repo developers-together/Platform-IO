@@ -74,7 +74,7 @@ export default function Login({ setCurrentPage }) {
             {isLoading ? <div className="spinner"></div> : "Sign In"}
           </button>
         </form>
-        <button onClick={()=>{setCurrentPage("File")}}> Guest file system login </button>
+        {/* <button onClick={()=>{setCurrentPage("File")}}> Guest file system login </button> */}
         {/* 
         <button
           className="skip-button"
