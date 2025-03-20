@@ -52,50 +52,47 @@ class FtpUserController extends Controller
     // Set username and directory
     $username = escapeshellarg($validated['username']);
     $password = escapeshellarg($validated['password']);
-    $teamId = escapeshellarg($team->id);
-    $directory = "/home/ftpusers/teams/$teamId"; 
+    $teamId   = escapeshellarg($team->id);
+    $directory = "/home/ftpusers/teams/$teamId";
 
     Log::info('Directory path set', ['directory' => $directory]);
-
-    // Function to run commands safely and log output
-    $runCommand = function ($command) {
-        $process = Process::fromShellCommandline($command);
-        $process->run();
-        
-        if (!$process->isSuccessful()) {
-            Log::error("Command failed", ['command' => $command, 'error' => $process->getErrorOutput()]);
-            throw new ProcessFailedException($process);
-        }
-        
-        Log::info("Command executed successfully", ['command' => $command, 'output' => $process->getOutput()]);
-    };
 
     // Ensure team directory exists
     if (!file_exists($directory)) {
         Log::info('Creating team directory', ['directory' => $directory]);
-        $runCommand("sudo mkdir -p $directory");
-        $runCommand("sudo chown -R root:ftp $directory");
+        $this->runCommand(['sudo', 'mkdir', '-p', $directory]);
+        $this->runCommand(['sudo', 'chown', '-R', 'root:ftp', $directory]);
+    }
+
+    // Check if user already exists
+    $checkUser = $this->runCommand(['id', '-u', $validated['username']], false);
+    if ($checkUser['exitCode'] === 0) {
+        Log::warning('User already exists', ['username' => $validated['username']]);
+        return response()->json(['error' => 'User already exists'], 409);
     }
 
     // Create FTP user
     Log::info('Creating FTP user', ['username' => $validated['username']]);
-    $runCommand("sudo useradd -m -d $directory -s /usr/sbin/nologin $username");
+    $createUser = $this->runCommand(['sudo', 'useradd', '-m', '-d', $directory, '-s', '/usr/sbin/nologin', $validated['username']]);
+    if ($createUser['exitCode'] !== 0) {
+        return response()->json(['error' => 'Failed to create user', 'details' => $createUser['error']], 500);
+    }
 
-    // Set user password
-    $runCommand("echo \"$username:$password\" | sudo chpasswd");
+    // Securely set user password
+    $changePassword = $this->runCommand(['sudo', 'chpasswd'], true, "{$validated['username']}:{$validated['password']}");
+    if ($changePassword['exitCode'] !== 0) {
+        return response()->json(['error' => 'Failed to set password', 'details' => $changePassword['error']], 500);
+    }
+    Log::info('Password set for FTP user');
 
     // Set permissions based on role
-    if ($role === 'leader' || $role === 'member') {
-        Log::info('Setting directory permissions: 770');
-        $runCommand("sudo chmod 770 $directory");
-    } elseif ($role === 'viewer') {
-        Log::info('Setting directory permissions: 750');
-        $runCommand("sudo chmod 750 $directory");
-    }
+    $permission = ($role === 'leader' || $role === 'member') ? '770' : '750';
+    Log::info('Setting directory permissions', ['permissions' => $permission]);
+    $this->runCommand(['sudo', 'chmod', $permission, $directory]);
 
     // Add user to FTP group
     Log::info('Adding user to FTP group');
-    $runCommand("sudo usermod -aG ftp $username");
+    $this->runCommand(['sudo', 'usermod', '-aG', 'ftpusers', $validated['username']]);
 
     Log::info('FTP user created successfully');
 
@@ -105,5 +102,36 @@ class FtpUserController extends Controller
         'team_id' => $team->id,
         'role' => $role,
     ], 201);
+}
+
+/**
+ * Runs a shell command securely using Symfony Process.
+ *
+ * @param array $command The command to run as an array.
+ * @param bool $useInput Whether to pass input to the command.
+ * @param string|null $input The input string (if needed).
+ * @return array Contains 'output', 'error', and 'exitCode'.
+ */
+private function runCommand(array $command, bool $useInput = false, string $input = null): array
+{
+    $process = new Process($command);
+    if ($useInput && $input) {
+        $process->setInput($input);
     }
+    $process->run();
+
+    // Log the output and error
+    Log::info('Command executed', [
+        'command' => implode(' ', $command),
+        'output' => $process->getOutput(),
+        'error' => $process->getErrorOutput(),
+        'exitCode' => $process->getExitCode(),
+    ]);
+
+    return [
+        'output' => trim($process->getOutput()),
+        'error' => trim($process->getErrorOutput()),
+        'exitCode' => $process->getExitCode(),
+    ];
+}
 }
