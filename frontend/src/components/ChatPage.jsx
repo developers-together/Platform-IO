@@ -133,7 +133,7 @@ export default function ChatPage() {
 
       const formattedMessages = response.data.data.map((msg) => ({
         id: msg.id,
-        user: msg.isAi?"AI":msg.user_name,
+        user: msg.isAi ? "AI" : msg.user_name,
         avatar: "",
         time: new Date(msg.created_at).toLocaleTimeString([], {
           hour: "2-digit",
@@ -520,12 +520,6 @@ export default function ChatPage() {
         <div className="chat-header3">
           <h3>General Chat</h3>
           <div className="header-actions">
-            <button>
-              <FiPhone />
-            </button>
-            <button>
-              <FiVideo />
-            </button>
             <button>
               <FiMoreHorizontal />
             </button>
