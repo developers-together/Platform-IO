@@ -263,7 +263,8 @@ export default function AIPage({ setLeftSidebarOpen }) {
         return;
       }
     }
-
+ 
+    
     // Send the message now that a chat exists
     try {
       const endpoint =selectedAction=="search"?
