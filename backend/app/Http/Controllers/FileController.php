@@ -35,43 +35,55 @@ class FileController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request, Team $team)
-    {
+{
+    try {
         Gate::authorize('create', Team::class);
+        Log::info("File upload initiated for team: {$team->id} by user: " . auth()->id());
 
+        // Validate the request
         $validated = $request->validate([
             'file' => 'required|file',
-            'path' => 'required',
+            'path' => 'required|string',
+            'name' => 'required|string'
         ]);
 
-        // Create a dedicated disk configuration for the team
-        $disk = Storage::build([
-            'driver' => 'local',
-            'root' => storage_path('app/public/teams/'.$team->id), // Fixed path
-            'visibility' => 'public'
-        ]);
+        Log::info("Validation successful", ['data' => $validated]);
+
+        // Define the storage path
+        $teamStoragePath = "teams/{$team->id}/" . trim($validated['path'], '/');
+        $fullStoragePath = storage_path("app/public/{$teamStoragePath}");
+
+        // Ensure the directory exists
+        if (!file_exists($fullStoragePath)) {
+            if (!mkdir($fullStoragePath, 0777, true) && !is_dir($fullStoragePath)) {
+                throw new \Exception("Failed to create directory: {$fullStoragePath}");
+            }
+            Log::info("Created directory: {$fullStoragePath}");
+        }
 
         $file = $request->file('file');
+        $filePath = "{$teamStoragePath}/{$validated['name']}";
 
-        // Clean and prepare the target directory path
-        $targetPath = ltrim($validated['path'], '/');  // Remove leading slashes
+        // Store the file using Laravel's storage system
+        Storage::disk('public')->putFileAs($teamStoragePath, $file, $validated['name']);
 
-        // Store the file using the custom disk
-        $path = $disk->putFileAs(
-            $validated['path'],
-            $file,
-            $file->getClientOriginalName()
-        );
+        Log::info("File successfully stored", ['path' => $filePath]);
 
-        // Create file record with proper relationships
-        // File::create([
-        //     'name' => $file->getClientOriginalName(),
-        //     'path' => $path,
-        //     'user_id' => auth()->id(),
-        //     'team_id' => $team->id, // Associate with the team
-        // ]);
-
-        return response()->json($path);
+        return response()->json(['path' => "storage/{$filePath}"], 201);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        Log::error("Validation failed", ['errors' => $e->errors()]);
+        return response()->json(['error' => 'Validation failed', 'details' => $e->errors()], 422);
+    } catch (\Exception $e) {
+        Log::error("File upload failed", [
+            'message' => $e->getMessage(),
+            'team_id' => $team->id,
+            'user_id' => auth()->id(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        return response()->json(['error' => 'File upload failed'], 500);
     }
+}
+
 
     /**
      * Display the specified resource.
