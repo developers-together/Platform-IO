@@ -110,6 +110,7 @@ class MessageController extends Controller
         return response()->json(['success' => true]);
     }
 
+
     public function sendtogemini($prompt){
 
         // Call Gemini API
@@ -141,6 +142,7 @@ class MessageController extends Controller
         $message1 = Message::create([
             'user_id' => Auth::id(),
             'chat_id' => $chat->id,
+            'user_name' => Auth::user()->name,
             'message' => $validated['prompt']
         ]);
 
@@ -148,7 +150,8 @@ class MessageController extends Controller
             'user_id' => Auth::id(),
             'chat_id' => $chat->id,
             'user_name' => 'Gemini',
-            'message' => $aiResponse
+            'message' => $aiResponse,
+            'isAi' => true
         ]);
 
         return response()->json(['success' => true, 'messages' => [$message1, $message2]]);
