@@ -52,11 +52,12 @@ const TitleShuffler = () => {
   return <h2>{title}</h2>;
 };
 
-// ========== ROTATING AI ICON (FIXED) ==========
-function RotatingAIIcon({ size = 128 }) {
+// ========== ROTATING AI ICON ==========
+function RotatingAIIcon({ size = 128, fast = false }) {
   const [rotation, setRotation] = useState(0);
   const hoveredRef = useRef(false);
-  const isFastModeRef = useRef(false);
+  // Initialize fast mode if the "fast" prop is true
+  const isFastModeRef = useRef(fast);
   const prevTimeRef = useRef(null);
   const requestRef = useRef(null);
 
@@ -65,9 +66,10 @@ function RotatingAIIcon({ size = 128 }) {
       if (!prevTimeRef.current) prevTimeRef.current = timestamp;
       const delta = timestamp - prevTimeRef.current;
       prevTimeRef.current = timestamp;
-      const baseSpeed = 360 / 5000;
-      const hoverSpeed = 360 / 2500;
-      const clickSpeed = 360 / 1000;
+      // Use faster speeds if fast is true
+      const baseSpeed = fast ? 360 / 1000 : 360 / 5000;
+      const hoverSpeed = fast ? 360 / 500 : 360 / 2500;
+      const clickSpeed = fast ? 360 / 500 : 360 / 1000;
       const currentSpeed = isFastModeRef.current
         ? clickSpeed
         : hoveredRef.current
@@ -80,7 +82,7 @@ function RotatingAIIcon({ size = 128 }) {
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, []);
+  }, [fast]);
 
   const handleMouseEnter = () => {
     hoveredRef.current = true;
@@ -136,7 +138,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const [isCreatingNewChat, setIsCreatingNewChat] = useState(false);
   const [newChatName, setNewChatName] = useState("");
 
-  // NEW: State to save the action selected from the dialog
+  // State to save the action selected from the dialog
   const [savedAction, setSavedAction] = useState("");
 
   // Close actions dialog on any click (with a timeout to avoid immediate closure on the opening click)
@@ -268,11 +270,13 @@ export default function AIPage({ setLeftSidebarOpen }) {
         return;
       }
     }
-    if(savedAction=="create-file-folder"){
+    if (savedAction === "create-file-folder") {
       console.log(newMessage.text);
-      const response = await axios.post(`http://localhost:8000/api/files/${teamId}/aicreate`,
-        { prompt: newMessage.text,
-          path:"/"
+      const response = await axios.post(
+        `http://localhost:8000/api/files/${teamId}/aicreate`,
+        {
+          prompt: newMessage.text,
+          path: "/",
         },
         {
           headers: {
@@ -281,9 +285,11 @@ export default function AIPage({ setLeftSidebarOpen }) {
           },
         }
       );
-      console.log("file created",response);
+      console.log("file created", response);
       return;
     }
+    // Add waiting/loading message
+    setMessages((prev) => [...prev, { sender: "ai", text: "", loading: true }]);
     try {
       const endpoint =
         selectedAction === "search"
@@ -300,6 +306,8 @@ export default function AIPage({ setLeftSidebarOpen }) {
           },
         }
       );
+      // Remove waiting message and add the real response
+      setMessages((prev) => prev.filter((msg) => !msg.loading));
       if (response.status === 200) {
         setMessages((prev) => [
           ...prev,
@@ -314,10 +322,13 @@ export default function AIPage({ setLeftSidebarOpen }) {
       }
     } catch (error) {
       console.error("Network error:", error);
-      setMessages((prev) => [
-        ...prev,
-        { sender: "ai", text: "Failed to reach the server." },
-      ]);
+      setMessages((prev) => {
+        const newMessages = prev.filter((msg) => !msg.loading);
+        return [
+          ...newMessages,
+          { sender: "ai", text: "Failed to reach the server." },
+        ];
+      });
     }
   };
 
@@ -622,50 +633,63 @@ export default function AIPage({ setLeftSidebarOpen }) {
           </div>
         ) : (
           <div className="chat-container">
-            {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`message-container ${
-                  msg.sender === "ai" ? "ai-container" : "user-container"
-                }`}
-              >
-                {msg.sender === "ai" ? (
-                  <RotatingAIIcon size={40} />
-                ) : (
-                  <div className="user-avatar">
-                    <Avatar
-                      name={msg.sender || "User"}
-                      options={{
-                        size: 48,
-                        background: "0041ac",
-                        color: "fff",
-                        rounded: true,
-                      }}
-                      alt={msg.sender}
-                    />
-                  </div>
-                )}
-                <div
-                  className={`chat-message ${
-                    msg.sender === "ai" ? "ai-message" : "user-message"
-                  }`}
-                >
-                  {msg.file ? (
-                    <img
-                      src={msg.file}
-                      alt="Uploaded content"
-                      className="uploaded-image"
-                    />
-                  ) : msg.sender === "ai" ? (
-                    <div className="ai-markdown">
-                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+            {messages.map((msg, idx) => {
+              if (msg.loading) {
+                return (
+                  <div key={idx} className="message-container ai-container">
+                    <RotatingAIIcon size={40} fast={true} />
+                    <div className="chat-message ai-message">
+                      <span>thinking about your prompt...</span>
                     </div>
-                  ) : (
-                    msg.text
-                  )}
-                </div>
-              </div>
-            ))}
+                  </div>
+                );
+              } else {
+                return (
+                  <div
+                    key={idx}
+                    className={`message-container ${
+                      msg.sender === "ai" ? "ai-container" : "user-container"
+                    }`}
+                  >
+                    {msg.sender === "ai" ? (
+                      <RotatingAIIcon size={40} />
+                    ) : (
+                      <div className="user-avatar">
+                        <Avatar
+                          name={msg.sender || "User"}
+                          options={{
+                            size: 48,
+                            background: "0041ac",
+                            color: "fff",
+                            rounded: true,
+                          }}
+                          alt={msg.sender}
+                        />
+                      </div>
+                    )}
+                    <div
+                      className={`chat-message ${
+                        msg.sender === "ai" ? "ai-message" : "user-message"
+                      }`}
+                    >
+                      {msg.file ? (
+                        <img
+                          src={msg.file}
+                          alt="Uploaded content"
+                          className="uploaded-image"
+                        />
+                      ) : msg.sender === "ai" ? (
+                        <div className="ai-markdown">
+                          <ReactMarkdown>{msg.text}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        msg.text
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+            })}
           </div>
         )}
       </main>
