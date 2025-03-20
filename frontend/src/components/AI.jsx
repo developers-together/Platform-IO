@@ -265,12 +265,6 @@ export default function AIPage({ setLeftSidebarOpen }) {
         return;
       }
     }
-<<<<<<< Updated upstream
- 
-    
-    // Send the message now that a chat exists
-=======
->>>>>>> Stashed changes
     try {
       const endpoint =
         selectedAction === "search"
@@ -571,9 +565,8 @@ export default function AIPage({ setLeftSidebarOpen }) {
                   <div className="custom-actions-section">
                     <div className="actions-heading">Custom Actions</div>
                     <ul className="actions-list">
-                      <li className="action-item">Add tasks</li>
-                      <li className="action-item">Calendar events</li>
-                      <li className="action-item">File management</li>
+                      <li className="action-item">Create File</li>
+                      <li className="action-item">Create Folder</li>
                     </ul>
                   </div>
                   <div className="additional-capabilities">
