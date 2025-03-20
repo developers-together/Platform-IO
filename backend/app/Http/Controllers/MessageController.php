@@ -141,7 +141,6 @@ class MessageController extends Controller
         $message1 = Message::create([
             'user_id' => Auth::id(),
             'chat_id' => $chat->id,
-            'message' => $validated['prompt']
             'message' => $validated['prompt'],
             'replyTo' => $aiResponse
         ]);
