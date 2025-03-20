@@ -8,19 +8,6 @@
 
 ---
 
-## Table of Contents
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
-- [Installation and Setup](#installation-and-setup)
-- [Usage](#usage)
-- [Demo Videos](#demo-videos)
-- [Contributing](#contributing)
-- [License](#license)
-
----
-
 ## Overview
 **Platform-IO** is an AI-powered, collaborative development platform created for the *Salam Hackathon* during Ramadan. Our main goals were:
 - To provide an interactive UI that can help teams build and manage projects quickly.
