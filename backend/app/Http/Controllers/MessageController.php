@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Http;
+
+
 
 class MessageController extends Controller
 {
@@ -127,8 +130,8 @@ class MessageController extends Controller
        return $aiResponse;
       }
 
-      public function askgemini(Request $requist, Chat $chat){
 
+      public function askgemini(Request $request, Chat $chat){
         $validated = $request->validate([
             'prompt' => ['required', 'string'],
         ]);
@@ -138,10 +141,16 @@ class MessageController extends Controller
         $message1 = Message::create([
             'user_id' => Auth::id(),
             'chat_id' => $chat->id,
+            'message' => $validated['prompt']
             'message' => $validated['prompt'],
             'replyTo' => $aiResponse
         ]);
 
+        $message2 = Message::create([
+            'user_id' => Auth::id(),
+            'chat_id' => $chat->id,
+            'message' => $aiResponse
+        ]);
         // $message2 = Message::create([
         //     'user_id' => Auth::id(),
         //     'chat_id' => $chat->id,
