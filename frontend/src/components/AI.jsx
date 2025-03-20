@@ -146,6 +146,9 @@ export default function AIPage({ setLeftSidebarOpen }) {
   // State to save the action selected from the dialog
   const [savedAction, setSavedAction] = useState("");
 
+  // File/image related state (imageUrl holds the file object if needed)
+  const [selectedImage, setSelectedImage] = useState(null);
+
   // Close actions dialog on any click (with a timeout to avoid immediate closure on the opening click)
   useEffect(() => {
     if (selectedAction === "actions") {
@@ -233,8 +236,12 @@ export default function AIPage({ setLeftSidebarOpen }) {
 
   // ===== Send message =====
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() && !selectedImage) return;
+    // Create a new message object. Attach image file if available.
     const newMessage = { sender: "You", text: input.trim() };
+    if (selectedImage) {
+      newMessage.file = selectedImage;
+    }
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
     let chatId = selectedChatId;
@@ -275,6 +282,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
         return;
       }
     }
+    // Check if an action is saved for file creation
     if (savedAction === "create-file-folder") {
       console.log(newMessage.text);
       const response = await axios.post(
@@ -293,24 +301,28 @@ export default function AIPage({ setLeftSidebarOpen }) {
       console.log("file created", response);
       return;
     }
-    // Add waiting/loading message
-    setMessages((prev) => [...prev, { sender: "ai", text: "", loading: true }]);
+    // Add a waiting/loading message
+    setMessages((prev) => [
+      ...prev,
+      { sender: "ai", text: "", loading: true },
+    ]);
     try {
       const endpoint =
         selectedAction === "search"
           ? `http://localhost:8000/api/ai_chats/${chatId}/websearch`
           : `http://localhost:8000/api/ai_chats/${chatId}/send`;
       console.log(endpoint);
-      const response = await axios.post(
-        endpoint,
-        { prompt: newMessage.text },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      // Build payload with prompt and image (if available)
+      const payload = {
+        prompt: newMessage.text,
+        image: selectedImage ? selectedImage : null,
+      };
+      const response = await axios.post(endpoint, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
       // Remove waiting message and add the real response
       setMessages((prev) => prev.filter((msg) => !msg.loading));
       if (response.status === 200) {
@@ -341,6 +353,13 @@ export default function AIPage({ setLeftSidebarOpen }) {
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Display the file name as a message and store the file data (base64 string)
+      const reader = new FileReader();
+      reader.onload = () => {
+        setSelectedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+      // Optionally, show a temporary message that the image is being uploaded
       setMessages((prev) => [
         ...prev,
         {
@@ -443,7 +462,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
         previousChats.filter((chat) => chat.id !== chatToDelete)
       );
     } catch (error) {
-      console.error("Error creating chat:", error);
+      console.error("Error deleting chat:", error);
     }
     setChatToDelete(null);
   };
@@ -683,7 +702,8 @@ export default function AIPage({ setLeftSidebarOpen }) {
                         <img
                           src={msg.file}
                           alt="Uploaded content"
-                          className="uploaded-image"
+                          className="uploaded-image loading"
+                          onLoad={(e) => e.target.classList.remove("loading")}
                         />
                       ) : msg.sender === "ai" ? (
                         <div className="ai-markdown">

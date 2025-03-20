@@ -133,7 +133,7 @@ export default function ChatPage() {
 
       const formattedMessages = response.data.data.map((msg) => ({
         id: msg.id,
-        user: msg.user_name,
+        user: msg.isai?"AI":msg.user_name,
         avatar: "",
         time: new Date(msg.created_at).toLocaleTimeString([], {
           hour: "2-digit",
@@ -332,7 +332,7 @@ export default function ChatPage() {
         }),
         message: aiResponseText,
         image: null,
-        replyTo: response.data.messages[0].id,
+        replyTo: null,
       };
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
