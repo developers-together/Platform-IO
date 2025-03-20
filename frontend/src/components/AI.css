@@ -168,7 +168,8 @@
 }
 
 .action-btn .search-icon,
-.action-btn .action-icon {
+.action-btn .action-icon,
+.action-icon2 {
   color: #0052d4;
 }
 
@@ -727,7 +728,7 @@
 .actions-dialog {
   position: absolute;
   bottom: 110%; /* positions dialog just above the input bar */
-  left: 80%;
+  left: 82%;
   transform: translateX(-50%);
   width: 200px; /* decreased width */
   background: transparent;
@@ -770,4 +771,54 @@
   transform: scale(0.95);
   border: 1px solid #4dabf7;
   box-shadow: 0 0px 10px rgba(0, 82, 212, 0.4);
+}
+
+/* Action Button - Consolidated Styles */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f3f4f6; /* default background */
+  border: 1px solid #4dabf7; /* default border */
+  border-radius: 12px;
+  color: #374151; /* default text color */
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.action-btn:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.action-btn:active {
+  background: #e5e7eb;
+  transform: scale(0.95);
+  border: 1px solid #4dabf7;
+}
+
+/* Selected/Enabled state */
+.action-btn.selected,
+.action-btn.enabled {
+  background: #0052d4;
+  color: white;
+  box-shadow: 0 0px 20px rgba(0, 82, 212, 0.8);
+}
+
+/* Icon colors */
+.action-btn .search-icon,
+.action-btn .action-icon {
+  /* For the default state, you can set these as desired.
+     In our example, we leave them to follow the parent color or set explicitly. */
+  color: #0052d4;
+}
+
+.action-btn.selected .search-icon,
+.action-btn.selected .action-icon,
+.action-btn.enabled .search-icon,
+.action-btn.enabled .action-icon {
+  color: white;
 }
