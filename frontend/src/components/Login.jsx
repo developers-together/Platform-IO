@@ -14,7 +14,7 @@ export default function Login({ setCurrentPage }) {
     setError("");
     setIsLoading(true);
     try {
-      const response = await axios.post("http://localhost:8000/api/login", {
+      const response = await axios.post("http://144.24.195.74:8000/api/login", {
         email,
         password,
       });

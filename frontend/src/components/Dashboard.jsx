@@ -29,7 +29,7 @@ function AISuggestedActionsCard() {
     const fetchSuggestions = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/tasks/${teamId}/suggestions`,
+          `http://144.24.195.74:8000/api/tasks/${teamId}/suggestions`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -89,7 +89,7 @@ function TasksCard({ setCurrentPage }) {
     const fetchTasks = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/tasks/${teamId}/index`,
+          `http://144.24.195.74:8000/api/tasks/${teamId}/index`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -122,7 +122,7 @@ function TasksCard({ setCurrentPage }) {
     if (!task) return;
     try {
       await axios.put(
-        `http://localhost:8000/api/tasks/${taskId}/update`,
+        `http://144.24.195.74:8000/api/tasks/${taskId}/update`,
         {
           title: task.title,
           description: task.description,
@@ -198,7 +198,7 @@ function EventsCard({ setCurrentPage }) {
     const fetchTasksForEvents = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/tasks/${teamId}/index`,
+          `http://144.24.195.74:8000/api/tasks/${teamId}/index`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -280,7 +280,7 @@ function CalendarCard({ setCurrentPage }) {
     const fetchTasks = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/tasks/${teamId}/index`,
+          `http://144.24.195.74:8000/api/tasks/${teamId}/index`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -351,7 +351,7 @@ function RecentChatCard({ setCurrentPage }) {
     const fetchRecentChats = async () => {
       try {
         const channelsRes = await axios.get(
-          `http://localhost:8000/api/chats/${teamId}/index`,
+          `http://144.24.195.74:8000/api/chats/${teamId}/index`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -364,7 +364,7 @@ function RecentChatCard({ setCurrentPage }) {
         for (const channel of channels) {
           try {
             const msgRes = await axios.get(
-              `http://localhost:8000/api/chats/${channel.id}/getMessages`,
+              `http://144.24.195.74:8000/api/chats/${channel.id}/getMessages`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,

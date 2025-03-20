@@ -82,7 +82,7 @@ export default function FileShareSystem() {
     }
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/folders/${teamId}/index`,
+        `http://144.24.195.74:8000/api/folders/${teamId}/index`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -166,7 +166,7 @@ export default function FileShareSystem() {
     }
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/folders/${teamId}/store`,
+        `http://144.24.195.74:8000/api/folders/${teamId}/store`,
         { name: newFolderName, path: currentPath },
         {
           headers: {
@@ -194,7 +194,7 @@ export default function FileShareSystem() {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/register",
+        "http://144.24.195.74:8000/api/register",
         registerData
       );
       localStorage.setItem("token", response.data.token);
@@ -249,8 +249,8 @@ export default function FileShareSystem() {
       }
       const endpoint =
         itemType === "folder"
-          ? `http://localhost:8000/api/folders/${teamId}/delete`
-          : `http://localhost:8000/api/files/${teamId}/delete`;
+          ? `http://144.24.195.74:8000/api/folders/${teamId}/delete`
+          : `http://144.24.195.74:8000/api/files/${teamId}/delete`;
       await axios.delete(endpoint, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -276,7 +276,7 @@ export default function FileShareSystem() {
   const handleDownload = async (item) => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/files/${teamId}/download`,
+        `http://144.24.195.74:8000/api/files/${teamId}/download`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -328,7 +328,7 @@ export default function FileShareSystem() {
     formData.append("name", originalName);
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/files/${teamId}/store`,
+        `http://144.24.195.74:8000/api/files/${teamId}/store`,
         formData,
         {
           headers: {

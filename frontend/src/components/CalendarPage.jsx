@@ -22,7 +22,7 @@ export default function CalendarPage() {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/tasks/${teamId}/index`,
+          `http://144.24.195.74:8000/api/tasks/${teamId}/index`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

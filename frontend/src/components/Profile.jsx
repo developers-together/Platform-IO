@@ -68,13 +68,13 @@ export default function Profile({ setCurrentPage }) {
   // Fetch user and team data
   useEffect(() => {
     const response = axios
-      .get("http://localhost:8000/api/user/show", {
+      .get("http://144.24.195.74:8000/api/user/show", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .catch((error) => console.error("Error fetching user:", error));
 
     const teamsPromise = axios
-      .get("http://localhost:8000/api/user/teams", {
+      .get("http://144.24.195.74:8000/api/user/teams", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .catch((error) => console.error("Error fetching teams:", error));
@@ -194,7 +194,7 @@ export default function Profile({ setCurrentPage }) {
   const handleDelete = () => setShowDeleteModal(true);
   const confirmDelete = async () => {
     axios
-      .delete("http://localhost:8000/api/user/delete", {
+      .delete("http://144.24.195.74:8000/api/user/delete", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

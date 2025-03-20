@@ -77,7 +77,7 @@ return [
 
         'ftp' => [
     'driver'   => 'ftp',
-    'host'     => env('FTP_HOST', 'localhost'),
+    'host'     => env('FTP_HOST', '144.24.195.74'),
     'username' => env('FTP_USERNAME'),
     'password' => env('FTP_PASSWORD'),
     'root'     => '/teams',
@@ -89,7 +89,7 @@ return [
 
         /*  
               'sftp' =>  [
-            'host' => env('SFTP_HOST', 'localhost'),
+            'host' => env('SFTP_HOST', '144.24.195.74'),
             'port' => env('SFTP_PORT', 22),
             'base_path' => storage_path('app/sftp'),
           //  'chroot_template' => '',//team_%d

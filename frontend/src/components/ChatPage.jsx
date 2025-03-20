@@ -72,7 +72,7 @@ export default function ChatPage() {
     if (!newChannel.trim()) return;
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/chats/${teamId}/store`,
+        `http://144.24.195.74:8000/api/chats/${teamId}/store`,
         { name: newChannel },
         {
           headers: {
@@ -95,7 +95,7 @@ export default function ChatPage() {
   const getTeamChats = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/chats/${teamId}/index`,
+        `http://144.24.195.74:8000/api/chats/${teamId}/index`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -114,7 +114,7 @@ export default function ChatPage() {
     try {
       setSelectedChatId(chatId);
       const response = await axios.get(
-        `http://localhost:8000/api/chats/${chatId}/getMessages`,
+        `http://144.24.195.74:8000/api/chats/${chatId}/getMessages`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -162,7 +162,7 @@ export default function ChatPage() {
 
   const deleteChannel = async (chatId) => {
     try {
-      await axios.delete(`http://localhost:8000/api/chats/${chatId}`, {
+      await axios.delete(`http://144.24.195.74:8000/api/chats/${chatId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
@@ -192,7 +192,7 @@ export default function ChatPage() {
     if (!editChannelName.trim()) return;
     try {
       await axios.put(
-        `http://localhost:8000/api/chats/${editingChannel}`,
+        `http://144.24.195.74:8000/api/chats/${editingChannel}`,
         { name: editChannelName },
         {
           headers: {
@@ -248,7 +248,7 @@ export default function ChatPage() {
     }
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/chats/${selectedChatId}/sendMessages`,
+        `http://144.24.195.74:8000/api/chats/${selectedChatId}/sendMessages`,
         formData,
         {
           headers: {
@@ -310,7 +310,7 @@ export default function ChatPage() {
     try {
       // Send the prompt to the AI endpoint
       const response = await axios.post(
-        `http://localhost:8000/api/chats/${selectedChatId}/ask`,
+        `http://144.24.195.74:8000/api/chats/${selectedChatId}/ask`,
         { prompt },
         {
           headers: {
@@ -344,7 +344,7 @@ export default function ChatPage() {
     setDeletingMessageIds((prev) => [...prev, id]);
     try {
       await axios.delete(
-        `http://localhost:8000/api/chats/${id}/deleteMessage`,
+        `http://144.24.195.74:8000/api/chats/${id}/deleteMessage`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -571,7 +571,7 @@ export default function ChatPage() {
                     alt="Uploaded"
                     className="uploaded-image"
                     onError={(e) =>
-                      (e.target.src = `http://localhost:8000${msg.image}`)
+                      (e.target.src = `http://144.24.195.74:8000${msg.image}`)
                     }
                   />
                 )}

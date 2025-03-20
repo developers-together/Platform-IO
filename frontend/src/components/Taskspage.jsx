@@ -63,7 +63,7 @@ export default function TasksPage() {
   // Initial data fetch
   useEffect(() => {
     axios
-      .get(`http://localhost:8000/api/tasks/${teamId}/index`, {
+      .get(`http://144.24.195.74:8000/api/tasks/${teamId}/index`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
@@ -99,7 +99,7 @@ export default function TasksPage() {
     if (!newTask.trim()) return;
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/tasks/${teamId}/store`,
+        `http://144.24.195.74:8000/api/tasks/${teamId}/store`,
         {
           title: newTask.trim(),
           // Do NOT copy the title into description; leave description empty
@@ -152,7 +152,7 @@ export default function TasksPage() {
     if (!editingTitle.trim()) return;
     try {
       await axios.put(
-        `http://localhost:8000/api/tasks/${currentEditingTask}/update`,
+        `http://144.24.195.74:8000/api/tasks/${currentEditingTask}/update`,
         {
           title: editingTitle,
           description: editingDescription,
@@ -219,7 +219,7 @@ export default function TasksPage() {
     if (!task) return;
     try {
       await axios.put(
-        `http://localhost:8000/api/tasks/${id}/update`,
+        `http://144.24.195.74:8000/api/tasks/${id}/update`,
         {
           title: task.title,
           description: task.description,
@@ -250,7 +250,7 @@ export default function TasksPage() {
     if (!task) return;
     try {
       await axios.put(
-        `http://localhost:8000/api/tasks/${id}/update`,
+        `http://144.24.195.74:8000/api/tasks/${id}/update`,
         {
           title: task.title,
           description: task.description,
@@ -282,7 +282,7 @@ export default function TasksPage() {
     if (!task) return;
     try {
       await axios.put(
-        `http://localhost:8000/api/tasks/${id}/update`,
+        `http://144.24.195.74:8000/api/tasks/${id}/update`,
         {
           title: task.title,
           description: task.description,
@@ -321,7 +321,7 @@ export default function TasksPage() {
   const handleDeleteTask = async (id) => {
     setDeletingId(id);
     try {
-      await axios.delete(`http://localhost:8000/api/tasks/${id}/delete`, {
+      await axios.delete(`http://144.24.195.74:8000/api/tasks/${id}/delete`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",

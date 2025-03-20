@@ -101,8 +101,8 @@ Configure environment variables to connect to Gemini AI if needed.
 Usage
 Local Access:
 ```bash
-React dev server: http://localhost:3000 (by default).
-Laravel server: http://localhost:8000 (by default).
+React dev server: http://144.24.195.74:3000 (by default).
+Laravel server: http://144.24.195.74:8000 (by default).
 ```
 ## AI Features:
 

@@ -94,7 +94,7 @@ export default function Teams({ setCurrentPage }) {
   // Fetch teams from API
   const getTeams = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/api/user/teams", {
+      const response = await axios.get("http://144.24.195.74:8000/api/user/teams", {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
@@ -151,7 +151,7 @@ export default function Teams({ setCurrentPage }) {
 
   const confirmLeaveTeam = async (id) => {
     try {
-      await axios.delete(`http://localhost:8000/api/team/${id}/delete`, {
+      await axios.delete(`http://144.24.195.74:8000/api/team/${id}/delete`, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
@@ -174,7 +174,7 @@ export default function Teams({ setCurrentPage }) {
     if (!joinCode.trim()) return;
     try {
       await axios.post(
-        "http://localhost:8000/api/team/joinTeam",
+        "http://144.24.195.74:8000/api/team/joinTeam",
         { code: joinCode.toUpperCase() },
         {
           headers: {
@@ -201,7 +201,7 @@ export default function Teams({ setCurrentPage }) {
     const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     try {
       await axios.post(
-        "http://localhost:8000/api/team/create",
+        "http://144.24.195.74:8000/api/team/create",
         {
           name: teamName,
           projectname: projectName,

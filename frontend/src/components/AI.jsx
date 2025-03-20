@@ -179,7 +179,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
     setSelectedChatId(chatId);
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/ai_chats/${chatId}/history`,
+        `http://144.24.195.74:8000/api/ai_chats/${chatId}/history`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -207,7 +207,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
     const fetchChats = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/ai_chats/${teamId}/index`,
+          `http://144.24.195.74:8000/api/ai_chats/${teamId}/index`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -248,7 +248,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
     if (previousChats.length === 0) {
       try {
         const response = await axios.post(
-          `http://localhost:8000/api/ai_chats/${teamId}/store`,
+          `http://144.24.195.74:8000/api/ai_chats/${teamId}/store`,
           { name: "New Chat" },
           {
             headers: {
@@ -286,7 +286,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
     if (savedAction === "create-file-folder") {
       console.log(newMessage.text);
       const response = await axios.post(
-        `http://localhost:8000/api/files/${teamId}/aicreate`,
+        `http://144.24.195.74:8000/api/files/${teamId}/aicreate`,
         {
           prompt: newMessage.text,
           path: "/",
@@ -309,8 +309,8 @@ export default function AIPage({ setLeftSidebarOpen }) {
     try {
       const endpoint =
         selectedAction === "search"
-          ? `http://localhost:8000/api/ai_chats/${chatId}/websearch`
-          : `http://localhost:8000/api/ai_chats/${chatId}/send`;
+          ? `http://144.24.195.74:8000/api/ai_chats/${chatId}/websearch`
+          : `http://144.24.195.74:8000/api/ai_chats/${chatId}/send`;
       console.log(endpoint);
       // Build payload with prompt and image (if available)
       const payload = {
@@ -427,7 +427,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
     if (!newChatName.trim()) return;
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/ai_chats/${teamId}/store`,
+        `http://144.24.195.74:8000/api/ai_chats/${teamId}/store`,
         { name: newChatName },
         {
           headers: {
@@ -452,7 +452,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
   // ===== Deleting a chat =====
   const handleDeleteChat = async () => {
     try {
-      await axios.delete(`http://localhost:8000/api/ai_chats/${chatToDelete}`, {
+      await axios.delete(`http://144.24.195.74:8000/api/ai_chats/${chatToDelete}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

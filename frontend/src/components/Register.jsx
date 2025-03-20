@@ -24,7 +24,7 @@ export default function Register({ setCurrentPage }) {
     setIsLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:8000/api/register", {
+      const response = await axios.post("http://144.24.195.74:8000/api/register", {
         name,
         email,
         password,
