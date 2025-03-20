@@ -325,13 +325,94 @@ class FileController extends Controller
         return $this->sendtogemini("give me a meaningful one or two word with no underscores name for a file in the shape of a string for this content: {$prompt}");
     }
 
-    public function createFileWithGemini(Request $request, Team $team)
+        public function createFileWithGemini(Request $request, Team $team)
+        {
+            Gate::authorize('create', Team::class);
+
+            $validated = $request->validate([
+                'path' => 'required|string',
+                'prompt' => 'required|string',
+            ]);
+
+            $disk = Storage::build([
+                'driver' => 'local',
+                'root' => storage_path("app/public/teams/{$team->id}"),
+                'visibility' => 'public'
+            ]);
+
+            // Generate file content and name from Gemini
+            $content = $this->sendtogemini($validated['prompt']);
+            $filename = $this->generateFilenameFromGemini($validated['prompt']);
+
+            // Sanitize filename
+            $filename = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $filename);
+            if (!str_contains($filename, '.')) {
+                $filename .= '.txt'; // Default extension
+            }
+
+            // Trim and sanitize the path
+            $path = trim($validated['path'], '/');
+
+            // Ensure unique filename if it already exists
+            $targetPath = "{$path}/{$filename}";
+            while ($disk->exists($targetPath)) {
+                $filename = pathinfo($filename, PATHINFO_FILENAME) . '_' . time() . '.' . pathinfo($filename, PATHINFO_EXTENSION);
+                $targetPath = "{$path}/{$filename}";
+            }
+
+            // Save file
+            $disk->put($targetPath, $content);
+
+            return response()->json(['message' => 'File created successfully', 'filename' => $filename]);
+        }
+
+
+
+    public function editFileWithGemini(Request $request, Team $team)
     {
-        Gate::authorize('create', Team::class);
+        Gate::authorize('update', $team);
 
         $validated = $request->validate([
             'path' => 'required|string',
             'prompt' => 'required|string',
+        ]);
+
+        $path = $validated['path'];
+
+        $disk = Storage::build([
+            'driver' => 'local',
+            'root' => storage_path("app/public/teams/{$team->id}"),
+            'visibility' => 'public'
+        ]);
+
+        // $targetPath = ltrim($validated['path'], '/') . '/' . $validated['filename'];
+
+        if (!$disk->exists($path)) {
+            return response()->json(['error' => 'File not found'], 404);
+        }
+
+        $existingContent = $disk->get($path);
+
+        // Send request to Gemini with both the content and the prompt
+        $newContent = $this->sendtogemini($validated['prompt'], $existingContent);
+
+        if (is_array($newContent)) {
+            return response()->json($newContent, 500); // If Gemini returns an error
+        }
+
+        $disk->put($path, $newContent);
+
+        return response()->json(['message' => 'File updated successfully', 'path' => $path]);
+    }
+
+
+    public function getFileUrl(Request $request, Team $team)
+    {
+        Gate::authorize('view', $team);
+
+        $validated = $request->validate([
+            'filename' => 'required|string',
+            'path' => 'required|string',
         ]);
 
         $disk = Storage::build([
@@ -340,97 +421,16 @@ class FileController extends Controller
             'visibility' => 'public'
         ]);
 
-        // Generate file content and name from Gemini
-        $content = $this->sendtogemini($validated['prompt']);
-        $filename = $this->generateFilenameFromGemini($validated['prompt']);
+        $targetPath = ltrim($validated['path'], '/') . '/' . $validated['filename'];
 
-        // 🔹 Sanitize filename
-        $filename = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $filename);
-        if (!str_contains($filename, '.')) {
-            $filename .= '.txt'; // Default extension
+        if (!$disk->exists($targetPath)) {
+            return response()->json(['error' => 'File not found'], 404);
         }
 
-        // 🔹 Trim and sanitize the path
-        $path = trim($validated['path'], '/');
+        // Generate the public URL
+        $url = asset("storage/teams/{$team->id}/" . $targetPath);
 
-        // 🔹 Ensure unique filename if it already exists
-        $targetPath = "{$path}/{$filename}";
-        while ($disk->exists($targetPath)) {
-            $filename = pathinfo($filename, PATHINFO_FILENAME) . '_' . time() . '.' . pathinfo($filename, PATHINFO_EXTENSION);
-            $targetPath = "{$path}/{$filename}";
-        }
-
-        // Save file
-        $disk->put($targetPath, $content);
-
-        return response()->json(['message' => 'File created successfully', 'filename' => $filename]);
+        return response()->json(['url' => $url]);
     }
-
-
-
-public function editFileWithGemini(Request $request, Team $team)
-{
-    Gate::authorize('update', $team);
-
-    $validated = $request->validate([
-        'path' => 'required|string',
-        'prompt' => 'required|string',
-    ]);
-
-    $path = $validated['path'];
-
-    $disk = Storage::build([
-        'driver' => 'local',
-        'root' => storage_path("app/public/teams/{$team->id}"),
-        'visibility' => 'public'
-    ]);
-
-    // $targetPath = ltrim($validated['path'], '/') . '/' . $validated['filename'];
-
-    if (!$disk->exists($path)) {
-        return response()->json(['error' => 'File not found'], 404);
-    }
-
-    $existingContent = $disk->get($path);
-
-    // Send request to Gemini with both the content and the prompt
-    $newContent = $this->sendtogemini($validated['prompt'], $existingContent);
-
-    if (is_array($newContent)) {
-        return response()->json($newContent, 500); // If Gemini returns an error
-    }
-
-    $disk->put($path, $newContent);
-
-    return response()->json(['message' => 'File updated successfully', 'path' => $path]);
-}
-
-
-public function getFileUrl(Request $request, Team $team)
-{
-    Gate::authorize('view', $team);
-
-    $validated = $request->validate([
-        'filename' => 'required|string',
-        'path' => 'required|string',
-    ]);
-
-    $disk = Storage::build([
-        'driver' => 'local',
-        'root' => storage_path("app/public/teams/{$team->id}"),
-        'visibility' => 'public'
-    ]);
-
-    $targetPath = ltrim($validated['path'], '/') . '/' . $validated['filename'];
-
-    if (!$disk->exists($targetPath)) {
-        return response()->json(['error' => 'File not found'], 404);
-    }
-
-    // Generate the public URL
-    $url = asset("storage/teams/{$team->id}/" . $targetPath);
-
-    return response()->json(['url' => $url]);
-}
 
 }
