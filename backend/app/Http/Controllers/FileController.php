@@ -322,7 +322,7 @@ class FileController extends Controller
     private function generateFilenameFromGemini(string $prompt): string
     {
         // Call your AI model to generate a filename based on the prompt
-        return $this->sendtogemini("Generate a meaningful filename based on this content: {$prompt}");
+        return $this->sendtogemini("give me a meaningful one or two word with no underscores name for a file in the shape of a string for this content: {$prompt}");
     }
 
     public function createFileWithGemini(Request $request, Team $team)
