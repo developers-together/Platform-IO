@@ -15,12 +15,11 @@ import { IoMdDownload } from "react-icons/io";
 import { FaFolderPlus } from "react-icons/fa";
 import { AiFillFilePdf } from "react-icons/ai";
 import { IoEnter } from "react-icons/io5";
-import { MdDelete } from "react-icons/md";
-import { MdCheck, MdClose } from "react-icons/md";
+import { MdDelete, MdCheck, MdClose } from "react-icons/md";
 import "./File.css";
 
 export default function FileShareSystem() {
-  // State variables
+  // State variables for file system, overlays, etc.
   const [items, setItems] = useState([]);
   const [menuItemPath, setMenuItemPath] = useState(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -30,31 +29,57 @@ export default function FileShareSystem() {
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
 
-  const helpRef = useRef(null);
-  const tooltipRef = useRef(null);
+  // Overlays: initially hidden.
+  const [showRegisterOverlay, setShowRegisterOverlay] = useState(false);
+  const [showTutorialOverlay, setShowTutorialOverlay] = useState(false);
+
+  // Active OS for the tutorial overlay.
+  const [activeOS, setActiveOS] = useState("windows");
+
+  // Registration data
+  const [registerData, setRegisterData] = useState({
+    username: "",
+    password: "",
+  });
+
+  // Define fileInputRef for file uploads.
   const fileInputRef = useRef(null);
 
-  const teamId = localStorage.getItem("teamId");
-  const token = localStorage.getItem("token");
+  // Get token and teamId from localStorage
+  let teamId = localStorage.getItem("teamId");
+  let token = localStorage.getItem("token");
 
+  // On component mount, if no token exists, prompt the user.
+  useEffect(() => {
+    if (!token) {
+      
+        setShowRegisterOverlay(true);
+      
+    }
+  }, [token]);
+
+  // Close item menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
-        tooltipRef.current &&
-        !tooltipRef.current.contains(e.target) &&
-        helpRef.current &&
-        !helpRef.current.contains(e.target)
+        !e.target.closest(".item-menu-dialog") &&
+        !e.target.closest(".item-menu-btn")
       ) {
-        // Optionally hide tooltip
+        setMenuItemPath(null);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
-  }, [token]);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  // Fetch directory data
+  // Fetch directory items (or return dummy data in guest mode)
   async function getdirsroot() {
+    if (!token || token === "guestToken") {
+      return [
+        { path: "/demo-folder", name: "Demo Folder", type: "folder" },
+        { path: "/demo-file.txt", name: "Demo File.txt", type: "text" },
+      ];
+    }
     try {
       const response = await axios.get(
         `http://localhost:8000/api/folders/${teamId}/index`,
@@ -63,47 +88,34 @@ export default function FileShareSystem() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          // Pass the currentPath as a parameter (if your backend uses it)
           params: { path: currentPath },
         }
       );
 
-      // Assume response.data.directory is an array of full paths, for example:
-      // ["1", "1/2", "1/2/gg"]
+      // Directories filtering
       const allDirs = response.data.directory;
-
       let filteredDirs;
       if (currentPath === "/") {
-        // At root, only direct children (no slash) are kept.
         filteredDirs = allDirs.filter((item) => !item.includes("/"));
       } else {
-        // For a non-root folder, first ensure currentPath ends with a slash.
         const normalizedPath = currentPath.endsWith("/")
           ? currentPath
           : currentPath + "/";
-        // Filter for items that start with the normalizedPath and have no additional slash
         filteredDirs = allDirs.filter((item) => {
           if (!item.startsWith(normalizedPath)) return false;
           const remainder = item.slice(normalizedPath.length);
           return !remainder.includes("/");
         });
       }
-
-      // Map the filtered directories to folder objects.
       const fetchedDirectories = filteredDirs.map((fullPath) => {
         const name = fullPath.split("/").pop();
-        return {
-          path: fullPath, // full path is our unique key
-          name,
-          type: "folder",
-        };
+        return { path: fullPath, name, type: "folder" };
       });
 
-      // Filtering files similarly:
+      // Files filtering
       const allFiles = response.data.files || [];
       let filteredFiles;
       if (currentPath === "/") {
-        // At root, only include files with no slash in their path.
         filteredFiles = allFiles.filter((file) => !file.path.includes("/"));
       } else {
         const normalizedPath = currentPath.endsWith("/")
@@ -115,18 +127,11 @@ export default function FileShareSystem() {
           return !remainder.includes("/");
         });
       }
-
-      // Map the filtered files to file objects.
       const fetchedFiles = filteredFiles.map((file) => {
         const name = file.path.split("/").pop();
-        return {
-          path: file.path,
-          name,
-          type: file.type, // e.g., "txt", "pdf", etc.
-        };
+        return { path: file.path, name, type: file.type };
       });
 
-      // Combine directories and files into one array.
       const fetchedItems = [...fetchedDirectories, ...fetchedFiles];
       return fetchedItems;
     } catch (error) {
@@ -144,16 +149,25 @@ export default function FileShareSystem() {
     fetchData();
   }, [teamId, token, currentPath]);
 
-  // Create folder
+  // Folder creation handler
   const handleCreateFolder = async () => {
     if (!newFolderName.trim()) return;
+    if (token === "guestToken") {
+      const newPath =
+        currentPath === "/" ? `${currentPath}${newFolderName}` : `${currentPath}/${newFolderName}`;
+      setItems((prev) => [
+        ...prev,
+        { path: newPath, name: newFolderName, type: "folder" },
+      ]);
+      setConfirmationMessage("Folder created (guest mode)!");
+      setNewFolderName("");
+      setIsCreatingFolder(false);
+      return;
+    }
     try {
       const response = await axios.post(
         `http://localhost:8000/api/folders/${teamId}/store`,
-        {
-          name: newFolderName,
-          path: currentPath,
-        },
+        { name: newFolderName, path: currentPath },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -161,54 +175,82 @@ export default function FileShareSystem() {
           },
         }
       );
-      let path = currentPath;
-      if (path === "/") path += newFolderName;
-      else path += "/" + newFolderName;
-      setConfirmationMessage(
-        response.data.message || "Folder created successfully!"
-      );
-      const newFolder = {
-        path: path,
-        name: newFolderName,
-        type: "folder",
-      };
-      setItems((prevItems) => [...prevItems, newFolder]);
+      const newPath =
+        currentPath === "/" ? `${currentPath}${newFolderName}` : `${currentPath}/${newFolderName}`;
+      setConfirmationMessage(response.data.message || "Folder created!");
+      setItems((prev) => [
+        ...prev,
+        { path: newPath, name: newFolderName, type: "folder" },
+      ]);
       setNewFolderName("");
       setIsCreatingFolder(false);
     } catch (error) {
-      console.error("Error creating folder:", error);
+      setErrorMessage(error.response?.data?.error || "Error creating folder.");
+    }
+  };
+
+  // Registration handler
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/register",
+        registerData
+      );
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("teamId", response.data.teamId);
+      localStorage.setItem("hasRegistered", "true");
+
+      setShowRegisterOverlay(false);
+      setShowTutorialOverlay(true);
+      setErrorMessage("");
+    } catch (error) {
       setErrorMessage(
         error.response?.data?.error ||
-          "An error occurred while creating the folder."
+          "Registration failed. Please try again."
       );
     }
   };
 
-  // Three-dots menu functions
+  // Guest mode handler
+  const handleGuestEnter = () => {
+    localStorage.setItem("hasRegistered", "true");
+    localStorage.setItem("token", "guestToken");
+    localStorage.setItem("teamId", "guestTeamId");
+    token = "guestToken";
+    teamId = "guestTeamId";
+
+    setShowRegisterOverlay(false);
+    setShowTutorialOverlay(true);
+  };
+
+  // Toggle item menu
   const toggleMenu = (itemPath, e) => {
     e.stopPropagation();
     setMenuItemPath((prev) => (prev === itemPath ? null : itemPath));
   };
 
-  // Open folder: use the "show" endpoint to fetch its contents.
-  // Even if the folder is empty, update the currentPath.
-  const handleOpen = async (itemPath, itemType) => {
+  // Open folder or file (only folders change directory)
+  const handleOpen = (itemPath, itemType) => {
     if (itemType === "folder") {
       setCurrentPath(itemPath);
-      setMenuItemPath(null);
     }
+    setMenuItemPath(null);
   };
 
+  // Delete folder or file
   const handleDelete = async (itemPath, itemType) => {
     if (!window.confirm(`Are you sure you want to delete this ${itemType}?`))
       return;
-
     try {
+      if (token === "guestToken") {
+        setItems((prev) => prev.filter((item) => item.path !== itemPath));
+        return;
+      }
       const endpoint =
         itemType === "folder"
           ? `http://localhost:8000/api/folders/${teamId}/delete`
           : `http://localhost:8000/api/files/${teamId}/delete`;
-
       await axios.delete(endpoint, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -216,31 +258,21 @@ export default function FileShareSystem() {
         },
         data: { path: itemPath },
       });
-
-      setItems((prevItems) =>
-        prevItems.filter((i) => i.path !== itemPath)
-      );
+      setItems((prev) => prev.filter((item) => item.path !== itemPath));
     } catch (error) {
       console.error(`Error deleting ${itemType}:`, error);
-      setErrorMessage(
-        `An error occurred while deleting the ${itemType}.`
-      );
+      setErrorMessage(`An error occurred while deleting the ${itemType}.`);
     }
   };
 
-  // "Back" button: navigate to the parent directory
+  // Navigate back in directory
   const handleBack = () => {
     if (currentPath === "/") return;
-    let p = currentPath.split("/");
-    p.pop();
-    let newPath = p.join("/");
-    if (newPath === "") {
-      newPath = "/";
-    }
+    const newPath = currentPath.split("/").slice(0, -1).join("/") || "/";
     setCurrentPath(newPath);
   };
 
-  // Download file feature
+  // Download file feature (only for files)
   const handleDownload = async (item) => {
     try {
       const response = await axios.get(
@@ -250,10 +282,9 @@ export default function FileShareSystem() {
             Authorization: `Bearer ${token}`,
           },
           params: { path: item.path },
-          responseType: "blob", // Important for downloading files
+          responseType: "blob",
         }
       );
-      // Create a blob from the response data
       const blob = new Blob([response.data], {
         type: response.headers["content-type"],
       });
@@ -270,15 +301,12 @@ export default function FileShareSystem() {
     }
   };
 
-  // Upload file feature
+  // Upload file feature with duplicate checking
   const handleUploadFile = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    // Determine original file name
     const originalName = file.name;
-
-    // Filter items in the current directory
+    // Filter items in current directory
     const currentItems = items.filter((item) => {
       if (currentPath === "/") {
         return !item.path.slice(1).includes("/");
@@ -290,20 +318,14 @@ export default function FileShareSystem() {
         return remainder && !remainder.includes("/");
       }
     });
-
-    // Check for duplicate by comparing file names
     if (currentItems.some((item) => item.name === originalName)) {
       setErrorMessage("File already exists");
       return;
     }
-
-    // Build formData including the original file name
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("path", currentPath); // Send the current directory path
-    formData.append("name", originalName); // Send the original file name to the API
-    console.log(file, currentPath, originalName);
-
+    formData.append("path", currentPath);
+    formData.append("name", originalName);
     try {
       const response = await axios.post(
         `http://localhost:8000/api/files/${teamId}/store`,
@@ -311,15 +333,12 @@ export default function FileShareSystem() {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            // Let axios set the appropriate Content-Type for multipart/form-data
           },
         }
       );
       setConfirmationMessage(
         response.data.message || "File uploaded successfully!"
       );
-
-      // Manually construct the file object using the original file name
       const dotIndex = originalName.lastIndexOf(".");
       let extension = "";
       if (dotIndex !== -1) {
@@ -331,10 +350,9 @@ export default function FileShareSystem() {
             ? `/${originalName}`
             : `${currentPath}/${originalName}`,
         name: originalName,
-        type: extension.replace(".", "").toLowerCase(), // e.g., "pdf" or "txt"
+        type: extension.replace(".", "").toLowerCase(),
       };
-
-      setItems((prevItems) => [...prevItems, newFile]);
+      setItems((prev) => [...prev, newFile]);
     } catch (error) {
       console.error("Error uploading file:", error);
       setErrorMessage(
@@ -342,7 +360,6 @@ export default function FileShareSystem() {
           "An error occurred while uploading the file."
       );
     }
-    // Clear the file input so the same file can be re-uploaded if needed.
     e.target.value = "";
   };
 
@@ -352,7 +369,7 @@ export default function FileShareSystem() {
     }
   };
 
-  // Toggle the add dialog and clear messages
+  // Toggle add dialog and clear messages
   const toggleAddDialog = () => {
     setShowAddDialog((prev) => !prev);
     setConfirmationMessage("");
@@ -361,48 +378,175 @@ export default function FileShareSystem() {
     setNewFolderName("");
   };
 
-  // Render icon based on type
-  function renderItemIcon(item) {
-    if (item.type === "folder") return <FiFolder size={28} color="#4dabf7" />;
-    if (item.type === "video") return <FiVideo size={28} color="#4dabf7" />;
-    if (item.type === "pdf") return <AiFillFilePdf size={28} color="#4dabf7" />;
-    if (item.type === "text") return <FiFileText size={28} color="#4dabf7" />;
-    if (item.type === "image") return <FiImage size={28} color="#4dabf7" />;
-    return <FiGenericFile size={28} color="#4dabf7" />;
-  }
-
-  // Render breadcrumb
-  function renderBreadcrumb() {
-    if (currentPath === "/") {
-      return <span className="breadcrumb-part">Root</span>;
-    } else {
-      const parts = currentPath.split("/").filter(Boolean);
-      return (
-        <div className="breadcrumb">
-          <span className="breadcrumb-part" onClick={() => setCurrentPath("/")}>
-            Root
-          </span>
-          {parts.map((part, index) => (
-            <React.Fragment key={index}>
-              <span className="breadcrumb-separator">›</span>
-              <span
-                className="breadcrumb-part"
-                onClick={() => {
-                  const newPath = "/" + parts.slice(0, index + 1).join("/");
-                  setCurrentPath(newPath);
-                }}
-              >
-                {part}
-              </span>
-            </React.Fragment>
-          ))}
-        </div>
-      );
+  // Render icon based on item type
+  const renderItemIcon = (item) => {
+    const iconProps = { size: 28, color: "#4dabf7" };
+    switch (item.type) {
+      case "folder":
+        return <FiFolder {...iconProps} />;
+      case "video":
+        return <FiVideo {...iconProps} />;
+      case "pdf":
+        return <AiFillFilePdf {...iconProps} />;
+      case "text":
+        return <FiFileText {...iconProps} />;
+      case "image":
+        return <FiImage {...iconProps} />;
+      default:
+        return <FiGenericFile {...iconProps} />;
     }
-  }
+  };
+
+  // Render breadcrumb navigation
+  const renderBreadcrumb = () => {
+    if (currentPath === "/") return <span className="breadcrumb-part">Root</span>;
+    const parts = currentPath.split("/").filter(Boolean);
+    return (
+      <div className="breadcrumb">
+        <span className="breadcrumb-part" onClick={() => setCurrentPath("/")}>
+          Root
+        </span>
+        {parts.map((part, index) => (
+          <React.Fragment key={index}>
+            <span className="breadcrumb-separator">›</span>
+            <span
+              className="breadcrumb-part"
+              onClick={() =>
+                setCurrentPath("/" + parts.slice(0, index + 1).join("/"))
+              }
+            >
+              {part}
+            </span>
+          </React.Fragment>
+        ))}
+      </div>
+    );
+  };
+
+  // --- Overlay Components ---
+
+  // Registration Overlay
+  const RegisterOverlay = () => {
+    const overlayRef = useRef(null);
+    useEffect(() => {
+      if (overlayRef.current) {
+        overlayRef.current.style.animation = "none";
+      }
+    }, []);
+    return (
+      <div className="overlay2">
+        <div className="register-overlay" ref={overlayRef}>
+          <h2>Create Your Account</h2>
+          <form onSubmit={handleRegister}>
+            <input
+              type="text"
+              placeholder="Username"
+              value={registerData.username}
+              onChange={(e) =>
+                setRegisterData((prev) => ({
+                  ...prev,
+                  username: e.target.value,
+                }))
+              }
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={registerData.password}
+              onChange={(e) =>
+                setRegisterData((prev) => ({
+                  ...prev,
+                  password: e.target.value,
+                }))
+              }
+              required
+            />
+            <button type="submit">Login</button>
+          </form>
+          <button
+            type="button"
+            onClick={handleGuestEnter}
+            style={{ marginTop: "1rem", fontSize: "0.9rem" }}
+          >
+            Skip Registration
+          </button>
+          {errorMessage && <div className="overlay-error">{errorMessage}</div>}
+        </div>
+      </div>
+    );
+  };
+
+  // Tutorial Overlay
+  const TutorialOverlay = () => {
+    const overlayRef = useRef(null);
+    useEffect(() => {
+      if (overlayRef.current) {
+        overlayRef.current.style.animation = "none";
+      }
+    }, []);
+    return (
+      <div className="overlay2">
+        <div className="tutorial-overlay" ref={overlayRef}>
+          <h2>Getting Started Guide</h2>
+          <div className="os-tabs">
+            {["windows", "mac", "linux"].map((os) => (
+              <button
+                key={os}
+                className={activeOS === os ? "active" : ""}
+                onClick={() => setActiveOS(os)}
+              >
+                {os.charAt(0).toUpperCase() + os.slice(1)}
+              </button>
+            ))}
+          </div>
+          <div className="tutorial-content">
+            {activeOS === "windows" && (
+              <>
+                <h3>Windows Instructions</h3>
+                <ol>
+                  <li>Right-click files/folders for context menu</li>
+                  <li>Drag-and-drop to organize items</li>
+                  <li>Double-click folders to navigate</li>
+                </ol>
+              </>
+            )}
+            {activeOS === "mac" && (
+              <>
+                <h3>macOS Instructions</h3>
+                <ol>
+                  <li>Control-click for context menus</li>
+                  <li>Use trackpad gestures to navigate</li>
+                  <li>Drag items between folders</li>
+                </ol>
+              </>
+            )}
+            {activeOS === "linux" && (
+              <>
+                <h3>Linux Instructions</h3>
+                <ol>
+                  <li>Right-click for context menus</li>
+                  <li>Use keyboard shortcuts (Ctrl+C/V)</li>
+                  <li>Drag items to move/copy</li>
+                </ol>
+              </>
+            )}
+          </div>
+          <button className="close-tutorial" onClick={() => setShowTutorialOverlay(false)}>
+            Start Using
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // --- End Overlays ---
 
   return (
     <div className="file-page">
+      {showRegisterOverlay && <RegisterOverlay />}
+      {showTutorialOverlay && <TutorialOverlay />}
+
       {confirmationMessage && (
         <div className="global-confirmation-message">
           {confirmationMessage}
@@ -433,33 +577,24 @@ export default function FileShareSystem() {
                 <FaFileMedical /> Upload File
               </button>
               {isCreatingFolder ? (
-                <div className="folder-create-container" tabIndex={0}>
+                <div className="folder-create-container">
                   <input
                     type="text"
                     className="folder-create-input"
-                    placeholder="Enter folder name..."
+                    placeholder="Folder name..."
                     value={newFolderName}
                     onChange={(e) => setNewFolderName(e.target.value)}
                     autoFocus
                   />
-                  <button
-                    className="folder-save-button"
-                    onClick={handleCreateFolder}
-                  >
+                  <button className="folder-save-button" onClick={handleCreateFolder}>
                     <MdCheck size={20} />
                   </button>
-                  <button
-                    className="folder-cancel-button"
-                    onClick={() => setIsCreatingFolder(false)}
-                  >
+                  <button className="folder-cancel-button" onClick={() => setIsCreatingFolder(false)}>
                     <MdClose size={20} />
                   </button>
                 </div>
               ) : (
-                <button
-                  className="add-dialog-item2"
-                  onClick={() => setIsCreatingFolder(true)}
-                >
+                <button className="add-dialog-item2" onClick={() => setIsCreatingFolder(true)}>
                   <FaFolderPlus /> Create Folder
                 </button>
               )}
@@ -474,23 +609,19 @@ export default function FileShareSystem() {
             <div
               key={item.path}
               className="item-card"
-              onClick={() => handleOpen(item.path, item.type)}
+              onClick={() =>
+                item.type === "folder" && handleOpen(item.path, item.type)
+              }
             >
               <div className="item-icon">{renderItemIcon(item)}</div>
               <p className="item-name" title={item.name}>
                 {item.name}
               </p>
-              <button
-                className="item-menu-btn"
-                onClick={(e) => toggleMenu(item.path, e)}
-              >
+              <button className="item-menu-btn" onClick={(e) => toggleMenu(item.path, e)}>
                 <FiMoreVertical size={20} />
               </button>
               {menuItemPath === item.path && (
-                <div
-                  className="item-menu-dialog"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <div className="item-menu-dialog" onClick={(e) => e.stopPropagation()}>
                   <button
                     className="item-menu-item open-item"
                     onClick={() => handleOpen(item.path, item.type)}
