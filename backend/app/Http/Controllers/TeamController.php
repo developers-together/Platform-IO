@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Storage;
 
 class TeamController extends Controller
 {
+
+
+
+    
     /**
      * Display a listing of the resource.
      */

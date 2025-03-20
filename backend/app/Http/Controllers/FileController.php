@@ -55,12 +55,9 @@ class FileController extends Controller
         // Clean and prepare the target directory path
         $targetPath = ltrim($validated['path'], '/');  // Remove leading slashes
 
-        // Store the file using the custom disk
-        $path = $disk->putFileAs(
-            $targetPath,
-            $file,
-            $file->getClientOriginalName()
-        );
+        $path = $file->storeAs($targetPath, $file->getClientOriginalName(), $disk);
+
+
 
         // Create file record with proper relationships
         // File::create([

@@ -75,6 +75,18 @@ return [
             'report' => false,
         ],
 
+        'ftp' => [
+    'driver'   => 'ftp',
+    'host'     => env('FTP_HOST', 'localhost'),
+    'username' => env('FTP_USERNAME'),
+    'password' => env('FTP_PASSWORD'),
+    'root'     => '/teams',
+    'passive'  => true,
+    'ssl'      => false,
+    'timeout'  => 30,
+],
+],
+
         /*  
               'sftp' =>  [
             'host' => env('SFTP_HOST', 'localhost'),
@@ -100,26 +112,26 @@ return [
         //     'report' => false,
         // ],
 
-        'sftp' => [
-            'driver' => 'sftp',
-            'host' => env('SFTP_HOST'),
-            'port' => env('SFTP_PORT'),
-            'username' => env('SFTP_USERNAME'),
-            'password' => env('SFTP_PASSWORD'),
-            // 'root' => env('SFTP_ROOT'),
-            'timeout' => 30,
-            'visibility' => 'public',
-            'directory_visibility' => 'public',
-            'permissions' => [
-                'read' => ['member', 'admin','viewer'],
-                'write' => ['admin','member']
-            ],
-            // 'chroot_template' => '',//team_%d
-            'throw' => false,
-            'report' => false,
-        ],
+    //     'sftp' => [
+    //         'driver' => 'sftp',
+    //         'host' => env('SFTP_HOST'),
+    //         'port' => env('SFTP_PORT'),
+    //         'username' => env('SFTP_USERNAME'),
+    //         'password' => env('SFTP_PASSWORD'),
+    //         // 'root' => env('SFTP_ROOT'),
+    //         'timeout' => 30,
+    //         'visibility' => 'public',
+    //         'directory_visibility' => 'public',
+    //         'permissions' => [
+    //             'read' => ['member', 'admin','viewer'],
+    //             'write' => ['admin','member']
+    //         ],
+    //         // 'chroot_template' => '',//team_%d
+    //         'throw' => false,
+    //         'report' => false,
+    //     ],
 
-    ],
+    // ],
 
     /*
     |--------------------------------------------------------------------------
