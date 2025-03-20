@@ -266,8 +266,12 @@ export default function AIPage({ setLeftSidebarOpen }) {
 
     // Send the message now that a chat exists
     try {
+      const endpoint =selectedAction=="search"?
+      `http://localhost:8000/api/ai_chats/${chatId}/websearch`:
+      `http://localhost:8000/api/ai_chats/${chatId}/send`;
+      console.log(endpoint);
       const response = await axios.post(
-        `http://localhost:8000/api/ai_chats/${chatId}/send`,
+        endpoint,
         { prompt: newMessage.text },
         {
           headers: {
@@ -313,6 +317,7 @@ export default function AIPage({ setLeftSidebarOpen }) {
     }
   };
 
+  
   // ===== Action buttons (search, actions, upload) =====
   const handleAction = (action) => {
     if (selectedAction === action) {
