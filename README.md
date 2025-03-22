@@ -29,8 +29,8 @@ We built this project in **6 days** as a prototype (V1), showcasing the potentia
 ---
 
 ## Tech Stack
-- **Front-End**: [React](https://reactjs.org/), CSS
-- **Back-End**: [Laravel (PHP)](https://laravel.com/)
+- **Front-End**: React, CSS
+- **Back-End**: Laravel (PHP)
 - **AI Integration**: Gemini AI (for suggestions, chatbot, and image analysis)
 - **Database**: SQLite
 - **Other**: Python scripts for additional AI tasks, FTP for shared file management
@@ -102,8 +102,8 @@ Create, edit, and manage files/folders. The changes are synced over FTP.
 Demo Videos
 We created two demo videos on YouTube:
 
-* #### Demo Only – Showcasing the platform features.
+[* #### Demo Only – Showcasing the platform features.]: #
 
-* #### Demo with the Team – A discussion with the project’s team, exploring the platform.
+* #### Demo with the Team – [A discussion with the project’s team, exploring the platform.](https://youtu.be/IKgpYHlJJus?si=KFjWIok0v-xxh2sQ)
 
 Disclaimer: This project is an early prototype (V1) built within 6 days for the Salam Hackathon. While functional, it may require additional optimization, security reviews, and code clean-up for production use.
