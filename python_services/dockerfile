@@ -1,0 +1,16 @@
+# Use the latest Python slim image
+FROM python:slim
+
+WORKDIR /python_services
+
+# Install any system dependencies needed for smolagents or asyncssh
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# CMD is handled by docker-compose
