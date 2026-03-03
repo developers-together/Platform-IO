@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            // $table->boolean('stared')->default(false);
+            $table->boolean('stared')->default(false);
             $table->text('description')->nullable();
             $table->dateTime('deadline')->nullable();
             // $table->dateTime('start')->nullable();
@@ -29,7 +29,7 @@ return new class extends Migration
         Schema::create('task_user', function (Blueprint $table) {
 
             $table->foreignId('task_id')->onDelete('cascade');
-            $table->foreginId('user_id')->onDelete('cascade');
+            $table->foreignId('user_id')->onDelete('cascade');
         });
     }
 

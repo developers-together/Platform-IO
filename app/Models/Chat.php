@@ -12,7 +12,7 @@ class Chat extends Model
 {
     // use HasFactory;
 
-    protected $fillable = ['name','team_id'];
+    protected $fillable = ['name','team_id','type'];
 
     public function team(): BelongsTo
     {
@@ -25,13 +25,25 @@ class Chat extends Model
 
     }
 
-    protected static function boot()
+    public function ChatPerm(): HasMany
     {
-        parent::boot();
-
-        static::deleting(function ($chat) {
-            $chat->messages()->delete(); // Delete messages when chat is deleted
-        });
+        return $this->hasMany(ChatPerm::class);
     }
+
+    public function user(): HasMany
+    {
+        return $this->hasMany(User::class);
+
+
+    }
+
+    // protected static function boot()
+    // {
+    //     parent::boot();
+    //
+    //     static::deleting(function ($chat) {
+    //         $chat->messages()->delete(); // Delete messages when chat is deleted
+    //     });
+    // }
 
 }

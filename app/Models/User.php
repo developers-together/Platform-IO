@@ -7,11 +7,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens;
+        use HasApiTokens;
+        use HasFactory;
+        use Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -22,9 +25,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'age',
+        // 'age',
         'job',
-        'location',
+        // 'location',
         'phone',
         'gender',
     ];
@@ -52,16 +55,23 @@ class User extends Authenticatable
         ];
     }
 
+    public function Contacts(): HasMany
+    {
+        return $this->HasMany(Contact::class);
+    }
+
     public function Messages(): HasMany
     {
         return $this->HasMany(Message::class);
-
     }
-
-    public function ai_chats(): HasMany
+    public function Chats(): HasMany
     {
-        return $this->hasMany(Ai_chats::class);
+        return $this->hasMany(chat::class);
     }
+    // public function ai_chats(): HasMany
+    // {
+        // return $this->hasMany(Ai_chats::class);
+    // }
 
     // public function messages()
     // {
@@ -75,9 +85,8 @@ class User extends Authenticatable
                     ->withTimestamps();
     }
 
-    public function getSftpUsernameAttribute()
-{
-    return 'user_'.$this->id.'_'.md5($this->created_at);
-}
-
+    // public function getSftpUsernameAttribute()
+    // {
+    //     return 'user_' . $this->id . '_' . md5($this->created_at);
+    // }
 }

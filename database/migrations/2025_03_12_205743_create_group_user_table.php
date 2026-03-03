@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('chat_id')->constrained()->onDelete('cascade');
+            $table->enum('notifications',['mute','notify','mute10m','mute60m','mute24d'])->default('notify');
             $table->timestamps();
         });
     }

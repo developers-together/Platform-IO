@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('c-event_task', function (Blueprint $table) {
+        Schema::create('event_task', function (Blueprint $table) {
 
             $table->foreignId('c-event_id');
             $table->foreignId('task_id');

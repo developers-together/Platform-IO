@@ -15,7 +15,19 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('team_id');
+            $table->enum('type',['text','voice']);
             $table->timestamps();
+        });
+
+        Schema::create('chat_perms',function (Blueprint $table){
+            $table->foreignId('chat_id');
+            $table->boolean('write');
+            $table->boolean('read');
+            $table->boolean('delete');
+            $table->boolean('modify');
+            $table->boolean('notify');
+            $table->boolean('allow_ai');
+
         });
 
     }

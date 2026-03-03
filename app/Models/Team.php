@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Team extends Model
 {
-    public function users()
+    public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
                     ->withPivot('role')
@@ -19,12 +21,12 @@ class Team extends Model
 
     public function tasks(): HasMany
     {
-        return $this->hasMany(Tasks::class);
+        return $this->hasMany(Task::class);
     }
 
-    public function ai_chats(): HasMany
-    {
-        return $this->hasMany(ai_chats::class);
-    }
+    // public function ai_chats(): HasMany
+    // {
+    //     return $this->hasMany(ai_chats::class);
+    // }
 
 }

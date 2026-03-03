@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('c-events', function (Blueprint $table) {
+        Schema::create('events', function (Blueprint $table) {
 
             $table->id();
             $table->foreignId('calender_id')->onDelete('cascade');
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->time('start');
             $table->time('end');
             $table->boolean('is_all_day');
-            // $table->string('timezone');
+            $table->string('timezone');
             $table->string('rrule');
         });
     }

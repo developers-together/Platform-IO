@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('message')->nullable();
             $table->string('path')->nullable();
             $table->integer("replyTo")->nullable();
-            $table->boolean("isAi")->default(false);
+            // $table->boolean("isAi")->default(false);
             $table->timestamps();
         });
 
