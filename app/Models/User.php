@@ -55,16 +55,16 @@ class User extends Authenticatable
         ];
     }
 
-    public function Contacts(): HasMany
+    public function contacts(): HasMany
     {
         return $this->HasMany(Contact::class);
     }
 
-    public function Messages(): HasMany
+    public function messages(): HasMany
     {
         return $this->HasMany(Message::class);
     }
-    public function Chats(): HasMany
+    public function chats(): HasMany
     {
         return $this->hasMany(chat::class);
     }

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends Controller
 {
@@ -35,10 +38,10 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'age' => 'nullable|integer',
+            // 'age' => 'nullable|integer',
             'gender' => 'nullable|string',
             'job' => 'nullable|string',
-            'location' => 'nullable|string',
+            // 'location' => 'nullable|string',
             'phone' => 'nullable|string',
         ]);
 
@@ -46,25 +49,44 @@ class UserController extends Controller
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
             'password' => Hash::make($validatedData['password']),
+            'gender' => $validatedData['gender'],
+            'job' => $validatedData['job'],
+            'phone' => $validatedData['phone']
         ]);
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
         // Return the user and token
-        return response()->json([
+        return Inertia::render([
             'user' => $user,
             'token' => $token,
-        ], 201);
+        ]);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show()
+    public function show($id)
     {
+        $user = user::where('id',$id);
+
+
+        return Inertia::render("user/{$id}",[
+            'user_data' => $user,
+            'contacts' => $user->contacts
+        ]);
+    }
+
+    public function profile(){
+
         $user = Auth::user();
 
-        return response()->json($user);
+
+        return Inertia::render('profile',[
+            'user_data' => $user,
+            'contacts' => $user->contacts
+
+        ]);
     }
 
 
@@ -87,10 +109,10 @@ class UserController extends Controller
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'sometimes|string|min:8',
-            'age' => 'nullable|integer',
+            // 'age' => 'nullable|integer',
             'gender' => 'nullable|string',
             'job' => 'nullable|string',
-            'location' => 'nullable|string',
+            // 'location' => 'nullable|string',
             'phone' => 'nullable|string',
         ]);
 
@@ -107,8 +129,17 @@ class UserController extends Controller
     {
         $user = Auth::user();
 
+        Auth::logout();
+
+
+
+        $request->session()->invalidate();
+
+
+
+        $request->session()->regenerateToken();
         // Revoke the current access token
-        $user->currentAccessToken()->delete();
+        // $user->currentAccessToken()->delete();
 
         return response()->json([
             'message' => 'Logged out successfully'
@@ -117,7 +148,7 @@ class UserController extends Controller
 
     public function teams()
     {
-        $user = Auth::user()->load('teams');
+        $user = Auth::user()->teams;
 
         $teams = $user->teams->map(function ($team) {
             return [
@@ -125,10 +156,11 @@ class UserController extends Controller
                 'name' => $team->name,
                 'projectname' => $team->projectname,
                 'description' => $team->description,
-                'code' => $team->code,
+                // 'code' => $team->code,
             ];
         });
 
+        return Inertia::render('teams/', ['teams'=>$teams]);
         return response()->json($teams);
     }
 
@@ -138,20 +170,15 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function delete(Request $request)
+    public function delete()
     {
         $user = Auth::user();
-
-        if ($user) {
+            /** @var \App\Models\User $user */
             $user->delete();
 
             return response()->json([
                 'message' => 'Your account has been deleted successfully.'
             ]);
-        }
 
-        return response()->json([
-            'message' => 'User not authenticated.'
-        ], 401);
     }
 }

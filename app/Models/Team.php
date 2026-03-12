@@ -24,6 +24,10 @@ class Team extends Model
         return $this->hasMany(Task::class);
     }
 
+    public function comms(): HasMany
+    {
+        return $this->hasMany(Comm::class);
+    }
     // public function ai_chats(): HasMany
     // {
     //     return $this->hasMany(ai_chats::class);

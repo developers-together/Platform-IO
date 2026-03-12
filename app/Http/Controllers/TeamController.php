@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Models\Contact;
 use App\Models\Team;
 use App\Models\TeamUser;
 use App\Models\User;
@@ -12,13 +12,17 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\URL;
+// use Illuminate\Http\Request;
+
 
 class TeamController extends Controller
 {
 
 
 
-    
+
     /**
      * Display a listing of the resource.
      */
@@ -51,29 +55,43 @@ class TeamController extends Controller
         'name'=>'string|required|max:255',
         'projectname'=>'string|required|max:255',
         'description'=>'string|nullable',
-        'code' => 'required|string|size:6|unique:teams,code'
+        'contacts'=>'array'
+        // 'code' => 'required|string|size:6|unique:teams,code'
         ]);
 
         // Get the authenticated user
-        $user = $request->user();
+        // $user = $request->user();
 
-        $userId = $user->id;
+        $userId = Auth::id();
 
         $team = Team::create([
         'name'=> $validated['name'],
         'projectname' =>$validated['projectname'],
         'description'=>$validated['description'] ?? null,
-        'code' => $validated['code']
+        // 'code' => $validated['code']
 
         ]);
 
-        Storage::makeDirectory('public/teams/'.$team->id);
+        foreach($validated['contacts'] as $contact){
+        Contact::create([
+            'team_id' => $team->id,
+            'contact' => $contact
+        ]);
+        }
+
+        // Storage::makeDirectory('public/teams/'.$team->id);
 
         //Attach the authenticated user to the team with the role "leader"
         $team->users()->attach($userId, ['role' => 'leader']);
 
         // Return the team with the associated users (including the leader)
-        return response()->json($team->load('users'), 201);
+        // return response()->json($team->load('users'), 201);
+
+        return Inertia::render("/team/{$team->id}",[
+            'team' => $team
+        ]);
+
+
 
     }
 
@@ -81,11 +99,14 @@ class TeamController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Team $team)
+    public function show($teamId)
     {
         // Load the team with its related users
-        $team->load('users');
+        // $team->load('users');
+        //
+        $team = Team::where('id',$teamId);
 
+        return Inertia::render('team/{$team->id}',['team'=>$team,'users'=>$team->users]);
         // Return the team details as a JSON response
         return response()->json([
             'message' => 'Team retrieved successfully',
@@ -306,37 +327,55 @@ class TeamController extends Controller
         ], 200);
     }
 
-    public function joinTeam(Request $request)
+    public function generateurl($teamId){
+
+    $userid = AUTH()->id;
+
+    if(Team::where('user_id',$userid)){
+
+
+            return URL::signedRoute('joinTeam',['teamId'=> $teamId]);
+        }
+
+    }
+
+    public function joinTeam($teamId)
     {
-        $request->validate([
-            'code' => 'required|string'
-        ]);
+        // $request->validate([
+        //     'url' => 'required|url'
+        // ]);
 
         $user = Auth::user();
 
-        // Find team by code
-        $team = Team::where('code', $request->code)->first();
+        $team = Team::where('id',$teamId);
 
-        if (!$team) {
-            return response()->json([
-                'message' => 'Invalid team code.'
-            ], 404);
-        }
+        $team->users()->attach($user->id);
+        // if(! $request->hasValidSignature()){
+        //     abort(401);
+        // }
+        // Find team by code
+        // $team = Team::where('code', $request->code)->first();
+
+        // if (!$team) {
+            // return response()->json([
+                // 'message' => 'Invalid team code.'
+            // ], 404);
+        // }
 
         // Check if user is already part of the team
-        if ($team->users()->where('user_id', $user->id)->exists()) {
-            return response()->json([
-                'message' => 'You are already a member of this team.'
-            ], 200);
-        }
-
-        // Attach user to the team
-        $team->users()->attach($user->id);
-
-        return response()->json([
-            'message' => 'Joined team successfully.',
-            'team' => $team
-        ], 200);
+        // if ($team->users()->where('user_id', $user->id)->exists()) {
+        //     return response()->json([
+        //         'message' => 'You are already a member of this team.'
+        //     ], 200);
+        // }
+        //
+        // // Attach user to the team
+        // $team->users()->attach($user->id);
+        //
+        // return response()->json([
+        //     'message' => 'Joined team successfully.',
+        //     'team' => $team
+        // ], 200);
     }
 
     public function getTeamById($id)
