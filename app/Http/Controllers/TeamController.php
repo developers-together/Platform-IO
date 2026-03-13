@@ -89,20 +89,18 @@ class TeamController extends Controller
             'team' => $team
         ]);
 
-
-
     }
 
 
     /**
      * Display the specified resource.
      */
-    public function show($teamId)
+    public function show(Team $team)
     {
         // Load the team with its related users
         // $team->load('users');
         //
-        $team = Team::firstOrFail($teamId);
+        // $team = Team::firstOrFail($teamId);
 
         return Inertia::render('team/{$team->id}',['team'=>$team,'users'=>$team->users]);
         // Return the team details as a JSON response
@@ -318,23 +316,24 @@ class TeamController extends Controller
         ], 200);
     }
 
-    public function generateurl(Team $team){
+    public function generateURL(Team $team){
 
         Gate::authorize('update',$team);
-        return URL::signedRoute('joinTeam',['teamId'=> $team->id]);
+        $url = URL::signedRoute('joinTeam',['teamId'=> $team->id]);
 
+        return Inertia::render('team/{team}/joinLink',['url'=>$url]);
     }
 
-    public function joinTeam($teamId)
+    public function joinTeam(Team $team, Request $request)
     {
         // $request->validate([
         //     'url' => 'required|url'
         // ]);
+        if (! $request->hasValidSignature()) {
+                abort(401);
+        }
 
         $user = Auth::user();
-
-        $team = Team::firstOrFail($teamId);
-
         $team->users()->attach($user->id);
         // if(! $request->hasValidSignature()){
         //     abort(401);

@@ -66,18 +66,19 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show(User $user)
     {
-        $user = User::findOrFail($id);
+        //$user = User::findOrFail($id);
 
 
-        return Inertia::render("user/{$id}",[
+        return Inertia::render('user/{$user}',[
             'user_data' => $user,
             'contacts' => $user->contacts
         ]);
     }
 
-    public function profile(){
+    public
+    function profile(){
 
         $user = Auth::user();
 
@@ -122,7 +123,8 @@ class UserController extends Controller
 
         $user->update($validatedData);
 
-        return response()->json($user);
+        return Inertia::render('update/{$user}',['user' => $user]);
+        // return response()->json($user);
     }
 
     public function logout(Request $request)
@@ -131,19 +133,20 @@ class UserController extends Controller
 
         Auth::logout();
 
+        return Inertia::render('/user/register');
 
 
-        $request->session()->invalidate();
+        // $request->session()->invalidate();
 
 
 
-        $request->session()->regenerateToken();
+        // $request->session()->regenerateToken();
         // Revoke the current access token
         // $user->currentAccessToken()->delete();
 
-        return response()->json([
-            'message' => 'Logged out successfully'
-        ]);
+        // return response()->json([
+        //     'message' => 'Logged out successfully'
+        // ]);
     }
 
     public function teams()
