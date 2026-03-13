@@ -13,23 +13,23 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->boolean('stared')->default(false);
+            $table->string('title', 150);
+            $table->boolean('starred')->default(false);
             $table->text('description')->nullable();
             $table->dateTime('deadline')->nullable();
             // $table->dateTime('start')->nullable();
             $table->boolean('completed')->default(false);
-            $table->string('team_id');
+            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
             // $table->string("categroy")->nullable();
             $table->enum('priority', ['must','should','could','willnot']);
-            $table->foreignId('task_id')->onDelete('cascade')->nullable();
+            $table->foreignId('parent_task_id')->nullable()->constrained('tasks')->nullOnDelete();
             $table->timestamps();
         });
 
         Schema::create('task_user', function (Blueprint $table) {
-
-            $table->foreignId('task_id')->onDelete('cascade');
-            $table->foreignId('user_id')->onDelete('cascade');
+            $table->foreignId('task_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->primary(['task_id', 'user_id']);
         });
     }
 
@@ -38,6 +38,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('task_user');
         Schema::dropIfExists('tasks');
     }
 };

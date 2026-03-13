@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\hasMany;
 use App\Models\Ai_Messages;
 
-class Ai_chat extends Model
+class Aichat extends Model
 {
     protected $fillable = ['name','team_id'];
 
@@ -18,7 +18,7 @@ class Ai_chat extends Model
 
     public function ai_messages(): HasMany
     {
-        return $this->hasMany(Ai_Messages::class, 'ai_chats_id');
+        return $this->hasMany(AiMessages::class, 'ai_chats_id');
     }
 
 

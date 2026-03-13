@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('event_task', function (Blueprint $table) {
-
-            $table->foreignId('c-event_id');
-            $table->foreignId('task_id');
+            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('task_id')->constrained()->cascadeOnDelete();
+            $table->primary(['event_id', 'task_id']);
         });
     }
 
@@ -23,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('event_task');
     }
 };

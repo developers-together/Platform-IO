@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ai_chats', function (Blueprint $table) {
+        Schema::create('calendars', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->foreignId('team_id');
+            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
+            $table->string('name', 100);
+            $table->string('color', 7);
+            $table->string('uri', 255);
             $table->timestamps();
         });
     }
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ai_chats');
+        Schema::dropIfExists('calendars');
     }
 };

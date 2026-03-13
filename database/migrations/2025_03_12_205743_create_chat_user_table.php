@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('calenders', function (Blueprint $table) {
+        Schema::create('chat_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('team_id')->onDelete('cascade');
-            $table->string('name');
-            $table->string('color');
-            $table->string('uri');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('chat_id')->constrained()->onDelete('cascade');
+            $table->enum('notifications',['mute','notify','mute_10m','mute_1h','mute_24h'])->default('notify');
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('calenders');
+        Schema::dropIfExists('chat_user');
     }
 };

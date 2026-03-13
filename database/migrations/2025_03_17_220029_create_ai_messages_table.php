@@ -18,8 +18,8 @@ return new class extends Migration
             $table->text('prompt');
             $table->text('response');
             $table->enum('ai', ['response','action','agents'])->default('response');
-            $table->string('file_path')->nullable();
-            $table->string('image_path')->nullable();
+            $table->string('file_path', 500)->nullable();
+            $table->string('image_path', 500)->nullable();
             $table->timestamps();
         });
     }

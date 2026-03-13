@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('chat_id')->constrained()->cascadeOnDelete();
             $table->text('message')->nullable();
-            $table->string('path')->nullable();
-            $table->integer("replyTo")->nullable();
+            $table->string('path', 500)->nullable();
+            $table->foreignId('reply_to')->nullable()->constrained('messages')->nullOnDelete();
             // $table->boolean("isAi")->default(false);
             $table->timestamps();
         });

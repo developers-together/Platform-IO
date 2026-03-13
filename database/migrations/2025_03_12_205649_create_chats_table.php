@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('chats', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('team_id');
+            $table->string('name', 100);
+            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
             $table->enum('type',['text','voice']);
             $table->timestamps();
         });
 
-        Schema::create('chat_perms',function (Blueprint $table){
-            $table->foreignId('chat_id');
+        Schema::create('chat_permissions',function (Blueprint $table){
+            $table->foreignId('chat_id')->constrained()->cascadeOnDelete();
             $table->boolean('write');
             $table->boolean('read');
             $table->boolean('delete');
@@ -37,6 +37,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('chat_permissions');
         Schema::dropIfExists('chats');
     }
 };

@@ -13,17 +13,17 @@ return new class extends Migration
     {
         Schema::create('teams', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('projectname');
+            $table->string('name', 100);
+            $table->string('project_name', 100);
             $table->text('description')->nullable();
             // $table->string('code', 6)->unique();
             $table->timestamps();
         });
 
-        Schema::create('team_comm', function (Blueprint $table) {
+        Schema::create('team_communications', function (Blueprint $table) {
 
             $table->id();
-            $table->foreignId('team_id')->onDelete('cascade');
+            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
             $table->string('contact');
         });
     }
@@ -33,6 +33,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('team_communications');
         Schema::dropIfExists('teams');
     }
 };
