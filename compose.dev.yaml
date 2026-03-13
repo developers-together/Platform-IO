@@ -70,16 +70,21 @@ services:
       - ./:/var/www
     networks:
       - laravel-development
+    depends_on:
+      mysql:
+        condition: service_started
+      redis:
+        condition: service_started
 
   mysql:
     image: mysql:8.0
     ports:
       - "${MYSQL_PORT:-3306}:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
-      MYSQL_DATABASE: ${DB_DATABASE:-platformio}
-      MYSQL_USER: ${DB_USERNAME:-laravel}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: platformio
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
     volumes:
       - mysql-data-development:/var/lib/mysql
     networks:

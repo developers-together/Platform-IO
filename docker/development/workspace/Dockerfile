@@ -5,11 +5,12 @@ FROM php:8.4-cli
 # Set environment variables for user and group ID
 ARG UID=1000
 ARG GID=1000
-ARG NODE_VERSION=22.0.0
+
 
 # Install system dependencies and build libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    procps \
     unzip \
     libonig-dev \
     libssl-dev \
@@ -23,6 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     intl \
     zip \
     bcmath \
+    pcntl \
     soap \
     && pecl install redis xdebug \
     && docker-php-ext-enable redis xdebug\
@@ -65,8 +67,8 @@ USER www
 RUN export NVM_DIR="$HOME/.nvm" && \
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash && \
     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && \
-    nvm install ${NODE_VERSION} && \
-    nvm alias default ${NODE_VERSION} && \
+    nvm install --lts && \
+    nvm alias default lts/* && \
     nvm use default
 
 # Ensure NVM is available for all future shells
