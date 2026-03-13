@@ -17,7 +17,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all()->paginate(15);
+        $users = User::paginate(15);
         return response()->json($users);
     }
 
@@ -68,7 +68,7 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        $user = user::where('id',$id);
+        $user = User::findOrFail($id);
 
 
         return Inertia::render("user/{$id}",[
@@ -148,7 +148,7 @@ class UserController extends Controller
 
     public function teams()
     {
-        $user = Auth::user()->teams;
+        $user = Auth::user();
 
         $teams = $user->teams->map(function ($team) {
             return [
@@ -161,7 +161,7 @@ class UserController extends Controller
         });
 
         return Inertia::render('teams/', ['teams'=>$teams]);
-        return response()->json($teams);
+        // return response()->json($teams);
     }
 
 

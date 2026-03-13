@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\URL;
 // use Illuminate\Http\Request;
+use App\Models\Comm;
 
 
 class TeamController extends Controller
@@ -73,7 +74,7 @@ class TeamController extends Controller
         ]);
 
         foreach($validated['contacts'] as $contact){
-        Contact::create([
+        Comm::create([
             'team_id' => $team->id,
             'contact' => $contact
         ]);
@@ -81,11 +82,8 @@ class TeamController extends Controller
 
         // Storage::makeDirectory('public/teams/'.$team->id);
 
-        //Attach the authenticated user to the team with the role "leader"
-        $team->users()->attach($userId, ['role' => 'leader']);
+        $team->users()->attach($userId, ['role' => 'admin']);
 
-        // Return the team with the associated users (including the leader)
-        // return response()->json($team->load('users'), 201);
 
         return Inertia::render("/team/{$team->id}",[
             'team' => $team
@@ -104,14 +102,14 @@ class TeamController extends Controller
         // Load the team with its related users
         // $team->load('users');
         //
-        $team = Team::where('id',$teamId);
+        $team = Team::firstOrFail($teamId);
 
         return Inertia::render('team/{$team->id}',['team'=>$team,'users'=>$team->users]);
         // Return the team details as a JSON response
-        return response()->json([
-            'message' => 'Team retrieved successfully',
-            'data' => $team,
-        ]);
+        // return response()->json([
+        //     'message' => 'Team retrieved successfully',
+        //     'data' => $team,
+        // ]);
 
     }
 
@@ -168,10 +166,9 @@ class TeamController extends Controller
         foreach ($validated['users'] as $userData) {
             $role = $userData['role'] ?? 'member'; // Default role is 'viewer'
 
-            // Ensure the role is not 'leader'
-            if ($role === 'leader') {
+            if ($role === 'admin') {
                 return response()->json([
-                    'message' => 'The leader role cannot be assigned through this function.',
+                    'message' => 'The admin role cannot be assigned through this function.',
                 ], 403);
             }
 
@@ -223,7 +220,7 @@ class TeamController extends Controller
         // Validate the request data
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id', // User ID to update
-            'role' => 'required|in:member,viewer', // New role (cannot be 'leader')
+            'role' => 'required|in:member,viewer', // New role (cannot be 'admin')
         ]);
 
         // Ensure the user is part of the team
@@ -261,25 +258,22 @@ class TeamController extends Controller
         // Get the user's role
         $role = $userInTeam->pivot->role;
 
-        // If user is a leader, promote someone else before leaving
-        if ($role === 'leader') {
+        if ($role === 'admin') {
             // Try to find another member or viewer to promote
-            $newLeader = $team->users()
+            $newAdmin = $team->users()
                 ->where('user_id', '!=', $user->id)
                 ->whereIn('role', ['member', 'viewer'])
                 ->first();
 
-            if (!$newLeader) {
+            if (!$newAdmin) {
                 return response()->json([
-                    'message' => 'You are the only member in the team. Cannot leave without assigning a new leader.',
+                    'message' => 'You are the only member in the team. Cannot leave without assigning a new admin.',
                 ], 403);
             }
 
-            // Promote the new leader
-            $team->users()->updateExistingPivot($newLeader->id, ['role' => 'leader']);
+            $team->users()->updateExistingPivot($newAdmin->id, ['role' => 'admin']);
         }
 
-        // Now detach the current user (whether leader/member/viewer)
         $team->users()->detach($user->id);
 
         return response()->json([
@@ -288,54 +282,46 @@ class TeamController extends Controller
     }
 
 
-    public function changeLeader(Request $request, Team $team)
+    public function changeAdmin(Request $request, Team $team)
     {
         // Authorize the action (ensure the user can update the team)
         Gate::authorize('update', $team);
 
         // Validate the request data
         $validated = $request->validate([
-            'new_leader_id' => 'required|exists:users,id', // New leader's user ID
+            'id' => 'required|exists:users,id', // New admin's user ID
         ]);
 
-        // Ensure the new leader is part of the team
-        if (!$team->users()->where('user_id', $validated['new_leader_id'])->exists()) {
+        // Ensure the new admin is part of the team
+        if (!$team->users()->where('user_id', $validated['id'])->exists()) {
             return response()->json([
-                'message' => 'The new leader is not part of this team.',
+                'message' => 'The new admin is not part of this team.',
             ], 404);
         }
 
-        // Get the current leader
-        $currentLeader = $team->users()->wherePivot('role', 'leader')->first();
+        $currentAdmin = $team->users()->wherePivot('role', 'admin')->first();
 
-        // If there is a current leader, demote them to a member
-        if ($currentLeader) {
-            $team->users()->updateExistingPivot($currentLeader->id, [
+        if ($currentAdmin) {
+            $team->users()->updateExistingPivot($currentAdmin->id, [
                 'role' => 'member',
             ]);
         }
 
-        // Promote the new leader
-        $team->users()->updateExistingPivot($validated['new_leader_id'], [
-            'role' => 'leader',
+        $team->users()->updateExistingPivot($validated['id'], [
+            'role' => 'admin',
         ]);
 
         // Return the updated team as a JSON response
         return response()->json([
-            'message' => 'Leader changed successfully',
+            'message' => 'admin changed successfully',
             'data' => $team->load('users'), // Load related users
         ], 200);
     }
 
-    public function generateurl($teamId){
+    public function generateurl(Team $team){
 
-    $userid = AUTH()->id;
-
-    if(Team::where('user_id',$userid)){
-
-
-            return URL::signedRoute('joinTeam',['teamId'=> $teamId]);
-        }
+        Gate::authorize('update',$team);
+        return URL::signedRoute('joinTeam',['teamId'=> $team->id]);
 
     }
 
@@ -347,7 +333,7 @@ class TeamController extends Controller
 
         $user = Auth::user();
 
-        $team = Team::where('id',$teamId);
+        $team = Team::firstOrFail($teamId);
 
         $team->users()->attach($user->id);
         // if(! $request->hasValidSignature()){

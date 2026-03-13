@@ -20,8 +20,9 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('team-comm', function (Blueprint $table) {
+        Schema::create('team_comm', function (Blueprint $table) {
 
+            $table->id();
             $table->foreignId('team_id')->onDelete('cascade');
             $table->string('contact');
         });
