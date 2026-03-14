@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Ai_chat;
+use App\Models\Aichat;
 use App\Models\Team;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Gate;
@@ -19,7 +19,7 @@ class Ai_chatController extends Controller
     {
         // Gate::authorize('viewAny', Ai_Chat::class);
 
-        $ai_chats = Ai_Chat::where('team_id', $team->id)->get();
+        $ai_chats = AiChat::where('team_id', $team->id)->get();
 
         return response()->json($ai_chats);
     }
@@ -40,7 +40,7 @@ class Ai_chatController extends Controller
 
         if($team->users()->where('user_id', $user->id)){
 
-            $ai_chat = Ai_Chat::create([
+            $ai_chat = AiChat::create([
                 'name'=> $validated['name'],
                 'team_id' => $team->id
                 ]);
@@ -49,7 +49,7 @@ class Ai_chatController extends Controller
         return $ai_chat->toJson();
     }
 
-    public function show(Ai_Chat $ai_chat)
+    public function show(AiChat $ai_chat)
     {
         // Authorize the action
         // Gate::authorize('view', $ai_chat);
@@ -58,7 +58,7 @@ class Ai_chatController extends Controller
         return $ai_chat->toJson();
     }
 
-    public function update(Request $request, Ai_Chat $ai_chat)
+    public function update(Request $request, AiChat $ai_chat)
     {
         // Validate the request
         $validated = $request->validate([
@@ -74,7 +74,7 @@ class Ai_chatController extends Controller
     }
 
 
-    public function destroy(Ai_Chat $ai_chat)
+    public function destroy(AiChat $ai_chat)
     {
         // $this->authorize('delete', $ai_chat);
 
