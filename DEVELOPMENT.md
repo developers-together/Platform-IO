@@ -254,3 +254,6 @@ Key differences from dev:
 - PHP opcache enabled, configs cached
 - `restart: unless-stopped` on all services
 - Health checks on MySQL, Redis, and PHP-FPM
+
+
+mysql -h 127.0.0.1 -P 3306 -u laravel -psecret platformio

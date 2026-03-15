@@ -16,6 +16,7 @@
         "laravel/sanctum": "*",
         "laravel/tinker": "*",
         "laravel/wayfinder": "*",
+        "monicahq/laravel-sabre": "^1.9",
         "sabre/dav": "*"
     },
     "require-dev": {

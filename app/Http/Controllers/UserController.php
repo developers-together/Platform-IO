@@ -17,8 +17,15 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::paginate(15);
-        return response()->json($users);
+        // $users = User::paginate(15);
+        // return response()->json($users);
+
+
+    }
+
+    public function login(){
+
+        return Inertia::render('auth/Login');
     }
 
     /**
@@ -26,7 +33,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('auth/Register');
     }
 
     /**
