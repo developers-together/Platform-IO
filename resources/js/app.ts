@@ -1,4 +1,5 @@
 import { createInertiaApp } from '@inertiajs/svelte';
+import type { ResolvedComponent } from '@inertiajs/svelte';
 import { hydrate, mount } from 'svelte';
 import '../css/app.css';
 import { initializeTheme } from '@/lib/theme.svelte';
@@ -8,10 +9,16 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     resolve: (name) => {
-        const pages = import.meta.glob('./pages/**/*.svelte', {
-            eager: true,
-        });
-        return pages[`./pages/${name}.svelte`] as never;
+        const pages = import.meta.glob<ResolvedComponent>(
+            './pages/**/*.svelte',
+        );
+        const page = pages[`./pages/${name}.svelte`];
+
+        if (!page) {
+            throw new Error(`Unknown page: ${name}`);
+        }
+
+        return page();
     },
     setup({ el, App, props }) {
         if (!el) return;

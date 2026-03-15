@@ -1,8 +1,14 @@
 <script lang="ts">
     import { Link } from '@inertiajs/svelte';
     import BookOpen from 'lucide-svelte/icons/book-open';
+    import Bot from 'lucide-svelte/icons/bot';
+    import CalendarDays from 'lucide-svelte/icons/calendar-days';
     import Folder from 'lucide-svelte/icons/folder';
+    import FolderOpen from 'lucide-svelte/icons/folder-open';
     import LayoutGrid from 'lucide-svelte/icons/layout-grid';
+    import ListTodo from 'lucide-svelte/icons/list-todo';
+    import MessageSquare from 'lucide-svelte/icons/message-square';
+    import Users from 'lucide-svelte/icons/users';
     import type { Snippet } from 'svelte';
     import AppLogo from '@/components/AppLogo.svelte';
     import NavFooter from '@/components/NavFooter.svelte';
@@ -18,8 +24,16 @@
         SidebarMenuItem,
     } from '@/components/ui/sidebar';
     import { toUrl } from '@/lib/utils';
+    import {
+        dashboard,
+        workspaceAi,
+        workspaceCalendar,
+        workspaceChat,
+        workspaceFiles,
+        workspaceTasks,
+        workspaceTeams,
+    } from '@/lib/appRoutes';
     import type { NavItem } from '@/types';
-    import { dashboard } from '@/routes';
 
     let {
         children,
@@ -32,6 +46,36 @@
             title: 'Dashboard',
             href: dashboard(),
             icon: LayoutGrid,
+        },
+        {
+            title: 'Teams',
+            href: workspaceTeams(),
+            icon: Users,
+        },
+        {
+            title: 'Tasks',
+            href: workspaceTasks(),
+            icon: ListTodo,
+        },
+        {
+            title: 'Calendar',
+            href: workspaceCalendar(),
+            icon: CalendarDays,
+        },
+        {
+            title: 'Chat',
+            href: workspaceChat(),
+            icon: MessageSquare,
+        },
+        {
+            title: 'Files',
+            href: workspaceFiles(),
+            icon: FolderOpen,
+        },
+        {
+            title: 'AI',
+            href: workspaceAi(),
+            icon: Bot,
         },
     ];
 

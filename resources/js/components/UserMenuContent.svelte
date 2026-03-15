@@ -10,9 +10,9 @@
     } from '@/components/ui/dropdown-menu';
     import UserInfo from '@/components/UserInfo.svelte';
     import { toUrl } from '@/lib/utils';
-    import type { User } from '@/types';
     import { logout } from '@/routes';
-    import { edit } from '@/routes/profile';
+    import { profileEdit } from '@/lib/appRoutes';
+    import type { User } from '@/types';
 
     let {
         user,
@@ -39,7 +39,7 @@
         {#snippet children(props)}
             <Link
                 class={props.class}
-                href={toUrl(edit())}
+                href={toUrl(profileEdit())}
                 prefetch
                 onclick={props.onClick}
             >

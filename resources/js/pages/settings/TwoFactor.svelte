@@ -12,8 +12,9 @@
     import AppLayout from '@/layouts/AppLayout.svelte';
     import SettingsLayout from '@/layouts/settings/Layout.svelte';
     import { twoFactorAuthState } from '@/lib/twoFactorAuth.svelte';
+    import { disable, enable } from '@/routes/two-factor';
+    import { twoFactorShow } from '@/lib/appRoutes';
     import type { BreadcrumbItem } from '@/types';
-    import { disable, enable, show } from '@/routes/two-factor';
 
     let {
         requiresConfirmation = false,
@@ -26,7 +27,7 @@
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Two-Factor Authentication',
-            href: show(),
+            href: twoFactorShow(),
         },
     ];
 

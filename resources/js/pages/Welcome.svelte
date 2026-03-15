@@ -2,7 +2,8 @@
     import { Link, page } from '@inertiajs/svelte';
     import AppHead from '@/components/AppHead.svelte';
     import { toUrl } from '@/lib/utils';
-    import { dashboard, login, register } from '@/routes';
+    import { login, register } from '@/routes';
+    import { dashboard } from '@/lib/appRoutes';
 
     let {
         canRegister = true,
@@ -55,6 +56,7 @@
     >
         <main
             class="flex w-full max-w-[335px] flex-col-reverse overflow-hidden rounded-lg lg:max-w-4xl lg:flex-row"
+            data-test="welcome-page"
         >
             <div
                 class="flex-1 rounded-br-lg rounded-bl-lg bg-white p-6 pb-12 text-[13px] leading-5 shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-tl-lg lg:rounded-br-none lg:p-20 dark:bg-[#161615] dark:text-[#EDEDEC] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]"
@@ -82,6 +84,7 @@
                             <a
                                 href="https://laravel.com/docs"
                                 target="_blank"
+                                rel="noopener noreferrer"
                                 class="ml-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
                             >
                                 <span>Documentation</span>
@@ -119,6 +122,7 @@
                             <a
                                 href="https://laracasts.com"
                                 target="_blank"
+                                rel="noopener noreferrer"
                                 class="ml-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
                             >
                                 <span>Laracasts</span>
@@ -145,6 +149,7 @@
                         <a
                             href="https://cloud.laravel.com"
                             target="_blank"
+                            rel="noopener noreferrer"
                             class="inline-block rounded-sm border border-black bg-[#1b1b18] px-5 py-1.5 text-sm leading-normal text-white hover:border-black hover:bg-black dark:border-[#eeeeec] dark:bg-[#eeeeec] dark:text-[#1C1C1A] dark:hover:border-white dark:hover:bg-white"
                         >
                             Deploy now

@@ -39,7 +39,6 @@ services:
     volumes:
       # Mount the application code for live updates
       - ./:/var/www
-      - ./:/var/www/html
     networks:
       - laravel-development
     depends_on:
@@ -116,7 +115,6 @@ services:
       - .env.docker
     volumes:
       - ./:/var/www
-      - ./:/var/www/html
     networks:
       - laravel-development
     depends_on:

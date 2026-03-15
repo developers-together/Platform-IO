@@ -9,7 +9,7 @@
         CardHeader,
         CardTitle,
     } from '@/components/ui/card';
-    import { home } from '@/routes';
+    import { home } from '@/lib/appRoutes';
 
     let {
         title = '',

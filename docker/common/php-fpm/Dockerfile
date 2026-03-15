@@ -45,6 +45,12 @@ WORKDIR /var/www
 # -----------------------------------------------------------
 COPY . /var/www
 
+# Create an empty SQLite database so `php artisan package:discover` (triggered
+# by composer's post-autoload-dump) doesn't crash.  The .dockerignore strips
+# the .env file, so Laravel falls back to the sqlite default.  This placeholder
+# is never used at runtime — containers connect to MySQL via .env.docker.
+RUN mkdir -p /var/www/database && touch /var/www/database/database.sqlite
+
 # Install Composer and dependencies
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && composer install --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-dist
@@ -94,8 +100,8 @@ RUN echo "upload_max_filesize = 512M" > "$PHP_INI_DIR/conf.d/uploads.ini" && \
     echo "memory_limit = 256M" >> "$PHP_INI_DIR/conf.d/uploads.ini" && \
     echo "max_execution_time = 300" >> "$PHP_INI_DIR/conf.d/uploads.ini"
 
-# Enable PHP-FPM status page by modifying zz-docker.conf with sed
-RUN sed -i '/\[www\]/a pm.status_path = /status' /usr/local/etc/php-fpm.d/zz-docker.conf
+# Enable PHP-FPM status page by modifying the www pool config
+RUN sed -i '/\[www\]/a pm.status_path = /status' /usr/local/etc/php-fpm.d/www.conf
 # Update the variables_order to include E (for ENV)
 #RUN sed -i 's/variables_order = "GPCS"/variables_order = "EGPCS"/' "$PHP_INI_DIR/php.ini"
 

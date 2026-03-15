@@ -1,10 +1,16 @@
 <script lang="ts">
     import { Link, page } from '@inertiajs/svelte';
     import BookOpen from 'lucide-svelte/icons/book-open';
+    import Bot from 'lucide-svelte/icons/bot';
+    import CalendarDays from 'lucide-svelte/icons/calendar-days';
     import Folder from 'lucide-svelte/icons/folder';
+    import FolderOpen from 'lucide-svelte/icons/folder-open';
     import LayoutGrid from 'lucide-svelte/icons/layout-grid';
+    import ListTodo from 'lucide-svelte/icons/list-todo';
     import Menu from 'lucide-svelte/icons/menu';
+    import MessageSquare from 'lucide-svelte/icons/message-square';
     import Search from 'lucide-svelte/icons/search';
+    import Users from 'lucide-svelte/icons/users';
     import AppLogo from '@/components/AppLogo.svelte';
     import AppLogoIcon from '@/components/AppLogoIcon.svelte';
     import Breadcrumbs from '@/components/Breadcrumbs.svelte';
@@ -42,8 +48,16 @@
     import { currentUrlState } from '@/lib/currentUrl';
     import { getInitials } from '@/lib/initials';
     import { toUrl } from '@/lib/utils';
+    import {
+        dashboard,
+        workspaceAi,
+        workspaceCalendar,
+        workspaceChat,
+        workspaceFiles,
+        workspaceTasks,
+        workspaceTeams,
+    } from '@/lib/appRoutes';
     import type { BreadcrumbItem, NavItem } from '@/types';
-    import { dashboard } from '@/routes';
 
     let {
         breadcrumbs = [],
@@ -63,6 +77,36 @@
             href: dashboard(),
             icon: LayoutGrid,
         },
+        {
+            title: 'Teams',
+            href: workspaceTeams(),
+            icon: Users,
+        },
+        {
+            title: 'Tasks',
+            href: workspaceTasks(),
+            icon: ListTodo,
+        },
+        {
+            title: 'Calendar',
+            href: workspaceCalendar(),
+            icon: CalendarDays,
+        },
+        {
+            title: 'Chat',
+            href: workspaceChat(),
+            icon: MessageSquare,
+        },
+        {
+            title: 'Files',
+            href: workspaceFiles(),
+            icon: FolderOpen,
+        },
+        {
+            title: 'AI',
+            href: workspaceAi(),
+            icon: Bot,
+        },
     ];
 
     const rightNavItems: NavItem[] = [
@@ -79,7 +123,7 @@
     ];
 </script>
 
-<div>
+<div class="fx-header">
     <div class="border-b border-sidebar-border/80">
         <div class="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
             <!-- Mobile Menu -->
@@ -112,7 +156,7 @@
                                 {#each mainNavItems as item (toUrl(item.href))}
                                     <Link
                                         href={toUrl(item.href)}
-                                        class="flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent {whenCurrentUrl(
+                                        class="fx-nav-item flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent {whenCurrentUrl(
                                             item.href,
                                             $currentUrl,
                                             activeItemStyles,
@@ -161,7 +205,7 @@
                                 class="relative flex h-full items-center"
                             >
                                 <Link
-                                    class="{navigationMenuTriggerStyle()} {whenCurrentUrl(
+                                    class="fx-nav-item {navigationMenuTriggerStyle()} {whenCurrentUrl(
                                         item.href,
                                         $currentUrl,
                                         activeItemStyles,
@@ -208,7 +252,7 @@
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 {...props}
-                                                class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 w-9 group cursor-pointer"
+                                                class="fx-interactive inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 w-9 group cursor-pointer"
                                             >
                                                 <span class="sr-only"
                                                     >{item.title}</span

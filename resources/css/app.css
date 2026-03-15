@@ -170,3 +170,158 @@
         @apply bg-background text-foreground;
     }
 }
+
+:root {
+    --motion-fast: 160ms;
+    --motion-medium: 260ms;
+    --motion-slow: 420ms;
+    --motion-ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --motion-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fx-route-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.99);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fx-card-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fx-header-in {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@layer components {
+    .fx-route-panel {
+        animation: fx-route-in var(--motion-slow) var(--motion-ease-emphasized)
+            both;
+        will-change: opacity, transform;
+    }
+
+    .fx-card {
+        animation: fx-card-in var(--motion-medium) var(--motion-ease-emphasized)
+            both;
+        transition:
+            transform var(--motion-medium) var(--motion-ease-standard),
+            box-shadow var(--motion-medium) var(--motion-ease-standard),
+            border-color var(--motion-fast) var(--motion-ease-standard),
+            background-color var(--motion-fast) var(--motion-ease-standard);
+        will-change: transform, box-shadow;
+    }
+
+    .fx-card:hover {
+        transform: translateY(-2px);
+        box-shadow:
+            0 12px 24px -12px rgb(15 23 42 / 30%),
+            0 8px 18px -16px rgb(15 23 42 / 30%);
+    }
+
+    .fx-interactive {
+        transition:
+            transform var(--motion-fast) var(--motion-ease-standard),
+            box-shadow var(--motion-fast) var(--motion-ease-standard),
+            border-color var(--motion-fast) var(--motion-ease-standard),
+            background-color var(--motion-fast) var(--motion-ease-standard),
+            color var(--motion-fast) var(--motion-ease-standard),
+            opacity var(--motion-fast) var(--motion-ease-standard);
+        will-change: transform;
+    }
+
+    .fx-interactive:hover:not(:disabled) {
+        transform: translateY(-1px);
+    }
+
+    .fx-interactive:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .fx-input {
+        transition:
+            transform var(--motion-fast) var(--motion-ease-standard),
+            box-shadow var(--motion-fast) var(--motion-ease-standard),
+            border-color var(--motion-fast) var(--motion-ease-standard),
+            background-color var(--motion-fast) var(--motion-ease-standard);
+    }
+
+    .fx-input:focus-visible {
+        transform: translateY(-1px);
+    }
+
+    .fx-nav-item {
+        transition:
+            transform var(--motion-fast) var(--motion-ease-standard),
+            background-color var(--motion-fast) var(--motion-ease-standard),
+            color var(--motion-fast) var(--motion-ease-standard);
+    }
+
+    .fx-nav-item:hover {
+        transform: translateX(2px);
+    }
+
+    .fx-header {
+        animation: fx-header-in 320ms var(--motion-ease-emphasized) both;
+    }
+
+    .fx-stagger .fx-card:nth-of-type(2) {
+        animation-delay: 40ms;
+    }
+
+    .fx-stagger .fx-card:nth-of-type(3) {
+        animation-delay: 80ms;
+    }
+
+    .fx-stagger .fx-card:nth-of-type(4) {
+        animation-delay: 120ms;
+    }
+
+    .fx-stagger .fx-card:nth-of-type(5) {
+        animation-delay: 160ms;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --motion-fast: 1ms;
+        --motion-medium: 1ms;
+        --motion-slow: 1ms;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 1ms !important;
+        animation-delay: 0ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 1ms !important;
+        transition-delay: 0ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .fx-card:hover,
+    .fx-interactive:hover:not(:disabled),
+    .fx-input:focus-visible,
+    .fx-nav-item:hover {
+        transform: none !important;
+    }
+}

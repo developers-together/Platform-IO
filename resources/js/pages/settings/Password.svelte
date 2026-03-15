@@ -1,5 +1,6 @@
 <script lang="ts">
     import { Form } from '@inertiajs/svelte';
+    import PasswordController from '@/actions/App/Http/Controllers/Settings/PasswordController';
     import AppHead from '@/components/AppHead.svelte';
     import Heading from '@/components/Heading.svelte';
     import InputError from '@/components/InputError.svelte';
@@ -8,14 +9,13 @@
     import { Label } from '@/components/ui/label';
     import AppLayout from '@/layouts/AppLayout.svelte';
     import SettingsLayout from '@/layouts/settings/Layout.svelte';
+    import { passwordEdit } from '@/lib/appRoutes';
     import type { BreadcrumbItem } from '@/types';
-    import PasswordController from '@/actions/App/Http/Controllers/Settings/PasswordController';
-    import { edit } from '@/routes/user-password';
 
     const breadcrumbItems: BreadcrumbItem[] = [
         {
             title: 'Password settings',
-            href: edit(),
+            href: passwordEdit(),
         },
     ];
 </script>

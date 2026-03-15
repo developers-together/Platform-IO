@@ -4,13 +4,13 @@
     import Heading from '@/components/Heading.svelte';
     import AppLayout from '@/layouts/AppLayout.svelte';
     import SettingsLayout from '@/layouts/settings/Layout.svelte';
+    import { appearanceEdit } from '@/lib/appRoutes';
     import type { BreadcrumbItem } from '@/types';
-    import { edit as editAppearance } from '@/routes/appearance';
 
     const breadcrumbItems: BreadcrumbItem[] = [
         {
             title: 'Appearance settings',
-            href: editAppearance(),
+            href: appearanceEdit(),
         },
     ];
 </script>

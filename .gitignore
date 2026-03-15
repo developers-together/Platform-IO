@@ -10,6 +10,8 @@
 /resources/js/routes
 /resources/js/wayfinder
 /vendor
+/platform-io-remake-frontend/
+/output/playwright
 .DS_Store
 .env
 .env.backup

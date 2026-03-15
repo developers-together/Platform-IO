@@ -1,5 +1,8 @@
 <script lang="ts">
+    import { page } from '@inertiajs/svelte';
     import type { Snippet } from 'svelte';
+    import { cubicOut } from 'svelte/easing';
+    import { fade, fly } from 'svelte/transition';
     import AppContent from '@/components/AppContent.svelte';
     import AppShell from '@/components/AppShell.svelte';
     import AppSidebar from '@/components/AppSidebar.svelte';
@@ -13,12 +16,27 @@
         breadcrumbs?: BreadcrumbItem[];
         children?: Snippet;
     } = $props();
+
+    const routeKey = $derived(`${$page.component}:${$page.url}`);
 </script>
 
 <AppShell variant="sidebar">
     <AppSidebar />
     <AppContent variant="sidebar" class="overflow-x-hidden">
         <AppSidebarHeader {breadcrumbs} />
-        {@render children?.()}
+        {#key routeKey}
+            <div
+                class="fx-route-panel"
+                in:fly={{
+                    y: 18,
+                    opacity: 0.35,
+                    duration: 280,
+                    easing: cubicOut,
+                }}
+                out:fade={{ duration: 130 }}
+            >
+                {@render children?.()}
+            </div>
+        {/key}
     </AppContent>
 </AppShell>
