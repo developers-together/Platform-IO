@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -78,7 +79,7 @@ class User extends Authenticatable
     //     return $this->hasMany(Message::class);
     // }
 
-    public function teams()
+    public function teams(): belongsToMany
     {
         return $this->belongsToMany(Team::class)
                     ->withPivot('role')
