@@ -22,24 +22,39 @@ class UserController extends Controller
 
 
     }
+/*
+    public function login(Request $request){
 
-    public function login(){
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'password' => 'reqired|passeword'
+        ]);
 
-        return Inertia::render('auth/Login');
+        $validated['password'] = Hash::make($validated['password']);
+
+        $user = User::where('email',$validated['email'])->first();
+
+        if($user->password == $validated['password']){
+
+
+        }
+*/
+
+        // return Inertia::render('auth/Login');
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
-    {
-        return Inertia::render('auth/Register');
-    }
+    // public function create()
+    // {
+    //     return Inertia::render('auth/Register');
+    // }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+/*    public function store(Request $request)
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
@@ -48,7 +63,6 @@ class UserController extends Controller
             // 'age' => 'nullable|integer',
             'gender' => 'nullable|string',
             'job' => 'nullable|string',
-            // 'location' => 'nullable|string',
             'phone' => 'nullable|string',
         ]);
 
@@ -69,7 +83,7 @@ class UserController extends Controller
             'token' => $token,
         ]);
     }
-
+*/
     /**
      * Display the specified resource.
      */
@@ -78,14 +92,13 @@ class UserController extends Controller
         //$user = User::findOrFail($id);
 
 
-        return Inertia::render('user/{$user}',[
+        return Inertia::render('profile/show',[
             'user_data' => $user,
             'contacts' => $user->contacts
         ]);
     }
 
-    public
-    function profile(){
+    public function profile(){
 
         $user = Auth::user();
 
@@ -116,7 +129,7 @@ class UserController extends Controller
         $validatedData = $request->validate([
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
-            'password' => 'sometimes|string|min:8',
+            // 'password' => 'sometimes|string|min:8',
             // 'age' => 'nullable|integer',
             'gender' => 'nullable|string',
             'job' => 'nullable|string',
@@ -124,16 +137,16 @@ class UserController extends Controller
             'phone' => 'nullable|string',
         ]);
 
-        if (isset($validatedData['password'])) {
-            $validatedData['password'] = Hash::make($validatedData['password']);
-        }
+        // if (isset($validatedData['password'])) {
+        //     $validatedData['password'] = Hash::make($validatedData['password']);
+        // }
 
         $user->update($validatedData);
 
         return Inertia::render('update/{$user}',['user' => $user]);
         // return response()->json($user);
     }
-
+/*
     public function logout(Request $request)
     {
         $user = Auth::user();
@@ -155,7 +168,7 @@ class UserController extends Controller
         //     'message' => 'Logged out successfully'
         // ]);
     }
-
+*/
     public function teams()
     {
         $user = Auth::user();

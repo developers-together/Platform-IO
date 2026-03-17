@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class Calendar extends Model
 {
-    protected $fillable = ['team_id','name','color','uri'];
+    use HasFactory;
+
+    protected $fillable = ['team_id', 'name', 'color', 'uri'];
 
     public function event(): HasMany
     {
@@ -26,14 +30,14 @@ class Calendar extends Model
 
     public function shares()
     {
+        // return Inertia::render
         return $this->hasMany(CalendarShare::class);
     }
 
     public function sharedWith()
     {
         return $this->belongsToMany(User::class, 'calendar_shares', 'calendar_id', 'shared_with_user_id')
-                    ->withPivot('permission')
-                    ->withTimestamps();
+            ->withPivot('permission')
+            ->withTimestamps();
     }
-
 }

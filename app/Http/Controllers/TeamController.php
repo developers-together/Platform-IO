@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\URL;
 // use Illuminate\Http\Request;
-use App\Models\Comm;
+use App\Models\Communication;
 
 
 class TeamController extends Controller
@@ -29,14 +29,12 @@ class TeamController extends Controller
      */
     public function index(Request $request)
     {
-        // Paginate teams (10 per page)
-        $teams = Team::with('users')->paginate(10);
-
-        // Return the paginated list of teams as a JSON response
-        return response()->json([
-            'message' => 'Teams retrieved successfully',
-            'data' => $teams,
-        ]);
+        // $teams = Team::with('users')->paginate(10);
+        //
+        // return response()->json([
+        //     'message' => 'Teams retrieved successfully',
+        //     'data' => $teams,
+        // ]);
     }
 
     /**
@@ -74,7 +72,7 @@ class TeamController extends Controller
         ]);
 
         foreach($validated['contacts'] as $contact){
-        Comm::create([
+        Communication::create([
             'team_id' => $team->id,
             'contact' => $contact
         ]);
@@ -187,27 +185,38 @@ class TeamController extends Controller
 
         // Validate the request data
         $validated = $request->validate([
-            'user_ids' => 'required|array', // Array of user IDs to remove
-            'user_ids.*' => 'exists:users,id', // Ensure each user ID exists
+            'user_id' => 'exists|users', // Array of user IDs to remove
         ]);
 
         // Ensure the users to be removed are part of the team
-        $usersInTeam = $team->users()->whereIn('user_id', $validated['user_ids'])->pluck('user_id');
+        // $usersInTeam = $team->users()->whereIn('user_id', $validated['user_ids'])->pluck('user_id');
 
-        if ($usersInTeam->isEmpty()) {
-            return response()->json([
-                'message' => 'No valid users to remove from the team.',
-            ], 404);
+        $user = $team->users->where('id','user_id')->first();
+        if($user->role == 'admin'){
+            // return Inertia::render('teams/{$team}/removeMember',['status','500']);
+            return back()->with([
+                'error' =>'Cannot remove the admin',
+            ]);
+        }
+
+        if ($user->isEmpty()) {
+            // return response()->json([
+            //     'message' => 'No valid users to remove from the team.',
+            // ], 404);
+            return back()->with([
+                'error' => 'no valid user to remove'
+            ]);
         }
 
         // Remove the users from the team
-        $team->users()->detach($usersInTeam);
+        $team->users()->detach($user);
 
         // Return the updated team as a JSON response
-        return response()->json([
-            'message' => 'Members removed successfully',
-            'data' => $team->load('users'), // Load related users
-        ], 200);
+        // return response()->json([
+        //     'message' => 'Members removed successfully',
+        //     'data' => $team->load('users'), // Load related users
+        // ], 200);
+        return Inertia::render('/teams/{$team}');
     }
 
     public function changeRoles(Request $request, Team $team)

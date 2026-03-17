@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 // use Illuminate\Http\Request;
 use App\Models\Team;
-use App\Models\Calender;
+use App\Models\Calendar;
 use App\Models\Event;
 
 use Illuminate\Http\Request;
@@ -24,14 +24,17 @@ class CalendarController extends Controller
     public function index()
     {
         //
+        return Inertia::render('Calendar');
+
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(team $team)
     {
         //
+        return Inertia::render('teams/{team}/calendar/create');
     }
 
     /**
@@ -46,7 +49,11 @@ class CalendarController extends Controller
 
         ]);
 
+        Calendar::create([
+            'name' => $validated['name'],
+            'color' => $validated['color']
 
+        ]);
     }
 
     /**

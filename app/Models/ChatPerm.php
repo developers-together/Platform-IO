@@ -2,17 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-// use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ChatPerm extends Model
 {
-    protected $fillable = ['chat_id','write','read','delete',
-        'modify','allow_ai'];
+    use HasFactory;
 
-//     public function Chat():BelongsTo
-//     {
-//         return BelongsTo(Chat::class);
-//
-// }
+    protected $fillable = ['chat_id', 'write', 'read', 'delete', 'modify', 'notify', 'allow_ai'];
+
+    public function chat()
+    {
+        return $this->belongsTo(Chat::class);
+    }
 }
