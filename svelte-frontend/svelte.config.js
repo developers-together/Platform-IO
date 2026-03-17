@@ -6,7 +6,11 @@ const config = {
 		adapter: adapter({
 			// SPA mode: fallback page handles all routes client-side
 			fallback: '200.html'
-		})
+		}),
+		alias: {
+			'$pages': 'src/Pages',
+			'$layouts': 'src/Layouts'
+		}
 	},
 	vitePlugin: {
 		dynamicCompileOptions: ({ filename }) =>
@@ -15,4 +19,3 @@ const config = {
 };
 
 export default config;
-
