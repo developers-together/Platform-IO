@@ -224,7 +224,7 @@
   <div class="left-panel">
     <div class="panel-heading-container">
       <h3 class="panel-heading">Channels</h3>
-      <button type="button" class="add-channel-btn" on:click={() => showCreateDialog = !showCreateDialog}>+</button>
+      <button type="button" class="add-channel-btn" aria-label="Create channel" on:click={() => showCreateDialog = !showCreateDialog}>+</button>
     </div>
 
     {#if showCreateDialog}
@@ -258,7 +258,7 @@
               {:else}
                 <button type="button" class="channel-row-btn" on:click={() => selectChannel(ch)}>{ch.name}</button>
                 <div class="channel-actions">
-                  <button type="button" class="channel-menu-btn" on:click|stopPropagation={() => channelMenuId = channelMenuId === ch.id ? null : ch.id}>⋯</button>
+                  <button type="button" class="channel-menu-btn" aria-label={`Open actions for ${ch.name}`} on:click|stopPropagation={() => channelMenuId = channelMenuId === ch.id ? null : ch.id}>⋯</button>
                   {#if channelMenuId === ch.id}
                     <div class="channel-menu">
                       <button type="button" on:click|stopPropagation={() => { editChannelId = ch.id; editChannelName = ch.name; channelMenuId = null; }}>✏️ Rename</button>
@@ -299,8 +299,8 @@
                 <img class="uploaded-image" src={msg.image_url} alt="attachment" />
               {/if}
               <div class="msg-actions">
-                <button type="button" on:click={() => { replyTo = msg; }}>↩</button>
-                <button type="button" on:click={() => deleteMessage(msg.id)}>🗑️</button>
+                <button type="button" aria-label="Reply to message" on:click={() => { replyTo = msg; }}>↩</button>
+                <button type="button" aria-label="Delete message" on:click={() => deleteMessage(msg.id)}>🗑️</button>
               </div>
             </div>
           </div>
@@ -311,13 +311,13 @@
         {#if replyTo}
           <div class="reply-preview">
             <span>Replying to {replyTo.user_name || 'User'}: {replyTo.message?.slice(0, 50)}</span>
-            <button type="button" class="cancel-reply1" on:click={() => replyTo = null}>✕</button>
+            <button type="button" class="cancel-reply1" aria-label="Cancel reply" on:click={() => replyTo = null}>✕</button>
           </div>
         {/if}
         <div class="chat-input-row">
           <input placeholder="Type a message..." bind:value={newMessage} on:keydown={(e) => { if (e.key === 'Enter') sendMessage(); }} />
-          <button type="button" on:click={sendMessage}>📤</button>
-          <button type="button" on:click={askAI} title="Ask AI (Coming Soon)" disabled>🤖</button>
+          <button type="button" aria-label="Send message" on:click={sendMessage}>📤</button>
+          <button type="button" aria-label="Ask AI (Coming Soon)" on:click={askAI} title="Ask AI (Coming Soon)" disabled>🤖</button>
         </div>
       </div>
     {:else}
