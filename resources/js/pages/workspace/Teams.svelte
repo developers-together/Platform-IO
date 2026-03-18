@@ -148,7 +148,7 @@
   <!-- Cards container -->
   <div class="teams-cards-container">
     {#each teams as team (team.id)}
-      <div class="team-card" on:click={() => goToDashboard(team.id)}>
+      <div class="team-card">
         <div class="team-avatar-container">
           <!-- Square, full-width avatar banner for each team card -->
           <Avatar
@@ -296,7 +296,7 @@
   .team-card {
     background: #fff; border: 1px solid #e5e7eb; border-radius: 1rem;
     overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
-    cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     display: flex; flex-direction: column; position: relative; height: 300px;
   }
   .team-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,82,212,0.2); }
