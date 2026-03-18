@@ -1,12 +1,7 @@
 <script lang="ts">
-    import { page } from '@inertiajs/svelte';
     import type { Snippet } from 'svelte';
-    import { cubicOut } from 'svelte/easing';
-    import { fade, fly } from 'svelte/transition';
-    import AppContent from '@/components/AppContent.svelte';
-    import AppShell from '@/components/AppShell.svelte';
-    import AppSidebar from '@/components/AppSidebar.svelte';
-    import AppSidebarHeader from '@/components/AppSidebarHeader.svelte';
+    import LegacySidebar from '@/legacy/lib/components/Sidebar.svelte';
+    import { sidebarOpen } from '@/legacy/lib/stores/ui.js';
     import type { BreadcrumbItem } from '@/types';
 
     let {
@@ -16,27 +11,36 @@
         breadcrumbs?: BreadcrumbItem[];
         children?: Snippet;
     } = $props();
-
-    const routeKey = $derived(`${$page.component}:${$page.url}`);
 </script>
 
-<AppShell variant="sidebar">
-    <AppSidebar />
-    <AppContent variant="sidebar" class="overflow-x-hidden">
-        <AppSidebarHeader {breadcrumbs} />
-        {#key routeKey}
-            <div
-                class="fx-route-panel"
-                in:fly={{
-                    y: 18,
-                    opacity: 0.35,
-                    duration: 280,
-                    easing: cubicOut,
-                }}
-                out:fade={{ duration: 130 }}
-            >
-                {@render children?.()}
-            </div>
-        {/key}
-    </AppContent>
-</AppShell>
+<div class="app-layout">
+    <LegacySidebar />
+    <main
+        class="content"
+        style:margin-left={$sidebarOpen
+            ? 'var(--sidebar-width-open, 240px)'
+            : 'var(--sidebar-width-closed, 70px)'}
+    >
+        {@render children?.()}
+    </main>
+</div>
+
+<style>
+    .app-layout {
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .content {
+        flex: 1;
+        overflow-y: auto;
+        transition: margin-left 0.3s;
+    }
+
+    @media (max-width: 768px) {
+        .content {
+            margin-left: var(--sidebar-width-closed, 70px) !important;
+        }
+    }
+</style>
