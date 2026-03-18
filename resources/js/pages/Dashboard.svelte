@@ -141,11 +141,11 @@
   <header class="db-header">
     <h2>Dashboard</h2>
   </header>
-  <p class="preview-note">{PREVIEW_NOTICE}</p>
+  <p class="preview-note" data-test="dashboard-preview-note">{PREVIEW_NOTICE}</p>
 
   <div class="dashboard-grid">
     <!-- TASKS CARD -->
-    <div class="card tasks-card">
+    <div class="card tasks-card" data-test="dashboard-tasks-card">
       <button type="button" class="card-title-link" on:click={() => goto('/workspace/tasks')}>
         <span>My Tasks</span> <span class="locked-tag">Preview</span>
       </button>
@@ -172,7 +172,7 @@
     </div>
 
     <!-- RECENT CHAT CARD -->
-    <div class="card chat-card">
+    <div class="card chat-card" data-test="dashboard-chat-card">
       <button type="button" class="card-title-link" on:click={() => goto('/workspace/chat')}>Recent Chat</button>
       <ul>
         {#if chatGroups.length === 0}
@@ -203,7 +203,7 @@
     </div>
 
     <!-- AI SUGGESTED ACTIONS CARD -->
-    <div class="card ai-card">
+    <div class="card ai-card" data-test="dashboard-ai-card">
       <h3>
         AI Suggested Actions <span class="locked-tag">Preview</span>
       </h3>
@@ -241,7 +241,7 @@
     </div>
 
     <!-- CALENDAR CARD -->
-    <div class="card calendar-card">
+    <div class="card calendar-card" data-test="dashboard-calendar-card">
       <button type="button" class="card-title-link" on:click={() => goto('/workspace/calendar')}>
         Calendar <span class="locked-tag">Preview</span>
       </button>
@@ -258,7 +258,7 @@
     </div>
 
     <!-- EVENTS CARD -->
-    <div class="card events-card">
+    <div class="card events-card" data-test="dashboard-events-card">
       <button type="button" class="events-title card-title-link" on:click={() => goto('/workspace/calendar')}>
         Upcoming events <span class="locked-tag">Preview</span>
       </button>
