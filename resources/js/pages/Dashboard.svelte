@@ -218,6 +218,7 @@
                 <button
                   type="button"
                   class="action-btn2 accept"
+                  aria-label="Accept suggestion"
                   title="AI actions are disabled until backend implementation is complete."
                   disabled
                 >
@@ -226,6 +227,7 @@
                 <button
                   type="button"
                   class="action-btn2 reject"
+                  aria-label="Reject suggestion"
                   title="AI actions are disabled until backend implementation is complete."
                   disabled
                 >
