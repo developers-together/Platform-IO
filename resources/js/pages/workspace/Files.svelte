@@ -132,7 +132,7 @@
 <AppLayout>
 <div class="file-page">
   <div class="feature-preview-banner" data-test="files-preview-banner">{FEATURE_STATUS_NOTE}</div>
-  <div class="feature-preview-disabled" aria-disabled="true" inert>
+  <div class="feature-preview-disabled" aria-disabled="true" title={FEATURE_STATUS_NOTE} inert>
   <div class="file-sidebar">
     <div class="file-sidebar-header">
       <h3>📁 Folders</h3>
