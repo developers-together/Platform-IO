@@ -88,7 +88,7 @@
 
 <AppLayout>
 <div class="tasks-page">
-  <p class="feature-preview-banner">{FEATURE_STATUS_NOTE}</p>
+  <p class="feature-preview-banner" data-test="tasks-preview-banner">{FEATURE_STATUS_NOTE}</p>
   <div class="feature-preview-disabled" aria-disabled="true" inert>
   <div class="tasks-header">
     <h1>Tasks</h1>
@@ -119,7 +119,7 @@
             </div>
           </div>
         {:else}
-          <div class="task-row" class:starred={task.stared}>
+          <div class="task-row" class:starred={task.stared} data-test={`task-row-${task.id}`}>
             <div class="task-content">
               <div class="task-left">
                 <button type="button" class="check-button" aria-label={`Toggle completion for ${task.title}`} on:click={() => toggleComplete(task)}>
@@ -166,7 +166,7 @@
   </div>
 
   <!-- Completed Section -->
-  <div class="completed-section">
+  <div class="completed-section" data-test="tasks-completed-section">
     <button type="button" class="completed-header" aria-expanded={completedOpen} on:click={() => { completedOpen = !completedOpen; }}>
       <span>Completed ({completedTasks.length})</span>
       <span>{completedOpen ? '▲' : '▼'}</span>
@@ -191,7 +191,7 @@
       bind:value={newTaskTitle}
       on:keydown={(e) => { if (e.key === 'Enter') addTask(); }}
     />
-    <button type="button" class="add-button" aria-label="Add task" on:click={addTask}>
+    <button type="button" class="add-button" data-test="tasks-add-button" aria-label="Add task" on:click={addTask}>
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
   </div>
