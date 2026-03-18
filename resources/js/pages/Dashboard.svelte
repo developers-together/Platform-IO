@@ -263,7 +263,7 @@
           <li style="color:gray">No upcoming events</li>
         {:else}
           {#each events as evt (evt.id)}
-            <li class="event-item" on:click={() => goto('/workspace/calendar')} style="cursor:pointer">
+            <li class="event-item">
               <div class="event-time-dot">
                 <span class="dot"></span>
                 <span class="event-time">{evt.startTime}–{evt.endTime}</span>
