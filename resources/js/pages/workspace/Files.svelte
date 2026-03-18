@@ -136,7 +136,7 @@
   <div class="file-sidebar">
     <div class="file-sidebar-header">
       <h3>📁 Folders</h3>
-      <button on:click={() => (showNewFolder = !showNewFolder)}>+</button>
+      <button type="button" on:click={() => (showNewFolder = !showNewFolder)}>+</button>
     </div>
 
     <div class="path-indicator">{toDisplayPath(currentPath)}</div>
@@ -150,7 +150,7 @@
             if (e.key === 'Enter') createFolder();
           }}
         />
-        <button on:click={createFolder}>Create</button>
+        <button type="button" on:click={createFolder}>Create</button>
       </div>
     {/if}
 
@@ -170,7 +170,7 @@
           <button type="button" class="folder-nav-btn folder-name-btn" on:click={() => openFolder(folder.path)}>
             <span>📂 {folder.name}</span>
           </button>
-          <button class="delete-folder-btn" on:click|stopPropagation={() => deleteFolder(folder.path)}>🗑️</button>
+          <button type="button" class="delete-folder-btn" on:click|stopPropagation={() => deleteFolder(folder.path)}>🗑️</button>
         </li>
       {/each}
 
@@ -188,7 +188,7 @@
           📤 Upload
           <input type="file" on:change={uploadFile} style="display: none" />
         </label>
-        <button class="ai-create-btn" on:click={() => (showAiCreate = !showAiCreate)}>🤖 AI Create</button>
+        <button type="button" class="ai-create-btn" on:click={() => (showAiCreate = !showAiCreate)}>🤖 AI Create</button>
       </div>
     </div>
 
@@ -196,7 +196,7 @@
       <div class="ai-create-form">
         <input placeholder="Preferred file name (optional)" bind:value={aiFileName} />
         <textarea placeholder="Describe what the file should contain..." bind:value={aiPrompt}></textarea>
-        <button on:click={aiCreateFile}>Create with AI</button>
+        <button type="button" on:click={aiCreateFile}>Create with AI</button>
       </div>
     {/if}
 
@@ -206,8 +206,8 @@
           <div class="file-icon">📄</div>
           <span class="file-name">{file.name}</span>
           <div class="file-actions">
-            <button on:click={() => downloadFile(file.path, file.name)} title="Download">⬇️</button>
-            <button on:click={() => deleteFile(file.path)} title="Delete">🗑️</button>
+            <button type="button" on:click={() => downloadFile(file.path, file.name)} title="Download">⬇️</button>
+            <button type="button" on:click={() => deleteFile(file.path)} title="Delete">🗑️</button>
           </div>
         </div>
       {:else}
