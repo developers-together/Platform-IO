@@ -82,7 +82,7 @@
   <div class="ai-sidebar">
     <div class="ai-sidebar-header">
       <h3>🤖 AI Chats</h3>
-      <button type="button" on:click={() => showNewSession = !showNewSession}>+</button>
+      <button type="button" aria-label="Create AI chat session" on:click={() => showNewSession = !showNewSession}>+</button>
     </div>
 
     {#if showNewSession}
@@ -105,8 +105,8 @@
               <span>{session.name}</span>
             </button>
             <div class="session-actions">
-              <button type="button" on:click|stopPropagation={() => { editSessionId = session.id; editSessionName = session.name; }}>✏️</button>
-              <button type="button" on:click|stopPropagation={() => deleteSession(session.id)}>🗑️</button>
+              <button type="button" aria-label={`Rename ${session.name}`} on:click|stopPropagation={() => { editSessionId = session.id; editSessionName = session.name; }}>✏️</button>
+              <button type="button" aria-label={`Delete ${session.name}`} on:click|stopPropagation={() => deleteSession(session.id)}>🗑️</button>
             </div>
           {/if}
         </li>
@@ -143,8 +143,8 @@
           on:keydown={(e) => { if (e.key === 'Enter') sendMessage(); }}
           disabled={isLoading}
         />
-        <button type="button" on:click={sendMessage} disabled={isLoading}>📤</button>
-        <button type="button" on:click={webSearch} disabled={isLoading} title="Web Search">🔍</button>
+        <button type="button" aria-label="Send message" on:click={sendMessage} disabled={isLoading}>📤</button>
+        <button type="button" aria-label="Search web" on:click={webSearch} disabled={isLoading} title="Web Search">🔍</button>
       </div>
     {:else}
       <div class="no-session">
