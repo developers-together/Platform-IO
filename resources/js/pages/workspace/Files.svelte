@@ -346,6 +346,14 @@
   .folder-name-btn {
     flex: 1;
   }
+  .folder-nav-btn:focus-visible,
+  .delete-folder-btn:focus-visible,
+  .ai-create-btn:focus-visible,
+  .file-actions button:focus-visible {
+    outline: 2px solid #2b5ce7;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
 
   .folder-list .empty-entry {
     cursor: default;
