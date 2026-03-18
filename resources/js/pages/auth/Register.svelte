@@ -35,8 +35,8 @@
 
 <AppHead title="Register" />
 
-<div class="register-container">
-    <div class="register-card">
+<div class="register-container" data-test="register-page">
+    <div class="register-card" data-test="register-card">
         <div class="register-header">
             <h2 class="register-title">Create Account</h2>
             <p class="register-subtitle">Get started with your free account</p>
@@ -64,6 +64,7 @@
                     <input
                         type="text"
                         name="name"
+                        data-test="register-name-input"
                         class="register-input"
                         placeholder="Name"
                         required
@@ -79,6 +80,7 @@
                     <input
                         type="email"
                         name="email"
+                        data-test="register-email-input"
                         class="register-input"
                         placeholder="Email"
                         required
@@ -94,6 +96,7 @@
                     <input
                         type="password"
                         name="password"
+                        data-test="register-password-input"
                         class="register-input"
                         placeholder="Password"
                         required
@@ -109,6 +112,7 @@
                     <input
                         type="password"
                         name="password_confirmation"
+                        data-test="register-password-confirmation-input"
                         class="register-input"
                         placeholder="Confirm Password"
                         required
@@ -119,7 +123,7 @@
                     <p class="field-error">{errors.password_confirmation}</p>
                 {/if}
 
-                <button type="submit" class="register-button" disabled={processing}>
+                <button type="submit" class="register-button" data-test="register-submit-button" disabled={processing}>
                     {#if processing}
                         <div class="spinner"></div>
                     {:else}
