@@ -94,14 +94,16 @@
 
     <ul class="session-list">
       {#each chatSessions as session (session.id)}
-        <li class:active={activeSession?.id === session.id} on:click={() => selectSession(session)} role="button" tabindex="0" on:keydown={(e) => { if (e.key === 'Enter') selectSession(session); }}>
+        <li class:active={activeSession?.id === session.id}>
           {#if editSessionId === session.id}
             <div class="edit-session">
               <input bind:value={editSessionName} on:keydown={(e) => { if (e.key === 'Enter') renameSession(); }} />
               <button on:click={renameSession}>✓</button>
             </div>
           {:else}
-            <span>{session.name}</span>
+            <button type="button" class="session-row-btn" on:click={() => selectSession(session)}>
+              <span>{session.name}</span>
+            </button>
             <div class="session-actions">
               <button on:click|stopPropagation={() => { editSessionId = session.id; editSessionName = session.name; }}>✏️</button>
               <button on:click|stopPropagation={() => deleteSession(session.id)}>🗑️</button>
@@ -172,6 +174,7 @@
   .session-list li { padding: 10px 12px; border-radius: var(--radius-md); cursor: pointer; transition: var(--transition); display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
   .session-list li:hover { background: #f0f0f0; }
   .session-list li.active { background: #e3f2fd; font-weight: 600; }
+  .session-row-btn { border: none; background: transparent; padding: 0; text-align: left; flex: 1; cursor: pointer; font-size: 0.9rem; }
   .session-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s; }
   .session-list li:hover .session-actions { opacity: 1; }
   .session-actions button { background: none; border: none; cursor: pointer; font-size: 0.85rem; }
