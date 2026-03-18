@@ -61,9 +61,9 @@
   <p class="feature-preview-banner">{FEATURE_STATUS_NOTE}</p>
   <div class="feature-preview-disabled" aria-disabled="true" inert>
   <div class="calendar-header">
-    <button class="nav-btn" on:click={prevMonth}>◀</button>
+    <button type="button" class="nav-btn" on:click={prevMonth}>◀</button>
     <h1>{monthName} {year}</h1>
-    <button class="nav-btn" on:click={nextMonth}>▶</button>
+    <button type="button" class="nav-btn" on:click={nextMonth}>▶</button>
   </div>
 
   <div class="calendar-grid">
