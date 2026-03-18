@@ -175,7 +175,7 @@
       <div class="completed-list">
         {#each completedTasks as task (task.id)}
           <div class="completed-task">
-            <span class="completed-icon" role="button" tabindex="0" on:click={() => toggleComplete(task)} on:keydown={(e) => { if (e.key === 'Enter') toggleComplete(task); }}>✅</span>
+            <button type="button" class="completed-icon icon-btn" aria-label={`Restore ${task.title} to active tasks`} on:click={() => toggleComplete(task)}>✅</button>
             <span>{task.title}</span>
           </div>
         {/each}
