@@ -365,6 +365,13 @@
   .left-card-content li.empty-channel-state:hover { background: transparent; transform: none; }
   .active-chat { background-color: #e3f2fd !important; font-weight: 600; }
   .channel-row-btn { border: none; background: transparent; padding: 0; text-align: left; flex: 1; cursor: pointer; font-size: 1rem; color: inherit; }
+  .channel-row-btn:focus-visible,
+  .channel-menu-btn:focus-visible,
+  .chat-input-row button:focus-visible {
+    outline: 2px solid #2b5ce7;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
 
   .channel-actions { position: relative; }
   .channel-menu-btn { background: none; border: none; padding: 4px; cursor: pointer; color: #666; font-size: 1.2rem; }
