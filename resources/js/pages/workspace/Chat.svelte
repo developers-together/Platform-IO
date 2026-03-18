@@ -224,15 +224,15 @@
   <div class="left-panel">
     <div class="panel-heading-container">
       <h3 class="panel-heading">Channels</h3>
-      <button class="add-channel-btn" on:click={() => showCreateDialog = !showCreateDialog}>+</button>
+      <button type="button" class="add-channel-btn" on:click={() => showCreateDialog = !showCreateDialog}>+</button>
     </div>
 
     {#if showCreateDialog}
       <div class="create-channel-dialog">
         <input placeholder="Channel name" bind:value={newChannelName} on:keydown={(e) => { if (e.key === 'Enter') createChannel(); }} />
         <div class="dialog-actions">
-          <button on:click={createChannel}>Create</button>
-          <button on:click={() => showCreateDialog = false}>Cancel</button>
+          <button type="button" on:click={createChannel}>Create</button>
+          <button type="button" on:click={() => showCreateDialog = false}>Cancel</button>
         </div>
       </div>
     {/if}
@@ -253,16 +253,16 @@
               {#if editChannelId === ch.id}
                 <div class="channel-edit-container">
                   <input class="task-edit-input" bind:value={editChannelName} on:keydown={(e) => { if (e.key === 'Enter') renameChannel(); }} />
-                  <button on:click={renameChannel}>Save</button>
+                  <button type="button" on:click={renameChannel}>Save</button>
                 </div>
               {:else}
                 <button type="button" class="channel-row-btn" on:click={() => selectChannel(ch)}>{ch.name}</button>
                 <div class="channel-actions">
-                  <button class="channel-menu-btn" on:click|stopPropagation={() => channelMenuId = channelMenuId === ch.id ? null : ch.id}>⋯</button>
+                  <button type="button" class="channel-menu-btn" on:click|stopPropagation={() => channelMenuId = channelMenuId === ch.id ? null : ch.id}>⋯</button>
                   {#if channelMenuId === ch.id}
                     <div class="channel-menu">
-                      <button on:click|stopPropagation={() => { editChannelId = ch.id; editChannelName = ch.name; channelMenuId = null; }}>✏️ Rename</button>
-                      <button on:click|stopPropagation={() => { deleteChannelId = ch.id; showDeleteModal = true; channelMenuId = null; }}>🗑️ Delete</button>
+                      <button type="button" on:click|stopPropagation={() => { editChannelId = ch.id; editChannelName = ch.name; channelMenuId = null; }}>✏️ Rename</button>
+                      <button type="button" on:click|stopPropagation={() => { deleteChannelId = ch.id; showDeleteModal = true; channelMenuId = null; }}>🗑️ Delete</button>
                     </div>
                   {/if}
                 </div>
@@ -299,8 +299,8 @@
                 <img class="uploaded-image" src={msg.image_url} alt="attachment" />
               {/if}
               <div class="msg-actions">
-                <button on:click={() => { replyTo = msg; }}>↩</button>
-                <button on:click={() => deleteMessage(msg.id)}>🗑️</button>
+                <button type="button" on:click={() => { replyTo = msg; }}>↩</button>
+                <button type="button" on:click={() => deleteMessage(msg.id)}>🗑️</button>
               </div>
             </div>
           </div>
@@ -311,13 +311,13 @@
         {#if replyTo}
           <div class="reply-preview">
             <span>Replying to {replyTo.user_name || 'User'}: {replyTo.message?.slice(0, 50)}</span>
-            <button class="cancel-reply1" on:click={() => replyTo = null}>✕</button>
+            <button type="button" class="cancel-reply1" on:click={() => replyTo = null}>✕</button>
           </div>
         {/if}
         <div class="chat-input-row">
           <input placeholder="Type a message..." bind:value={newMessage} on:keydown={(e) => { if (e.key === 'Enter') sendMessage(); }} />
-          <button on:click={sendMessage}>📤</button>
-          <button on:click={askAI} title="Ask AI (Coming Soon)" disabled>🤖</button>
+          <button type="button" on:click={sendMessage}>📤</button>
+          <button type="button" on:click={askAI} title="Ask AI (Coming Soon)" disabled>🤖</button>
         </div>
       </div>
     {:else}
@@ -332,8 +332,8 @@
       <div class="modal-content">
         <p>Delete this channel?</p>
         <div class="modal-actions">
-          <button class="btn confirm-btn" on:click={() => deleteChannel(deleteChannelId)}>Delete</button>
-          <button class="btn cancel-btn" on:click={() => showDeleteModal = false}>Cancel</button>
+          <button type="button" class="btn confirm-btn" on:click={() => deleteChannel(deleteChannelId)}>Delete</button>
+          <button type="button" class="btn cancel-btn" on:click={() => showDeleteModal = false}>Cancel</button>
         </div>
       </div>
     </div>
