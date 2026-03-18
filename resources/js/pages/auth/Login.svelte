@@ -1,8 +1,9 @@
 <script>
-    import { Form } from '@inertiajs/svelte';
+    import { Form, router } from '@inertiajs/svelte';
     import AppHead from '@/components/AppHead.svelte';
     import { store } from '@/routes/login';
 
+    // Props are injected by the backend guest login route.
     let {
         status = '',
         canResetPassword = true,
@@ -12,7 +13,26 @@
     const forgotPasswordPath = '/forgot-password';
     const registerPath = '/register';
 
+    // Route helper generated from Laravel routes.
+    // `store.form()` points to POST /login handled by Fortify.
     const hasErrors = (errors) => Boolean(errors?.email || errors?.password);
+
+    // Keep post-auth UX deterministic from frontend side as requested.
+    // We only redirect when a user is actually authenticated.
+    function redirectToDashboardIfAuthenticated(inertiaPage) {
+        const authenticatedUser = inertiaPage?.props?.auth?.user;
+        const componentName = inertiaPage?.component ?? '';
+
+        if (!authenticatedUser || componentName === 'Dashboard') {
+            return;
+        }
+
+        router.visit('/dashboard', {
+            replace: true,
+            preserveState: false,
+            preserveScroll: false,
+        });
+    }
 </script>
 
 <AppHead title="Login" />
@@ -28,7 +48,14 @@
             <div class="success-message2">{status}</div>
         {/if}
 
-        <Form {...store.form()} class="login-form">
+        <!-- Submit directly to backend auth endpoint -->
+        <Form
+            {...store.form()}
+            class="login-form"
+            resetOnError={['password']}
+            options={{ preserveScroll: true }}
+            onSuccess={redirectToDashboardIfAuthenticated}
+        >
             {#snippet children({ errors, processing })}
                 {#if hasErrors(errors)}
                     <div class="error-message2">
@@ -48,6 +75,9 @@
                         autocomplete="email"
                     />
                 </div>
+                {#if errors.email}
+                    <p class="field-error">{errors.email}</p>
+                {/if}
 
                 <div class="input-group">
                     <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -59,6 +89,17 @@
                         required
                         autocomplete="current-password"
                     />
+                </div>
+                {#if errors.password}
+                    <p class="field-error">{errors.password}</p>
+                {/if}
+
+                <!-- Fortify reads `remember=1` when checked -->
+                <div class="remember-row">
+                    <label class="remember-label">
+                        <input type="checkbox" name="remember" value="1" />
+                        <span>Remember me</span>
+                    </label>
                 </div>
 
                 <button type="submit" class="login-button" disabled={processing}>
@@ -160,6 +201,14 @@
     .input-group:focus-within {
         transform: translateY(-1px);
         box-shadow: 0 12px 30px rgba(8, 34, 102, 0.22);
+    }
+
+    .field-error {
+        margin: -4px 0 10px;
+        color: #fecaca;
+        font-size: 0.82rem;
+        padding-left: 6px;
+        width: 100%;
     }
 
     .input-icon {
@@ -271,6 +320,26 @@
         border: 1px solid rgba(255, 255, 255, 0.4);
         box-shadow: 0 6px 20px rgba(0, 82, 212, 0.4);
         cursor: pointer;
+    }
+
+    .remember-row {
+        width: 100%;
+        margin: 4px 0 8px;
+    }
+
+    .remember-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #f8fafc;
+        font-size: 0.86rem;
+        cursor: pointer;
+    }
+
+    .remember-label input {
+        width: 15px;
+        height: 15px;
+        accent-color: #2b5ce7;
     }
 
     .login-button:hover:not(:disabled) {
