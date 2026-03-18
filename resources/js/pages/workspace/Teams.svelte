@@ -182,12 +182,12 @@
     {/each}
 
     <!-- Add card -->
-    <div class="team-card add-card" on:click={() => showAddDialog = true}>
+    <button type="button" class="team-card add-card" on:click={() => showAddDialog = true}>
       <div class="add-card-content">
         <span class="plus-icon">+</span>
         <p>Add</p>
       </div>
-    </div>
+    </button>
   </div>
 
   <!-- Add Dialog -->
@@ -355,6 +355,7 @@
     border: 2px dashed #d1d5db; border-radius: 1rem; color: #6b7280;
     display: flex; align-items: center; justify-content: center; padding: 1rem;
     transition: all 0.2s ease-in-out;
+    cursor: pointer;
   }
   .add-card:hover { transform: translateY(-2px); border: 2px dashed #0052d4; }
   .add-card-content { display: flex; flex-direction: column; align-items: center; font-size: 0.9rem; }
