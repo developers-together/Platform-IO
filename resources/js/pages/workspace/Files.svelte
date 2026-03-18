@@ -131,7 +131,7 @@
 
 <AppLayout>
 <div class="file-page">
-  <div class="feature-preview-banner">{FEATURE_STATUS_NOTE}</div>
+  <div class="feature-preview-banner" data-test="files-preview-banner">{FEATURE_STATUS_NOTE}</div>
   <div class="feature-preview-disabled" aria-disabled="true" inert>
   <div class="file-sidebar">
     <div class="file-sidebar-header">
@@ -154,7 +154,7 @@
       </div>
     {/if}
 
-      <ul class="folder-list">
+    <ul class="folder-list" data-test="files-folder-list">
         {#if currentPath !== ROOT}
         <li class="has-nav-button">
           <button type="button" class="folder-nav-btn" on:click={goUp}>⬅ Back</button>
@@ -184,11 +184,11 @@
     <div class="file-toolbar">
       <h2>{toDisplayPath(currentPath)}</h2>
       <div class="toolbar-actions">
-        <label class="upload-btn">
+        <label class="upload-btn" data-test="files-upload-button">
           📤 Upload
           <input type="file" on:change={uploadFile} style="display: none" />
         </label>
-        <button type="button" class="ai-create-btn" on:click={() => (showAiCreate = !showAiCreate)}>🤖 AI Create</button>
+        <button type="button" class="ai-create-btn" data-test="files-ai-create-toggle" on:click={() => (showAiCreate = !showAiCreate)}>🤖 AI Create</button>
       </div>
     </div>
 
