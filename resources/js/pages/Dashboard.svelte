@@ -180,7 +180,7 @@
         {:else}
           {#each chatGroups as group, idx}
             <li class="chat-group-card">
-              <div class="chat-group-header" on:click={() => toggleGroup(idx)}>
+              <button type="button" class="chat-group-header" on:click={() => toggleGroup(idx)}>
                 <span class="chat-dot"></span>
                 <span class="chat-group-name">{group.name}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -190,7 +190,7 @@
                     <polyline points="6 9 12 15 18 9"/>
                   {/if}
                 </svg>
-              </div>
+              </button>
               <div class="chat-group-body" class:open={group.isOpen}>
                 {#each group.messages as msg}
                   <div class="chat-group-message"><strong>{msg.user}:</strong> {msg.text}</div>
@@ -458,6 +458,7 @@
   .chat-group-header {
     background: #ebecec; padding: 10px 14px; display: flex; align-items: center;
     justify-content: left; cursor: pointer; transition: background 0.2s; gap: 6px;
+    border: none; width: 100%; text-align: left;
   }
   .chat-group-header:hover { background: #e2e3e3; }
   .chat-group-name { font-weight: 500; color: #333; }
