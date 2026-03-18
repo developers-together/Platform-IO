@@ -114,15 +114,15 @@
               </div>
             </div>
             <div class="edit-form-actions">
-              <button class="save-button" on:click={saveEdit}>Save</button>
-              <button class="cancel-button" on:click={() => { editingTask = null; }}>Cancel</button>
+              <button type="button" class="save-button" on:click={saveEdit}>Save</button>
+              <button type="button" class="cancel-button" on:click={() => { editingTask = null; }}>Cancel</button>
             </div>
           </div>
         {:else}
           <div class="task-row" class:starred={task.stared}>
             <div class="task-content">
               <div class="task-left">
-                <button class="check-button" aria-label={`Toggle completion for ${task.title}`} on:click={() => toggleComplete(task)}>
+                <button type="button" class="check-button" aria-label={`Toggle completion for ${task.title}`} on:click={() => toggleComplete(task)}>
                   <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
                 </button>
                 <span class="task-title">{task.title}</span>
@@ -135,7 +135,7 @@
               </div>
 
               <div class="task-right">
-                <button class="caret-button" aria-label={`Toggle details for ${task.title}`} on:click={() => expandedId = expandedId === task.id ? null : task.id}>
+                <button type="button" class="caret-button" aria-label={`Toggle details for ${task.title}`} on:click={() => expandedId = expandedId === task.id ? null : task.id}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points={expandedId === task.id ? "18 15 12 9 6 15" : "6 9 12 15 18 9"}/></svg>
                 </button>
                 <span class="star-icon" class:active={task.stared} role="button" tabindex="0" on:click={() => toggleStar(task)} on:keydown={(e) => { if (e.key === 'Enter') toggleStar(task); }}>★</span>
@@ -148,8 +148,8 @@
               <div class="confirm-dialog">
                 <span>Delete?</span>
                 <div class="confirm-buttons">
-                  <button class="confirm-yes" on:click={() => deleteTask(task.id)}>Yes</button>
-                  <button class="confirm-no" on:click={() => { confirmDeleteId = null; }}>No</button>
+                  <button type="button" class="confirm-yes" on:click={() => deleteTask(task.id)}>Yes</button>
+                  <button type="button" class="confirm-no" on:click={() => { confirmDeleteId = null; }}>No</button>
                 </div>
               </div>
             {/if}
@@ -191,7 +191,7 @@
       bind:value={newTaskTitle}
       on:keydown={(e) => { if (e.key === 'Enter') addTask(); }}
     />
-    <button class="add-button" aria-label="Add task" on:click={addTask}>
+    <button type="button" class="add-button" aria-label="Add task" on:click={addTask}>
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
   </div>
