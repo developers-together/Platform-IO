@@ -216,6 +216,7 @@
               <span>{suggestion.text}</span>
               <div class="ai-actions">
                 <button
+                  type="button"
                   class="action-btn2 accept"
                   title="AI actions are disabled until backend implementation is complete."
                   disabled
@@ -223,6 +224,7 @@
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 </button>
                 <button
+                  type="button"
                   class="action-btn2 reject"
                   title="AI actions are disabled until backend implementation is complete."
                   disabled
