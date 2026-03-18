@@ -41,7 +41,7 @@
 
 <AppHead title="Platform-IO" />
 
-<div class="start5">
+<div class="start5" data-test="welcome-page">
   {#if showOverlay}
     <div class="overlay" class:fade-out={fadingOut}>
       <div class="overlay-content">
@@ -67,7 +67,7 @@
         activeTransition="transform 0.2s ease-out"
         inactiveTransition="transform 0.4s ease-in-out"
       >
-        <a href={ctaPath} class="btn-custom5">
+        <a href={ctaPath} class="btn-custom5" data-test="welcome-use-platform">
           <ShinyText text={ctaLabel} speed={3} />
         </a>
       </Magnet>
