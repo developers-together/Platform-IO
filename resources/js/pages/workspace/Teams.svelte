@@ -157,7 +157,7 @@
             options={{ background: '0052d4', color: 'fff', bold: true, rounded: false }}
             className="team-avatar"
           />
-          <button class="team-menu-btn" on:click={(e) => toggleTeamMenu(team.id, e)}>&#8942;</button>
+          <button type="button" class="team-menu-btn" on:click={(e) => toggleTeamMenu(team.id, e)}>&#8942;</button>
         </div>
         <div class="team-info">
           <div class="info-item"><span class="info-title">Team Name:</span><span class="info-value">{team.name}</span></div>
@@ -167,15 +167,15 @@
 
         {#if menuTeamId === team.id && !showTeamCode}
           <div class="team-menu-dialog">
-            <button class="team-menu-item" on:click={(e) => handleShowCode(team.id, e)}>Show Code</button>
-            <button class="team-menu-item2" on:click={(e) => handleLeaveTeam(team.id, e)}>Leave</button>
+            <button type="button" class="team-menu-item" on:click={(e) => handleShowCode(team.id, e)}>Show Code</button>
+            <button type="button" class="team-menu-item2" on:click={(e) => handleLeaveTeam(team.id, e)}>Leave</button>
           </div>
         {/if}
 
         {#if menuTeamId === team.id && showTeamCode}
           <div class="team-code-dialog">
             <p>Team Code: {team.code}</p>
-            <button on:click={() => { menuTeamId = null; showTeamCode = false; }}>Close</button>
+            <button type="button" on:click={() => { menuTeamId = null; showTeamCode = false; }}>Close</button>
           </div>
         {/if}
       </div>
@@ -194,19 +194,19 @@
   {#if showAddDialog}
     <div class="add-dialog-overlay">
       <div class="add-dialog-content2">
-        <button class="close-dialog-btn" on:click={closeAddDialog}>&times;</button>
+        <button type="button" class="close-dialog-btn" on:click={closeAddDialog}>&times;</button>
         <div class="join-create-options">
           <div class="join-team-box">
             <h3>Join Team</h3>
             <input maxlength="6" type="text" placeholder="Team Code" bind:value={joinCode} class="join-input" />
-            <button class="join-btn" on:click={joinTeam}>Join</button>
+            <button type="button" class="join-btn" on:click={joinTeam}>Join</button>
           </div>
           <div class="create-team-box">
             <h3>Create Team</h3>
             <input type="text" placeholder="Team Name" bind:value={teamName} class="create-input" />
             <input type="text" placeholder="Project Name" bind:value={projectName} class="create-input" />
             <input type="text" placeholder="Team Description" bind:value={teamDescription} class="create-input" />
-            <button class="create-btn" on:click={createTeam}>Create</button>
+            <button type="button" class="create-btn" on:click={createTeam}>Create</button>
           </div>
         </div>
       </div>
@@ -220,8 +220,8 @@
         <h3>Leave Team</h3>
         <p>Are you sure you want to leave this team?</p>
         <div class="modal-actions">
-          <button on:click={() => confirmLeaveTeam(leaveModalTeamId)} class="btn confirm-btn">Yes, Leave</button>
-          <button on:click={() => leaveModalTeamId = null} class="btn cancel-btn">Don't Leave</button>
+          <button type="button" on:click={() => confirmLeaveTeam(leaveModalTeamId)} class="btn confirm-btn">Yes, Leave</button>
+          <button type="button" on:click={() => leaveModalTeamId = null} class="btn cancel-btn">Don't Leave</button>
         </div>
       </div>
     </div>
