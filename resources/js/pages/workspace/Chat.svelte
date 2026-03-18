@@ -1,858 +1,421 @@
-<script lang="ts">
-    import { onMount } from 'svelte';
-    import AppHead from '@/components/AppHead.svelte';
-    import { Badge } from '@/components/ui/badge';
-    import { Button } from '@/components/ui/button';
-    import {
-        Card,
-        CardContent,
-        CardDescription,
-        CardHeader,
-        CardTitle,
-    } from '@/components/ui/card';
-    import { Input } from '@/components/ui/input';
-    import AppLayout from '@/layouts/AppLayout.svelte';
-    import {
-        askChatAi,
-        createChat,
-        deleteChat,
-        deleteChatMessage,
-        fetchChatMessages,
-        fetchTeamChats,
-        renameChat,
-        sendChatMessage,
-    } from '@/lib/api/chats';
-    import { fetchUserTeams } from '@/lib/api/teams';
-    import {
-        MAX_CHAT_IMAGE_SIZE_BYTES,
-        isSafeHttpUrl,
-        validateUploadFile,
-    } from '@/lib/security';
-    import {
-        initializeWorkspaceTeam,
-        setWorkspaceTeam,
-        workspaceState,
-    } from '@/lib/workspace.svelte';
-    import { workspaceChat } from '@/lib/appRoutes';
-    import type {
-        BreadcrumbItem,
-        ChatChannelSummary,
-        ChatMessage,
-        TeamSummary,
-    } from '@/types';
+<svelte:options runes={false} />
 
-    type UiChatMessage = ChatMessage & {
-        createdAtMs: number;
-        createdAtLabel: string | null;
-        safeAttachmentUrl: string | null;
+<script>
+  import { onMount } from 'svelte';
+  import { teamId } from '@/legacy/lib/stores/team.js';
+  import { api } from '@/legacy/lib/api/client.js';
+  import Avatar from '@/legacy/lib/components/Avatar.svelte';
+  import AppHead from '@/components/AppHead.svelte';
+  import AppLayout from '@/layouts/AppLayout.svelte';
+
+  let channels = [];
+  let activeChannel = null;
+  let messages = [];
+  let newMessage = '';
+  let showCreateDialog = false;
+  let newChannelName = '';
+  let replyTo = null;
+  let showDeleteModal = false;
+  let deleteChannelId = null;
+  let channelMenuId = null;
+  let editChannelId = null;
+  let editChannelName = '';
+  let loadingChannels = false;
+  let chatUnavailableMessage = '';
+  let teamBootstrapAttempted = false;
+
+  onMount(async () => {
+    // Teams page is currently preview-only; bootstrap team context from /api/user/teams
+    // so chat can still work without forcing the user through unfinished team flows.
+    const activeTeamId = await ensureTeamContext();
+    if (!activeTeamId) {
+      chatUnavailableMessage = 'No team context found yet. Chat will activate once a team is available.';
+      return;
+    }
+    await loadChannels();
+  });
+
+  async function ensureTeamContext() {
+    if ($teamId) {
+      return $teamId;
+    }
+
+    if (teamBootstrapAttempted) {
+      return null;
+    }
+    teamBootstrapAttempted = true;
+
+    try {
+      const teamResponse = await api('/user/teams');
+      const teams = Array.isArray(teamResponse)
+        ? teamResponse
+        : (teamResponse?.teams || teamResponse?.data || []);
+
+      const firstTeamId = Number(teams[0]?.id);
+      if (Number.isFinite(firstTeamId) && firstTeamId > 0) {
+        $teamId = firstTeamId;
+        return firstTeamId;
+      }
+    } catch (err) {
+      console.error('Unable to bootstrap team context for chat:', err);
+    }
+
+    return null;
+  }
+
+  function normalizeMessage(msg) {
+    return {
+      id: msg.id,
+      user_name: msg.user_name || msg.user?.name || 'User',
+      message: msg.message || msg.content || '',
+      image_url: msg.image_url || msg.image || null,
+      replyTo: msg.replyTo ?? msg.reply_id ?? null,
+      created_at: msg.created_at,
     };
+  }
 
-    const BLOCKED_IMAGE_MIME_TYPES = ['image/svg+xml'];
-    const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
+  async function loadChannels() {
+    const activeTeamId = await ensureTeamContext();
+    if (!activeTeamId) {
+      channels = [];
+      activeChannel = null;
+      messages = [];
+      return;
+    }
 
-    const breadcrumbs: BreadcrumbItem[] = [
-        {
-            title: 'Chat',
-            href: workspaceChat(),
-        },
-    ];
+    loadingChannels = true;
+    chatUnavailableMessage = '';
 
-    const workspace = workspaceState();
+    try {
+      const data = await api(`/chats/${activeTeamId}/index`);
+      channels = Array.isArray(data) ? data : (data?.chats || data?.data || []);
+    } catch (err) {
+      console.error('Failed to load channels:', err);
+      chatUnavailableMessage = 'Could not load channels right now.';
+      channels = [];
+    } finally {
+      loadingChannels = false;
+    }
+  }
 
-    let teams = $state<TeamSummary[]>([]);
-    let selectedTeamId = $state<number | null>(workspace.selectedTeamId);
+  async function selectChannel(ch) {
+    activeChannel = ch;
+    channelMenuId = null;
 
-    let channels = $state<ChatChannelSummary[]>([]);
-    let selectedChannelId = $state<number | null>(null);
-    let messages = $state<ChatMessage[]>([]);
+    try {
+      const data = await api(`/chats/${ch.id}/getMessages`);
+      const rows = Array.isArray(data)
+        ? data
+        : (data?.data || data?.messages || []);
 
-    let loadingWorkspace = $state(true);
-    let loadingMessages = $state(false);
-    let busyAction = $state<
-        | ''
-        | 'create-channel'
-        | 'rename-channel'
-        | 'delete-channel'
-        | 'send-message'
-        | 'ask-ai'
-        | `delete-message-${number}`
-    >('');
+      messages = rows.map(normalizeMessage);
+    } catch (err) {
+      console.error(err);
+      messages = [];
+    }
+  }
 
-    let error = $state('');
-    let success = $state('');
+  async function createChannel() {
+    if (!newChannelName.trim()) return;
+    const activeTeamId = await ensureTeamContext();
+    if (!activeTeamId) return;
 
-    let newChannelName = $state('');
-    let renameChannelName = $state('');
-    let messageText = $state('');
+    try {
+      await api(`/chats/${activeTeamId}/store`, {
+        method: 'POST',
+        body: { name: newChannelName.trim() },
+      });
 
-    let selectedImage = $state<File | null>(null);
-    let replyToMessageId = $state<number | null>(null);
+      newChannelName = '';
+      showCreateDialog = false;
+      await loadChannels();
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
-    const maxVisibleMessages = 120;
-    let showAllMessages = $state(false);
+  async function sendMessage() {
+    if (!newMessage.trim() || !activeChannel) return;
 
-    let fileInput = $state<HTMLInputElement | null>(null);
+    try {
+      const body = { message: newMessage.trim() };
+      if (replyTo?.id) {
+        body.replyTo = replyTo.id;
+      }
 
-    const activeChannel = $derived(
-        channels.find((channel) => channel.id === selectedChannelId) ?? null,
-    );
+      await api(`/chats/${activeChannel.id}/sendMessages`, {
+        method: 'POST',
+        body,
+      });
 
-    const replyTarget = $derived(
-        messages.find((message) => message.id === replyToMessageId) ?? null,
-    );
+      newMessage = '';
+      replyTo = null;
+      await selectChannel(activeChannel);
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
-    const orderedMessages = $derived.by((): UiChatMessage[] =>
-        [...messages]
-            .map((message) => {
-                const createdAtMsRaw = message.createdAt
-                    ? Date.parse(message.createdAt)
-                    : Number.NaN;
-                const createdAtMs = Number.isNaN(createdAtMsRaw)
-                    ? 0
-                    : createdAtMsRaw;
-                const safeAttachmentUrl =
-                    message.imageUrl && isSafeHttpUrl(message.imageUrl)
-                        ? message.imageUrl
-                        : null;
+  async function deleteMessage(msgId) {
+    try {
+      await api(`/chats/${msgId}/deleteMessage`, { method: 'DELETE' });
+      await selectChannel(activeChannel);
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
-                return {
-                    ...message,
-                    createdAtMs,
-                    createdAtLabel: Number.isNaN(createdAtMsRaw)
-                        ? null
-                        : dateTimeFormatter.format(createdAtMs),
-                    safeAttachmentUrl,
-                };
-            })
-            .sort((a, b) => {
-                if (a.createdAtMs === b.createdAtMs) {
-                    return a.id - b.id;
-                }
+  function askAI() {
+    // TODO(back-end): restore this API call once AI assistant endpoints are fully implemented.
+    chatUnavailableMessage = 'Ask AI is currently disabled until AI backend implementation is complete.';
+  }
 
-                return a.createdAtMs - b.createdAtMs;
-            }),
-    );
+  async function deleteChannel(id) {
+    try {
+      await api(`/chats/${id}`, {
+        method: 'DELETE',
+        body: { chat_id: id },
+      });
 
-    const visibleMessages = $derived.by(() => {
-        if (showAllMessages) return orderedMessages;
-        if (orderedMessages.length <= maxVisibleMessages) return orderedMessages;
-        return orderedMessages.slice(-maxVisibleMessages);
-    });
+      showDeleteModal = false;
+      deleteChannelId = null;
 
-    const hiddenMessageCount = $derived.by(() =>
-        Math.max(orderedMessages.length - visibleMessages.length, 0),
-    );
-
-    const clearNotices = () => {
-        error = '';
-        success = '';
-    };
-
-    const getErrorMessage = (err: unknown): string => {
-        if (err instanceof Error) {
-            return err.message;
-        }
-
-        return 'Request failed.';
-    };
-
-    const resetComposer = () => {
-        messageText = '';
-        selectedImage = null;
-        replyToMessageId = null;
-        if (fileInput) {
-            fileInput.value = '';
-        }
-    };
-
-    const loadMessages = async (channelId: number) => {
-        loadingMessages = true;
-        clearNotices();
-
-        try {
-            messages = await fetchChatMessages(channelId);
-        } catch (err) {
-            messages = [];
-            error = getErrorMessage(err);
-        } finally {
-            loadingMessages = false;
-        }
-    };
-
-    const loadChannels = async (teamId: number) => {
-        clearNotices();
-
-        try {
-            channels = await fetchTeamChats(teamId);
-            if (channels.length === 0) {
-                selectedChannelId = null;
-                messages = [];
-                return;
-            }
-
-            const persisted = channels.find(
-                (channel) => channel.id === selectedChannelId,
-            );
-            selectedChannelId = persisted ? persisted.id : channels[0].id;
-            renameChannelName =
-                channels.find((channel) => channel.id === selectedChannelId)
-                    ?.name ?? '';
-
-            await loadMessages(selectedChannelId);
-        } catch (err) {
-            channels = [];
-            selectedChannelId = null;
-            messages = [];
-            error = getErrorMessage(err);
-        }
-    };
-
-    const loadWorkspace = async () => {
-        loadingWorkspace = true;
-        clearNotices();
-
-        try {
-            teams = await fetchUserTeams();
-            const persistedTeamId = initializeWorkspaceTeam();
-            const persistedTeam = teams.find(
-                (team) => team.id === persistedTeamId,
-            );
-
-            selectedTeamId = persistedTeam
-                ? persistedTeam.id
-                : (teams[0]?.id ?? null);
-            setWorkspaceTeam(selectedTeamId);
-
-            if (selectedTeamId) {
-                await loadChannels(selectedTeamId);
-            } else {
-                channels = [];
-                messages = [];
-                selectedChannelId = null;
-            }
-        } catch (err) {
-            teams = [];
-            selectedTeamId = null;
-            channels = [];
-            messages = [];
-            selectedChannelId = null;
-            error = getErrorMessage(err);
-        } finally {
-            loadingWorkspace = false;
-        }
-    };
-
-    const selectTeam = async (event: Event) => {
-        const target = event.currentTarget as HTMLSelectElement;
-        const value = Number(target.value);
-
-        selectedTeamId = Number.isFinite(value) && value > 0 ? value : null;
-        setWorkspaceTeam(selectedTeamId);
-
-        selectedChannelId = null;
-        channels = [];
+      if (activeChannel?.id === id) {
+        activeChannel = null;
         messages = [];
-        showAllMessages = false;
+      }
 
-        if (!selectedTeamId) {
-            return;
-        }
+      await loadChannels();
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
-        await loadChannels(selectedTeamId);
-    };
+  async function renameChannel() {
+    if (!editChannelName.trim()) return;
 
-    const selectChannel = async (channelId: number) => {
-        if (selectedChannelId === channelId) {
-            return;
-        }
+    try {
+      await api(`/chats/${editChannelId}`, {
+        method: 'PUT',
+        body: { name: editChannelName.trim() },
+      });
 
-        selectedChannelId = channelId;
-        renameChannelName =
-            channels.find((channel) => channel.id === channelId)?.name ?? '';
-        showAllMessages = false;
-        await loadMessages(channelId);
-    };
+      editChannelId = null;
+      editChannelName = '';
+      await loadChannels();
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
-    const createNewChannel = async () => {
-        clearNotices();
-        if (!selectedTeamId) {
-            error = 'Select a team first.';
-            return;
-        }
-
-        if (!newChannelName.trim()) {
-            error = 'Channel name is required.';
-            return;
-        }
-
-        busyAction = 'create-channel';
-        try {
-            const created = await createChat(
-                selectedTeamId,
-                newChannelName.trim(),
-            );
-            newChannelName = '';
-
-            if (created) {
-                channels = [...channels, created].sort((a, b) =>
-                    a.name.localeCompare(b.name),
-                );
-                selectedChannelId = created.id;
-                renameChannelName = created.name;
-                messages = [];
-                success = 'Channel created.';
-                await loadMessages(created.id);
-            } else {
-                await loadChannels(selectedTeamId);
-                success = 'Channel created.';
-            }
-        } catch (err) {
-            error = getErrorMessage(err);
-        } finally {
-            busyAction = '';
-        }
-    };
-
-    const renameActiveChannel = async () => {
-        clearNotices();
-        if (!selectedChannelId) {
-            error = 'Select a channel first.';
-            return;
-        }
-
-        if (!renameChannelName.trim()) {
-            error = 'New channel name is required.';
-            return;
-        }
-
-        busyAction = 'rename-channel';
-        try {
-            const updated = await renameChat(
-                selectedChannelId,
-                renameChannelName.trim(),
-            );
-
-            const fallbackName = renameChannelName.trim();
-            channels = channels.map((channel) =>
-                channel.id === selectedChannelId
-                    ? {
-                          ...channel,
-                          name: updated?.name ?? fallbackName,
-                      }
-                    : channel,
-            );
-            success = 'Channel renamed.';
-        } catch (err) {
-            error = getErrorMessage(err);
-        } finally {
-            busyAction = '';
-        }
-    };
-
-    const removeActiveChannel = async () => {
-        clearNotices();
-        if (!selectedChannelId) {
-            error = 'Select a channel first.';
-            return;
-        }
-
-        const confirmed = window.confirm(
-            'Delete this channel and all its messages?',
-        );
-        if (!confirmed) {
-            return;
-        }
-
-        busyAction = 'delete-channel';
-        try {
-            const channelId = selectedChannelId;
-            await deleteChat(channelId);
-            channels = channels.filter((channel) => channel.id !== channelId);
-
-            if (channels.length === 0) {
-                selectedChannelId = null;
-                messages = [];
-            } else {
-                selectedChannelId = channels[0].id;
-                renameChannelName = channels[0].name;
-                await loadMessages(channels[0].id);
-            }
-
-            success = 'Channel deleted.';
-        } catch (err) {
-            error = getErrorMessage(err);
-        } finally {
-            busyAction = '';
-        }
-    };
-
-    const onFileChange = (event: Event) => {
-        const target = event.currentTarget as HTMLInputElement;
-        const file = target.files?.[0] ?? null;
-
-        if (!file) {
-            selectedImage = null;
-            return;
-        }
-
-        const fileError = validateUploadFile(
-            file,
-            MAX_CHAT_IMAGE_SIZE_BYTES,
-            ['image/'],
-            BLOCKED_IMAGE_MIME_TYPES,
-        );
-        if (fileError) {
-            error = fileError;
-            target.value = '';
-            selectedImage = null;
-            return;
-        }
-
-        selectedImage = file;
-        clearNotices();
-    };
-
-    const sendMessage = async () => {
-        clearNotices();
-        if (!selectedChannelId) {
-            error = 'Select a channel first.';
-            return;
-        }
-
-        if (!messageText.trim() && !selectedImage) {
-            error = 'Write a message or attach an image.';
-            return;
-        }
-
-        busyAction = 'send-message';
-        try {
-            const created = await sendChatMessage(selectedChannelId, {
-                message: messageText.trim(),
-                image: selectedImage,
-                replyTo: replyToMessageId,
-            });
-
-            if (created) {
-                messages = [...messages, created];
-                success = 'Message sent.';
-            } else {
-                await loadMessages(selectedChannelId);
-            }
-
-            resetComposer();
-        } catch (err) {
-            error = getErrorMessage(err);
-        } finally {
-            busyAction = '';
-        }
-    };
-
-    const askAiInChannel = async () => {
-        clearNotices();
-        if (!selectedChannelId) {
-            error = 'Select a channel first.';
-            return;
-        }
-
-        const prompt = messageText.trim();
-        if (!prompt) {
-            error = 'Type a prompt for AI.';
-            return;
-        }
-
-        busyAction = 'ask-ai';
-        try {
-            const aiMessage = await askChatAi(selectedChannelId, prompt);
-            if (aiMessage) {
-                messages = [...messages, aiMessage];
-            } else {
-                await loadMessages(selectedChannelId);
-            }
-
-            messageText = '';
-            replyToMessageId = null;
-            success = 'AI response added.';
-        } catch (err) {
-            error = getErrorMessage(err);
-        } finally {
-            busyAction = '';
-        }
-    };
-
-    const removeMessage = async (messageId: number) => {
-        clearNotices();
-        const confirmed = window.confirm('Delete this message?');
-        if (!confirmed) {
-            return;
-        }
-
-        busyAction = `delete-message-${messageId}`;
-        try {
-            await deleteChatMessage(messageId);
-            messages = messages.filter((message) => message.id !== messageId);
-            success = 'Message deleted.';
-        } catch (err) {
-            error = getErrorMessage(err);
-        } finally {
-            busyAction = '';
-        }
-    };
-
-    onMount(async () => {
-        await loadWorkspace();
+  function formatTime(timestamp) {
+    if (!timestamp) return '';
+    return new Date(timestamp).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
     });
+  }
 </script>
 
-<AppHead title="Workspace Chat" />
+<AppHead title="Chat" />
 
-<AppLayout {breadcrumbs}>
-    <div
-        class="fx-stagger flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
-        data-test="chat-page"
-    >
-        <Card>
-            <CardHeader>
-                <CardTitle>Team and Channel Context</CardTitle>
-                <CardDescription>
-                    Select a team, then manage channels before messaging.
-                </CardDescription>
-            </CardHeader>
-            <CardContent class="grid gap-4 lg:grid-cols-3">
-                <label class="flex flex-col gap-1 text-sm lg:col-span-1">
-                    <span class="font-medium">Team</span>
-                    <select
-                        class="fx-input h-10 rounded-md border border-input bg-background px-3"
-                        disabled={loadingWorkspace || teams.length === 0}
-                        value={selectedTeamId ?? ''}
-                        onchange={selectTeam}
-                    >
-                        {#if teams.length === 0}
-                            <option value="">No teams available</option>
-                        {:else}
-                            {#each teams as team (team.id)}
-                                <option value={team.id}>{team.name}</option>
-                            {/each}
-                        {/if}
-                    </select>
-                </label>
-
-                <label class="flex flex-col gap-1 text-sm lg:col-span-1">
-                    <span class="font-medium">Channel</span>
-                    <select
-                        class="fx-input h-10 rounded-md border border-input bg-background px-3"
-                        disabled={channels.length === 0}
-                        value={selectedChannelId ?? ''}
-                        onchange={(event) => {
-                            const target =
-                                event.currentTarget as HTMLSelectElement;
-                            const id = Number(target.value);
-                            if (Number.isFinite(id) && id > 0) {
-                                selectChannel(id);
-                            }
-                        }}
-                    >
-                        {#if channels.length === 0}
-                            <option value="">No channels yet</option>
-                        {:else}
-                            {#each channels as channel (channel.id)}
-                                <option value={channel.id}
-                                    >{channel.name}</option
-                                >
-                            {/each}
-                        {/if}
-                    </select>
-                </label>
-
-                <div class="space-y-2 lg:col-span-1">
-                    <label class="flex flex-col gap-1 text-sm">
-                        <span class="font-medium">Create channel</span>
-                        <div class="flex gap-2">
-                            <Input
-                                placeholder="New channel name"
-                                bind:value={newChannelName}
-                                class="flex-1"
-                            />
-                            <Button
-                                variant="outline"
-                                disabled={busyAction === 'create-channel' ||
-                                    !selectedTeamId}
-                                onClick={createNewChannel}
-                            >
-                                {busyAction === 'create-channel'
-                                    ? 'Creating...'
-                                    : 'Create'}
-                            </Button>
-                        </div>
-                    </label>
-                </div>
-
-                <label class="flex flex-col gap-1 text-sm lg:col-span-2">
-                    <span class="font-medium">Rename active channel</span>
-                    <div class="flex gap-2">
-                        <Input
-                            placeholder="Updated channel name"
-                            bind:value={renameChannelName}
-                            disabled={!selectedChannelId}
-                            class="flex-1"
-                        />
-                        <Button
-                            variant="outline"
-                            disabled={!selectedChannelId ||
-                                busyAction === 'rename-channel'}
-                            onClick={renameActiveChannel}
-                        >
-                            {busyAction === 'rename-channel'
-                                ? 'Saving...'
-                                : 'Save'}
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            disabled={!selectedChannelId ||
-                                busyAction === 'delete-channel'}
-                            onClick={removeActiveChannel}
-                        >
-                            {busyAction === 'delete-channel'
-                                ? 'Deleting...'
-                                : 'Delete'}
-                        </Button>
-                    </div>
-                </label>
-
-                <div
-                    class="rounded-md border bg-muted/30 p-3 text-sm lg:col-span-1"
-                >
-                    <p>
-                        <span class="font-semibold">Channels:</span>
-                        {channels.length}
-                    </p>
-                    <p>
-                        <span class="font-semibold">Selected:</span>
-                        {activeChannel?.name || 'None'}
-                    </p>
-                </div>
-            </CardContent>
-        </Card>
-
-        {#if error}
-            <p class="text-sm text-red-600">{error}</p>
-        {/if}
-
-        {#if success}
-            <p class="text-sm text-emerald-600">{success}</p>
-        {/if}
-
-        <Card class="flex min-h-[420px] flex-1 flex-col">
-            <CardHeader>
-                <CardTitle>Conversation</CardTitle>
-                <CardDescription>
-                    {#if activeChannel}
-                        Channel: {activeChannel.name}
-                    {:else}
-                        Select or create a channel to start.
-                    {/if}
-                </CardDescription>
-            </CardHeader>
-            <CardContent class="flex flex-1 flex-col gap-3">
-                <div
-                    class="flex-1 space-y-2 overflow-y-auto rounded-md border p-3"
-                >
-                    {#if loadingMessages}
-                        <p class="text-sm text-muted-foreground">
-                            Loading messages...
-                        </p>
-                    {:else if orderedMessages.length === 0}
-                        <p class="text-sm text-muted-foreground">
-                            No messages yet.
-                        </p>
-                    {:else}
-                        {#if hiddenMessageCount > 0}
-                            <div class="flex justify-center">
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => {
-                                        showAllMessages = true;
-                                    }}
-                                >
-                                    Show {hiddenMessageCount} earlier
-                                    {hiddenMessageCount === 1
-                                        ? ' message'
-                                        : ' messages'}
-                                </Button>
-                            </div>
-                        {:else if showAllMessages &&
-                        orderedMessages.length > maxVisibleMessages}
-                            <div class="flex justify-center">
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => {
-                                        showAllMessages = false;
-                                    }}
-                                >
-                                    Show recent messages only
-                                </Button>
-                            </div>
-                        {/if}
-
-                        {#each visibleMessages as message (message.id)}
-                            <div class="rounded-md border p-3 text-sm">
-                                <div
-                                    class="mb-2 flex flex-wrap items-center gap-2"
-                                >
-                                    <span class="font-semibold"
-                                        >{message.userName}</span
-                                    >
-                                    {#if message.isAi}
-                                        <Badge variant="secondary">AI</Badge>
-                                    {/if}
-                                    {#if message.createdAtLabel}
-                                        <span
-                                            class="text-xs text-muted-foreground"
-                                        >
-                                            {message.createdAtLabel}
-                                        </span>
-                                    {/if}
-                                </div>
-
-                                {#if message.replyTo}
-                                    <p
-                                        class="mb-2 text-xs text-muted-foreground"
-                                    >
-                                        Replying to message #{message.replyTo}
-                                    </p>
-                                {/if}
-
-                                {#if message.message}
-                                    <p class="whitespace-pre-wrap break-words">
-                                        {message.message}
-                                    </p>
-                                {/if}
-
-                                {#if message.safeAttachmentUrl}
-                                    <a
-                                        href={message.safeAttachmentUrl}
-                                        class="mt-2 block text-xs text-blue-600 underline"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        referrerpolicy="no-referrer"
-                                    >
-                                        Open image attachment
-                                    </a>
-                                {:else if message.imageUrl}
-                                    <p class="mt-2 text-xs text-amber-600">
-                                        Attachment blocked because the URL is
-                                        unsafe.
-                                    </p>
-                                {/if}
-
-                                <div class="mt-3 flex gap-2">
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => {
-                                            replyToMessageId = message.id;
-                                        }}
-                                    >
-                                        Reply
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        disabled={busyAction ===
-                                            `delete-message-${message.id}`}
-                                        onClick={() =>
-                                            removeMessage(message.id)}
-                                    >
-                                        {busyAction ===
-                                        `delete-message-${message.id}`
-                                            ? 'Deleting...'
-                                            : 'Delete'}
-                                    </Button>
-                                </div>
-                            </div>
-                        {/each}
-                    {/if}
-                </div>
-
-                {#if replyTarget}
-                    <div class="rounded-md border bg-muted/30 p-2 text-xs">
-                        Replying to <span class="font-semibold"
-                            >{replyTarget.userName}</span
-                        >:
-                        {replyTarget.message || '[Attachment]'}
-                        <button
-                            type="button"
-                            class="ml-2 text-red-600 underline"
-                            onclick={() => {
-                                replyToMessageId = null;
-                            }}
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                {/if}
-
-                <div class="space-y-2 rounded-md border p-3">
-                    <textarea
-                        class="fx-input min-h-[88px] w-full rounded-md border border-input bg-background p-2 text-sm"
-                        placeholder="Write a message..."
-                        bind:value={messageText}
-                        disabled={!selectedChannelId}
-                    ></textarea>
-
-                    <div class="flex flex-wrap items-center gap-2">
-                        <input
-                            bind:this={fileInput}
-                            type="file"
-                            accept="image/*"
-                            class="hidden"
-                            onchange={onFileChange}
-                        />
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={!selectedChannelId}
-                            onClick={() => fileInput?.click()}
-                        >
-                            Attach image
-                        </Button>
-
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={busyAction === 'ask-ai' ||
-                                !selectedChannelId}
-                            onClick={askAiInChannel}
-                        >
-                            {busyAction === 'ask-ai' ? 'Thinking...' : 'Ask AI'}
-                        </Button>
-
-                        <Button
-                            size="sm"
-                            disabled={busyAction === 'send-message' ||
-                                !selectedChannelId}
-                            onClick={sendMessage}
-                        >
-                            {busyAction === 'send-message'
-                                ? 'Sending...'
-                                : 'Send'}
-                        </Button>
-
-                        {#if selectedImage}
-                            <span class="text-xs text-muted-foreground">
-                                Attached: {selectedImage.name}
-                            </span>
-                        {/if}
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
+<AppLayout>
+<div class="chat-page-container">
+  <div class="left-panel">
+    <div class="panel-heading-container">
+      <h3 class="panel-heading">Channels</h3>
+      <button class="add-channel-btn" on:click={() => showCreateDialog = !showCreateDialog}>+</button>
     </div>
+
+    {#if showCreateDialog}
+      <div class="create-channel-dialog">
+        <input placeholder="Channel name" bind:value={newChannelName} on:keydown={(e) => { if (e.key === 'Enter') createChannel(); }} />
+        <div class="dialog-actions">
+          <button on:click={createChannel}>Create</button>
+          <button on:click={() => showCreateDialog = false}>Cancel</button>
+        </div>
+      </div>
+    {/if}
+
+    {#if chatUnavailableMessage}
+      <div class="chat-notice">{chatUnavailableMessage}</div>
+    {/if}
+
+    <div class="left-card-content">
+      <ul>
+        {#if loadingChannels}
+          <li class="empty-channel-state">Loading channels...</li>
+        {:else if channels.length === 0}
+          <li class="empty-channel-state">No channels yet</li>
+        {:else}
+          {#each channels as ch (ch.id)}
+            <li class:active-chat={activeChannel?.id === ch.id} on:click={() => selectChannel(ch)} role="button" tabindex="0" on:keydown={(e) => { if (e.key === 'Enter') selectChannel(ch); }}>
+              {#if editChannelId === ch.id}
+                <div class="channel-edit-container">
+                  <input class="task-edit-input" bind:value={editChannelName} on:keydown={(e) => { if (e.key === 'Enter') renameChannel(); }} />
+                  <button on:click={renameChannel}>Save</button>
+                </div>
+              {:else}
+                <span>{ch.name}</span>
+                <div class="channel-actions">
+                  <button class="channel-menu-btn" on:click|stopPropagation={() => channelMenuId = channelMenuId === ch.id ? null : ch.id}>⋯</button>
+                  {#if channelMenuId === ch.id}
+                    <div class="channel-menu">
+                      <button on:click|stopPropagation={() => { editChannelId = ch.id; editChannelName = ch.name; channelMenuId = null; }}>✏️ Rename</button>
+                      <button on:click|stopPropagation={() => { deleteChannelId = ch.id; showDeleteModal = true; channelMenuId = null; }}>🗑️ Delete</button>
+                    </div>
+                  {/if}
+                </div>
+              {/if}
+            </li>
+          {/each}
+        {/if}
+      </ul>
+    </div>
+  </div>
+
+  <div class="chat-center2">
+    {#if activeChannel}
+      <div class="chat-header3">
+        <h3># {activeChannel.name}</h3>
+      </div>
+
+      <div class="chat-messages2">
+        {#each messages as msg (msg.id)}
+          <div class="chat-message2">
+            <Avatar name={msg.user_name || 'U'} size={42} background="0052d4" color="fff" />
+            <div class="msg-body">
+              <div class="msg-header">
+                <span class="msg-user">{msg.user_name || 'User'}</span>
+                <span class="msg-time">{formatTime(msg.created_at)}</span>
+              </div>
+              {#if msg.replyTo}
+                <div class="reply-container">
+                  <span class="reply-text">↩ Reply</span>
+                </div>
+              {/if}
+              <p class="msg-text">{msg.message}</p>
+              {#if msg.image_url}
+                <img class="uploaded-image" src={msg.image_url} alt="attachment" />
+              {/if}
+              <div class="msg-actions">
+                <button on:click={() => { replyTo = msg; }}>↩</button>
+                <button on:click={() => deleteMessage(msg.id)}>🗑️</button>
+              </div>
+            </div>
+          </div>
+        {/each}
+      </div>
+
+      <div class="chat-input">
+        {#if replyTo}
+          <div class="reply-preview">
+            <span>Replying to {replyTo.user_name || 'User'}: {replyTo.message?.slice(0, 50)}</span>
+            <button class="cancel-reply1" on:click={() => replyTo = null}>✕</button>
+          </div>
+        {/if}
+        <div class="chat-input-row">
+          <input placeholder="Type a message..." bind:value={newMessage} on:keydown={(e) => { if (e.key === 'Enter') sendMessage(); }} />
+          <button on:click={sendMessage}>📤</button>
+          <button on:click={askAI} title="Ask AI (Coming Soon)" disabled>🤖</button>
+        </div>
+      </div>
+    {:else}
+      <div class="no-channel">
+        <p>{chatUnavailableMessage || 'Select a channel to start chatting'}</p>
+      </div>
+    {/if}
+  </div>
+
+  {#if showDeleteModal}
+    <div class="modal-overlay" on:click|self={() => showDeleteModal = false} role="presentation">
+      <div class="modal-content">
+        <p>Delete this channel?</p>
+        <div class="modal-actions">
+          <button class="btn confirm-btn" on:click={() => deleteChannel(deleteChannelId)}>Delete</button>
+          <button class="btn cancel-btn" on:click={() => showDeleteModal = false}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  {/if}
+</div>
 </AppLayout>
+
+<style>
+  .chat-page-container { display: grid; grid-template-columns: 250px 1fr; gap: 20px; height: 100vh; padding: 20px; background: #f9fafc; }
+  .left-panel { display: flex; flex-direction: column; gap: 10px; }
+  .panel-heading-container { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #e2e3e3; border-radius: 20px; }
+  .panel-heading { margin: 0; font-size: 1rem; font-weight: 600; color: #333; }
+  .add-channel-btn { background: none; border: none; color: #0052d4; font-size: 1.5rem; cursor: pointer; padding: 0; transition: var(--transition); }
+  .add-channel-btn:hover { transform: scale(1.2); }
+
+  .create-channel-dialog { background: #fff; border: 1px solid #e2e3e3; border-radius: 20px; padding: 12px; }
+  .create-channel-dialog input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 12px; font-size: 0.95rem; }
+  .dialog-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .dialog-actions button { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; }
+  .dialog-actions button:first-child { background: #0052d4; color: white; }
+  .dialog-actions button:last-child { background: #f0f0f0; color: #333; }
+  .chat-notice { background: #fff6db; border: 1px solid #f0d27a; color: #6a5000; border-radius: 12px; padding: 10px 12px; font-size: 0.85rem; line-height: 1.4; }
+
+  .left-card-content { background: #fff; padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; border-radius: 20px; border: 1px solid #e2e3e3; min-height: 200px; }
+  .left-card-content ul { list-style: none; margin: 0; padding: 0; }
+  .left-card-content li { padding: 10px; border-radius: 8px; font-size: 1rem; transition: background 0.2s, transform 0.2s; color: #333; cursor: pointer; display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+  .left-card-content li:hover { background: #f0f0f0; transform: translateX(4px); }
+  .left-card-content li.empty-channel-state { cursor: default; color: #6b7280; justify-content: center; }
+  .left-card-content li.empty-channel-state:hover { background: transparent; transform: none; }
+  .active-chat { background-color: #e3f2fd !important; font-weight: 600; }
+
+  .channel-actions { position: relative; }
+  .channel-menu-btn { background: none; border: none; padding: 4px; cursor: pointer; color: #666; font-size: 1.2rem; }
+  .channel-menu-btn:hover { color: #0052d4; }
+  .channel-menu { position: absolute; right: 0; top: 25px; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 8px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.2); min-width: 140px; }
+  .channel-menu button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px; background: none; border: none; cursor: pointer; color: #333; font-size: 0.9rem; }
+  .channel-menu button:hover { background: #f5f5f5; border-radius: 4px; }
+
+  .channel-edit-container { display: flex; align-items: center; gap: 8px; width: 100%; }
+  .channel-edit-container input { flex: 1; padding: 6px; border: 1px solid #ddd; border-radius: 4px; }
+  .channel-edit-container button { background: #0052d4; color: white; padding: 6px 12px; border-radius: 4px; font-weight: 500; }
+
+  .chat-center2 { display: flex; flex-direction: column; overflow: hidden; }
+  .chat-header3 { background: #e2e3e3; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; border-radius: 20px; }
+  .chat-header3 h3 { margin: 0; flex: 1; }
+
+  .chat-messages2 { flex: 1; padding: 16px; overflow-y: auto; background: #fafafa; display: flex; flex-direction: column; gap: 12px; scrollbar-width: thin; border: 1px solid #e2e3e3; border-radius: 20px; margin: 10px 0; }
+
+  .chat-message2 { display: flex; gap: 14px; align-items: flex-start; }
+  .msg-body { background: #fff; border-radius: 10px; padding: 10px 14px; flex: 1; box-shadow: 0 2px 6px rgba(0,0,0,0.06); position: relative; }
+  .msg-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .msg-user { font-weight: 600; color: #333; }
+  .msg-time { font-size: 0.85rem; color: #777; }
+  .msg-text { margin-bottom: 6px; color: #444; line-height: 1.4; }
+  .uploaded-image { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 6px; }
+
+  .msg-actions { display: none; position: absolute; right: 12px; bottom: 8px; gap: 6px; }
+  .msg-body:hover .msg-actions { display: flex; }
+  .msg-actions button { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: #0052d4; }
+  .msg-actions button:hover { transform: scale(1.1); }
+
+  .reply-container { background: #e3f2fd; border-left: 3px solid #0052d4; border-radius: 6px; padding: 8px 12px; margin: 8px 0; font-size: 0.9rem; color: #37474f; }
+  .reply-preview { display: flex; align-items: center; background: #f2f3f5; padding: 8px 12px; border-radius: 10px; gap: 8px; font-size: 0.9rem; color: #555; position: relative; }
+  .cancel-reply1 { position: absolute; right: 8px; background: none !important; border: none; color: #0052d4; cursor: pointer; font-size: 1rem; }
+
+  .chat-input { display: flex; flex-direction: column; gap: 8px; padding: 14px 18px; background: #e2e3e3; border-radius: 20px; }
+  .chat-input-row { display: flex; align-items: center; gap: 10px; width: 100%; }
+  .chat-input input { flex: 1; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; transition: border 0.2s; }
+  .chat-input input:focus { border: 1px solid #0052d4; outline: none; box-shadow: var(--shadow-focus); }
+  .chat-input button { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #0052d4; }
+  .chat-input button:disabled { color: #9ca3af; cursor: not-allowed; }
+  .chat-input button:hover { color: #003c9f; transform: scale(1.1); }
+  .chat-input button:disabled:hover { color: #9ca3af; transform: none; }
+
+  .no-channel { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--gray-500); font-size: 1.1rem; }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+  .modal-content { background: white; padding: 2rem; border-radius: 12px; width: 300px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+  .modal-actions { margin-top: 1rem; display: flex; justify-content: center; gap: 1rem; }
+  .btn { padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; }
+  .confirm-btn { background: #ef4444; color: white; }
+  .confirm-btn:hover { background: #dc2626; }
+  .cancel-btn { background: #e2e8f0; color: #1e293b; }
+  .cancel-btn:hover { background: #cbd5e0; }
+</style>
