@@ -167,10 +167,10 @@
 
   <!-- Completed Section -->
   <div class="completed-section">
-    <div class="completed-header" on:click={() => { completedOpen = !completedOpen; }} role="button" tabindex="0" on:keydown={(e) => { if (e.key === 'Enter') completedOpen = !completedOpen; }}>
+    <button type="button" class="completed-header" aria-expanded={completedOpen} on:click={() => { completedOpen = !completedOpen; }}>
       <span>Completed ({completedTasks.length})</span>
       <span>{completedOpen ? '▲' : '▼'}</span>
-    </div>
+    </button>
     {#if completedOpen}
       <div class="completed-list">
         {#each completedTasks as task (task.id)}
@@ -243,7 +243,7 @@
   .task-extra p { margin: 0; font-size: 0.95rem; color: #4a5568; }
 
   .completed-section { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; margin-top: auto; box-shadow: 0 2px 4px rgba(0,0,0,0.04); overflow: hidden; }
-  .completed-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 0.8rem 1rem; background: #f8f9fa; border-radius: 8px; transition: background 0.2s ease; }
+  .completed-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 0.8rem 1rem; background: #f8f9fa; border-radius: 8px; transition: background 0.2s ease; border: none; width: 100%; }
   .completed-header:hover { background: #f1f3f5; }
   .completed-list { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.5rem; }
   .completed-task { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #48bb78; }
