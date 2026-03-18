@@ -243,12 +243,12 @@
       </button>
       <div class="calendar-grid">
         {#each days as day}
-          <div class="calendar-day" on:click={() => goto('/workspace/calendar')} style="cursor:pointer">
+          <button type="button" class="calendar-day" on:click={() => goto('/workspace/calendar')}>
             {day}
             {#if eventDays.includes(day)}
               <span class="event-dot"></span>
             {/if}
-          </div>
+          </button>
         {/each}
       </div>
     </div>
@@ -440,6 +440,7 @@
   .calendar-day {
     background: rgba(0,0,0,0.05); border-radius: 8px; padding: 10px;
     text-align: center; position: relative; font-size: 0.8rem; width: 100%; height: 100%;
+    border: none; cursor: pointer;
   }
   .event-dot {
     position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
