@@ -166,10 +166,10 @@
       </li>
 
       {#each visibleDirectories as folder (folder.path)}
-        <li on:click={() => openFolder(folder.path)} role="button" tabindex="0" on:keydown={(e) => {
-          if (e.key === 'Enter') openFolder(folder.path);
-        }}>
-          <span>📂 {folder.name}</span>
+        <li class="has-nav-button">
+          <button type="button" class="folder-nav-btn folder-name-btn" on:click={() => openFolder(folder.path)}>
+            <span>📂 {folder.name}</span>
+          </button>
           <button class="delete-folder-btn" on:click|stopPropagation={() => deleteFolder(folder.path)}>🗑️</button>
         </li>
       {/each}
@@ -341,6 +341,10 @@
     padding: 10px 12px;
     font-size: 0.9rem;
     cursor: pointer;
+  }
+
+  .folder-name-btn {
+    flex: 1;
   }
 
   .folder-list .empty-entry {
