@@ -100,6 +100,7 @@ class TeamController extends Controller
         //
         // $team = Team::firstOrFail($teamId);
 
+        Gate::authorize('view',Auth::user(),$team);
         return Inertia::render('team/{$team->id}',['team'=>$team,'users'=>$team->users]);
         // Return the team details as a JSON response
         // return response()->json([
@@ -146,25 +147,24 @@ class TeamController extends Controller
     }
 
 
-    public function addMembers(Request $request, Team $team)
+    public function addMember(Request $request, Team $team)
     {
         // Authorize the action (ensure the user can update the team)
-        Gate::authorize('update', $team);
+        Gate::authorize('addMember', $team);
 
         // Validate the request data
         $validated = $request->validate([
-            'users' => 'required|array', // Array of user objects
-            'users.*.id' => 'required|exists:users,id', // Ensure each user ID exists
-            'users.*.role' => 'sometimes|in:member,viewer', // Validate the role
+            'id' => 'required|exists:user', // Array of user objects
+            'role' => 'sometimes|in:member,viewer,admin', // Validate the role
         ]);
 
         // Attach the users to the team with the specified role (default: viewer)
         foreach ($validated['users'] as $userData) {
             $role = $userData['role'] ?? 'member'; // Default role is 'viewer'
 
-            if ($role === 'admin') {
+            if ($role === 'owner') {
                 return response()->json([
-                    'message' => 'The admin role cannot be assigned through this function.',
+                    'message' => 'The owner role cannot be assigned through this function.',
                 ], 403);
             }
 
@@ -174,11 +174,11 @@ class TeamController extends Controller
             ]);
         }
 
-        // Return the updated team with the associated users
-        return response()->json($team->fresh()->load('users'), 200);
+        return back()->with(['success' => 'user added successfully']);
+        // return response()->json($team->fresh()->load('users'), 200);
     }
 
-    public function removeMembers(Request $request, Team $team)
+    public function removeMember(Request $request, Team $team)
     {
         $user = Auth::user();
         // Authorize the action (ensure the user can update the team)
@@ -224,15 +224,17 @@ class TeamController extends Controller
         return back()->with(['success'=>'member removed']);
     }
 
-    public function changeRoles(Request $request, Team $team)
+    public function changeRole(Request $request, Team $team)
     {
+
+        $user = Auth::user();
         // Authorize the action (ensure the user can update the team)
-        Gate::authorize('update', $team);
+        Gate::authorize('changeRole',$user, $team);
 
         // Validate the request data
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id', // User ID to update
-            'role' => 'required|in:member,viewer', // New role (cannot be 'admin')
+            'user_id' => 'required|exists:user', // User ID to update
+            'role' => 'required|in:member,viewer,admin', // New role (cannot be 'admin')
         ]);
 
         // Ensure the user is part of the team
@@ -254,6 +256,22 @@ class TeamController extends Controller
         ], 200);
     }
 
+    public function transferOwner(Team $team, Request $request){
+
+        $user = Auth::user();
+
+        Gate::authorize('transferOwner', $user,$team);
+        $validated = $request->validate([
+        'id' => 'required|exists:user'
+        ]);
+
+        $team->users()->where('user_id',$validated['id'])->updateExistingPivot('role','owner');
+        $team->users()->where('user_id',$user->id)->delete();
+
+        return redirect('/');
+
+    }
+
     public function leaveTeam(Team $team)
     {
         $user = Auth::user();
@@ -270,69 +288,22 @@ class TeamController extends Controller
         // Get the user's role
         $role = $userInTeam->pivot->role;
 
-        if ($role === 'admin') {
-            // Try to find another member or viewer to promote
-            $newAdmin = $team->users()
-                ->where('user_id', '!=', $user->id)
-                ->whereIn('role', ['member', 'viewer'])
-                ->first();
+        if ($role === 'owner') {
 
-            if (!$newAdmin) {
-                return response()->json([
-                    'message' => 'You are the only member in the team. Cannot leave without assigning a new admin.',
-                ], 403);
-            }
-
-            $team->users()->updateExistingPivot($newAdmin->id, ['role' => 'admin']);
+            return back()->with([
+                'error' => 'please transfer ownership'
+            ]);
         }
 
         $team->users()->detach($user->id);
 
-        return response()->json([
-            'message' => 'You have left the team successfully.',
-        ], 200);
-    }
 
-
-    public function changeAdmin(Request $request, Team $team)
-    {
-        // Authorize the action (ensure the user can update the team)
-        Gate::authorize('update', $team);
-
-        // Validate the request data
-        $validated = $request->validate([
-            'id' => 'required|exists:users,id', // New admin's user ID
-        ]);
-
-        // Ensure the new admin is part of the team
-        if (!$team->users()->where('user_id', $validated['id'])->exists()) {
-            return response()->json([
-                'message' => 'The new admin is not part of this team.',
-            ], 404);
-        }
-
-        $currentAdmin = $team->users()->wherePivot('role', 'admin')->first();
-
-        if ($currentAdmin) {
-            $team->users()->updateExistingPivot($currentAdmin->id, [
-                'role' => 'member',
-            ]);
-        }
-
-        $team->users()->updateExistingPivot($validated['id'], [
-            'role' => 'admin',
-        ]);
-
-        // Return the updated team as a JSON response
-        return response()->json([
-            'message' => 'admin changed successfully',
-            'data' => $team->load('users'), // Load related users
-        ], 200);
     }
 
     public function generateURL(Team $team){
 
-        Gate::authorize('update',$team);
+        $user = Auth::user();
+        Gate::authorize('generateURL',$user,$team);
         $url = URL::signedRoute('joinTeam',['teamId'=> $team->id]);
 
         return Inertia::render('team/{team}/joinLink',['url'=>$url]);
@@ -340,46 +311,19 @@ class TeamController extends Controller
 
     public function joinTeam(Team $team, Request $request)
     {
-        // $request->validate([
-        //     'url' => 'required|url'
-        // ]);
         if (! $request->hasValidSignature()) {
                 abort(401);
         }
 
         $user = Auth::user();
         $team->users()->attach($user->id);
-        // if(! $request->hasValidSignature()){
-        //     abort(401);
-        // }
-        // Find team by code
-        // $team = Team::where('code', $request->code)->first();
-
-        // if (!$team) {
-            // return response()->json([
-                // 'message' => 'Invalid team code.'
-            // ], 404);
-        // }
-
-        // Check if user is already part of the team
-        // if ($team->users()->where('user_id', $user->id)->exists()) {
-        //     return response()->json([
-        //         'message' => 'You are already a member of this team.'
-        //     ], 200);
-        // }
-        //
-        // // Attach user to the team
-        // $team->users()->attach($user->id);
-        //
-        // return response()->json([
-        //     'message' => 'Joined team successfully.',
-        //     'team' => $team
-        // ], 200);
     }
 
     public function getTeamById($id)
     {
         $team = Team::with('users')->find($id);
+
+        Gate::authorize('getTeamById',Auth::user(),$team);
 
         if (!$team) {
             return response()->json([

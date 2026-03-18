@@ -21,7 +21,7 @@ class TeamPolicy
      */
     public function view(User $user, Team $team): bool
     {
-        return true;
+        return $team->users()->where('user_id',$user->id)->exists();
     }
 
     /**
@@ -41,6 +41,29 @@ class TeamPolicy
         ->where('user_id', $user->id)
         ->wherePivot('role', 'owner')
         ->exists();
+    }
+
+    public function addMember(User $user, Team $team){
+
+        return $team->users()->where('user_id',$user->id)->wherePivot('role','owner')->exists();
+    }
+
+    public function changeRole(User $user, Team $team){
+
+        return $team->users()->where('user_id',$user->id)->wherePivot('role','owner')->exists();
+    }
+
+    public function transferOwner(User $user, Team $team){
+        return $team->users()->where('user_id',$user->id)->wherePivot('role','owner')->exists();
+    }
+
+
+    public function generateURL(User $user, Team $team){
+        return $team->users()->where('user_id',$user->id)->wherePivot('role','owner')->exists();
+    }
+
+        public function getTeamById(User $user, Team $team){
+        return $team->users()->where('user_id',$user->id)->exists();
     }
 
     /**
