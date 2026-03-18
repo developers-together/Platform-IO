@@ -127,7 +127,7 @@
 <AppLayout>
 <div class="teams-page">
   <p class="feature-preview-banner" data-test="teams-preview-banner">{FEATURE_STATUS_NOTE}</p>
-  <div class="feature-preview-disabled" aria-disabled="true" inert>
+  <div class="feature-preview-disabled" aria-disabled="true" title={FEATURE_STATUS_NOTE} inert>
   <!-- Header -->
   <div class="teams-header">
     <button
