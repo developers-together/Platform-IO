@@ -249,14 +249,14 @@
           <li class="empty-channel-state">No channels yet</li>
         {:else}
           {#each channels as ch (ch.id)}
-            <li class:active-chat={activeChannel?.id === ch.id} on:click={() => selectChannel(ch)} role="button" tabindex="0" on:keydown={(e) => { if (e.key === 'Enter') selectChannel(ch); }}>
+            <li class:active-chat={activeChannel?.id === ch.id}>
               {#if editChannelId === ch.id}
                 <div class="channel-edit-container">
                   <input class="task-edit-input" bind:value={editChannelName} on:keydown={(e) => { if (e.key === 'Enter') renameChannel(); }} />
                   <button on:click={renameChannel}>Save</button>
                 </div>
               {:else}
-                <span>{ch.name}</span>
+                <button type="button" class="channel-row-btn" on:click={() => selectChannel(ch)}>{ch.name}</button>
                 <div class="channel-actions">
                   <button class="channel-menu-btn" on:click|stopPropagation={() => channelMenuId = channelMenuId === ch.id ? null : ch.id}>⋯</button>
                   {#if channelMenuId === ch.id}
@@ -364,6 +364,7 @@
   .left-card-content li.empty-channel-state { cursor: default; color: #6b7280; justify-content: center; }
   .left-card-content li.empty-channel-state:hover { background: transparent; transform: none; }
   .active-chat { background-color: #e3f2fd !important; font-weight: 600; }
+  .channel-row-btn { border: none; background: transparent; padding: 0; text-align: left; flex: 1; cursor: pointer; font-size: 1rem; color: inherit; }
 
   .channel-actions { position: relative; }
   .channel-menu-btn { background: none; border: none; padding: 4px; cursor: pointer; color: #666; font-size: 1.2rem; }
