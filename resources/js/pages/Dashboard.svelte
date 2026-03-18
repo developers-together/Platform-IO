@@ -146,9 +146,9 @@
   <div class="dashboard-grid">
     <!-- TASKS CARD -->
     <div class="card tasks-card">
-      <h3 on:click={() => goto('/workspace/tasks')} style="cursor:pointer">
-        My Tasks <span class="locked-tag">Preview</span>
-      </h3>
+      <button type="button" class="card-title-link" on:click={() => goto('/workspace/tasks')}>
+        <span>My Tasks</span> <span class="locked-tag">Preview</span>
+      </button>
       <ul>
         {#if tasks.length === 0}
           <li style="color:gray">No tasks yet</li>
@@ -349,6 +349,17 @@
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
   }
   .card h3 { margin: 0 0 15px; font-size: 1.5rem; }
+  .card-title-link {
+    margin: 0 0 15px;
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    color: inherit;
+  }
   .card ul { list-style: none; margin: 0; padding: 0; flex: 1; overflow-y: auto; }
   .card li { display: flex; align-items: center; margin-bottom: 10px; font-size: 1rem; }
 
