@@ -364,6 +364,11 @@
     cursor: pointer;
     color: inherit;
   }
+  .card-title-link:focus-visible {
+    outline: 2px solid #2b5ce7;
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
   .card ul { list-style: none; margin: 0; padding: 0; flex: 1; overflow-y: auto; }
   .card li { display: flex; align-items: center; margin-bottom: 10px; font-size: 1rem; }
 
@@ -446,6 +451,10 @@
     text-align: center; position: relative; font-size: 0.8rem; width: 100%; height: 100%;
     border: none; cursor: pointer;
   }
+  .calendar-day:focus-visible {
+    outline: 2px solid #2b5ce7;
+    outline-offset: -2px;
+  }
   .event-dot {
     position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
     width: 6px; height: 6px; background-color: #f13e3c; border-radius: 50%;
@@ -464,6 +473,10 @@
     background: #ebecec; padding: 10px 14px; display: flex; align-items: center;
     justify-content: left; cursor: pointer; transition: background 0.2s; gap: 6px;
     border: none; width: 100%; text-align: left;
+  }
+  .chat-group-header:focus-visible {
+    outline: 2px solid #2b5ce7;
+    outline-offset: -2px;
   }
   .chat-group-header:hover { background: #e2e3e3; }
   .chat-group-name { font-weight: 500; color: #333; }
