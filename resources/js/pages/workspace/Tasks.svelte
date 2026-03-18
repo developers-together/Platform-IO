@@ -1,786 +1,272 @@
-<script lang="ts">
-    import { onMount } from 'svelte';
-    import AppHead from '@/components/AppHead.svelte';
-    import { Badge } from '@/components/ui/badge';
-    import { Button } from '@/components/ui/button';
-    import {
-        Card,
-        CardContent,
-        CardDescription,
-        CardHeader,
-        CardTitle,
-    } from '@/components/ui/card';
-    import AppLayout from '@/layouts/AppLayout.svelte';
-    import {
-        createTask,
-        deleteTask,
-        fetchTeamTasks,
-        updateTask,
-    } from '@/lib/api/tasks';
-    import { fetchUserTeams } from '@/lib/api/teams';
-    import {
-        initializeWorkspaceTeam,
-        setWorkspaceTeam,
-        workspaceState,
-    } from '@/lib/workspace.svelte';
-    import { workspaceTasks } from '@/lib/appRoutes';
-    import type {
-        BreadcrumbItem,
-        TaskSummary,
-        TaskUpdatePayload,
-        TeamSummary,
-    } from '@/types';
+<svelte:options runes={false} />
 
-    const breadcrumbs: BreadcrumbItem[] = [
-        {
-            title: 'Tasks',
-            href: workspaceTasks(),
-        },
-    ];
+<script>
+  import AppHead from '@/components/AppHead.svelte';
+  import AppLayout from '@/layouts/AppLayout.svelte';
 
-    const workspace = workspaceState();
-    let teams = $state<TeamSummary[]>([]);
-    let selectedTeamId = $state<number | null>(workspace.selectedTeamId);
+  // Preview mode keeps the full tasks UI visible while backend work continues.
+  // TODO(back-end): re-enable endpoint wiring and remove preview lock when stable.
+  const FEATURE_STATUS_NOTE = 'Tasks is currently in preview mode. Backend actions are temporarily disabled.';
 
-    let loading = $state(true);
-    let busyTaskId = $state<number | null>(null);
-    let busyAction = $state<'create' | 'update' | 'delete' | ''>('');
+  let tasks = [
+    {
+      id: 201,
+      title: 'Define sprint outcomes',
+      description: 'Capture acceptance criteria for this sprint.',
+      completed: false,
+      stared: true,
+      end: '2026-03-22',
+      start: '2026-03-18',
+      category: 'Planning',
+    },
+    {
+      id: 202,
+      title: 'Review bug backlog',
+      description: 'Prioritize open regression issues before release.',
+      completed: false,
+      stared: false,
+      end: '2026-03-24',
+      start: '2026-03-18',
+      category: 'QA',
+    },
+    {
+      id: 203,
+      title: 'Prepare deployment checklist',
+      description: 'List rollback and smoke-test steps.',
+      completed: false,
+      stared: false,
+      end: '2026-03-26',
+      start: '2026-03-18',
+      category: 'Release',
+    },
+  ];
+  let completedTasks = [
+    {
+      id: 204,
+      title: 'Finalize design review',
+      description: 'Shared handoff notes with engineering.',
+      completed: true,
+      stared: false,
+      end: '2026-03-17',
+      start: '2026-03-16',
+      category: 'Design',
+    },
+  ];
+  let newTaskTitle = '';
+  let expandedId = null;
+  let editingTask = null;
+  let confirmDeleteId = null;
+  let completedOpen = false;
 
-    let tasks = $state<TaskSummary[]>([]);
-    let error = $state('');
-    let success = $state('');
+  // TODO(back-end): wire to POST /api/tasks/{teamId}/store.
+  async function addTask() {
+    void newTaskTitle;
+  }
 
-    let newTaskTitle = $state('');
-    let newTaskDescription = $state('');
-    let newTaskDueDate = $state('');
+  // TODO(back-end): wire to DELETE /api/tasks/{id}/delete.
+  async function deleteTask(id) {
+    void id;
+  }
 
-    let showCompleted = $state(false);
-    let expandedTaskIds = $state<number[]>([]);
-    let editingTaskId = $state<number | null>(null);
-    let editingTitle = $state('');
-    let editingDescription = $state('');
-    let editingDueDate = $state('');
-    let confirmDeleteTaskId = $state<number | null>(null);
-    let editedTaskId = $state<number | null>(null);
+  // TODO(back-end): wire to PUT /api/tasks/{id}/update.
+  async function toggleComplete(task) {
+    void task;
+  }
 
-    const parseDate = (value: string | null): Date | null => {
-        if (!value) return null;
-        const parsed = new Date(value);
-        return Number.isNaN(parsed.getTime()) ? null : parsed;
-    };
+  // TODO(back-end): wire to PUT /api/tasks/{id}/update (stared field).
+  async function toggleStar(task) {
+    void task;
+  }
 
-    const toDateInputValue = (value: string | null): string => {
-        const parsed = parseDate(value);
-        if (!parsed) {
-            return '';
-        }
-
-        const pad = (part: number) => String(part).padStart(2, '0');
-        const year = parsed.getFullYear();
-        const month = pad(parsed.getMonth() + 1);
-        const day = pad(parsed.getDate());
-        const hour = pad(parsed.getHours());
-        const minute = pad(parsed.getMinutes());
-        return `${year}-${month}-${day}T${hour}:${minute}`;
-    };
-
-    const formatDate = (value: string | null): string => {
-        const parsed = parseDate(value);
-        if (!parsed) return 'No date';
-
-        return parsed.toLocaleString([], {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    };
-
-    const sortTasks = (list: TaskSummary[]): TaskSummary[] =>
-        [...list].sort((a, b) => {
-            if (a.starred !== b.starred) {
-                return a.starred ? -1 : 1;
-            }
-
-            const aDue =
-                parseDate(a.endAt)?.getTime() ?? Number.MAX_SAFE_INTEGER;
-            const bDue =
-                parseDate(b.endAt)?.getTime() ?? Number.MAX_SAFE_INTEGER;
-            if (aDue !== bDue) {
-                return aDue - bDue;
-            }
-
-            return b.id - a.id;
-        });
-
-    const buildUpdatePayload = (
-        task: TaskSummary,
-        overrides: Partial<TaskUpdatePayload>,
-    ): TaskUpdatePayload => ({
-        title: task.title,
-        description: task.description,
-        completed: task.completed,
-        stared: task.starred,
-        start: task.startAt,
-        end: task.endAt,
-        category: 'General',
-        ...overrides,
-    });
-
-    const activeTasks = $derived(
-        sortTasks(tasks.filter((task) => !task.completed)),
-    );
-    const completedTasks = $derived(
-        sortTasks(tasks.filter((task) => task.completed)),
-    );
-
-    const getMessage = (err: unknown): string => {
-        if (err instanceof Error) return err.message;
-        return 'Request failed.';
-    };
-
-    const clearMessages = () => {
-        error = '';
-        success = '';
-    };
-
-    const setEditedPulse = (taskId: number) => {
-        editedTaskId = taskId;
-        setTimeout(() => {
-            if (editedTaskId === taskId) {
-                editedTaskId = null;
-            }
-        }, 1100);
-    };
-
-    const clearEditState = () => {
-        editingTaskId = null;
-        editingTitle = '';
-        editingDescription = '';
-        editingDueDate = '';
-    };
-
-    const loadTasks = async () => {
-        if (!selectedTeamId) {
-            tasks = [];
-            return;
-        }
-
-        loading = true;
-        clearMessages();
-
-        try {
-            tasks = await fetchTeamTasks(selectedTeamId);
-        } catch (err) {
-            tasks = [];
-            error = getMessage(err);
-        } finally {
-            loading = false;
-        }
-    };
-
-    const loadTeamsAndTasks = async () => {
-        loading = true;
-
-        try {
-            teams = await fetchUserTeams();
-            const stored = initializeWorkspaceTeam();
-            const selected = teams.find((team) => team.id === stored);
-            selectedTeamId = selected ? selected.id : (teams[0]?.id ?? null);
-            setWorkspaceTeam(selectedTeamId);
-            await loadTasks();
-        } catch (err) {
-            teams = [];
-            selectedTeamId = null;
-            tasks = [];
-            error = getMessage(err);
-            loading = false;
-        }
-    };
-
-    const selectTeam = async (event: Event) => {
-        const target = event.currentTarget as HTMLSelectElement;
-        const value = Number(target.value);
-        selectedTeamId = Number.isFinite(value) && value > 0 ? value : null;
-        setWorkspaceTeam(selectedTeamId);
-        clearEditState();
-        expandedTaskIds = [];
-        confirmDeleteTaskId = null;
-        await loadTasks();
-    };
-
-    const createNewTask = async () => {
-        clearMessages();
-
-        if (!selectedTeamId) {
-            error = 'Select a team first.';
-            return;
-        }
-
-        if (!newTaskTitle.trim()) {
-            error = 'Task title is required.';
-            return;
-        }
-
-        busyAction = 'create';
-        busyTaskId = -1;
-        try {
-            const created = await createTask(selectedTeamId, {
-                title: newTaskTitle.trim(),
-                description: newTaskDescription.trim(),
-                end: newTaskDueDate || null,
-            });
-
-            if (created) {
-                tasks = [created, ...tasks];
-                setEditedPulse(created.id);
-            }
-
-            newTaskTitle = '';
-            newTaskDescription = '';
-            newTaskDueDate = '';
-            success = 'Task created successfully.';
-        } catch (err) {
-            error = getMessage(err);
-        } finally {
-            busyAction = '';
-            busyTaskId = null;
-        }
-    };
-
-    const toggleExpand = (taskId: number) => {
-        if (expandedTaskIds.includes(taskId)) {
-            expandedTaskIds = expandedTaskIds.filter((id) => id !== taskId);
-        } else {
-            expandedTaskIds = [...expandedTaskIds, taskId];
-        }
-    };
-
-    const startEditTask = (task: TaskSummary) => {
-        clearMessages();
-        editingTaskId = task.id;
-        editingTitle = task.title;
-        editingDescription = task.description;
-        editingDueDate = toDateInputValue(task.endAt);
-        confirmDeleteTaskId = null;
-    };
-
-    const saveTaskEdit = async () => {
-        clearMessages();
-
-        if (!editingTaskId) {
-            error = 'Choose a task to edit.';
-            return;
-        }
-
-        if (!editingTitle.trim()) {
-            error = 'Task title is required.';
-            return;
-        }
-
-        const sourceTask = tasks.find((task) => task.id === editingTaskId);
-        if (!sourceTask) {
-            error = 'Task no longer exists.';
-            clearEditState();
-            return;
-        }
-
-        busyAction = 'update';
-        busyTaskId = editingTaskId;
-        try {
-            const updated = await updateTask(
-                sourceTask.id,
-                buildUpdatePayload(sourceTask, {
-                    title: editingTitle.trim(),
-                    description: editingDescription.trim(),
-                    end: editingDueDate || null,
-                }),
-            );
-
-            tasks = tasks.map((task) =>
-                task.id === sourceTask.id
-                    ? (updated ?? {
-                          ...task,
-                          title: editingTitle.trim(),
-                          description: editingDescription.trim(),
-                          endAt: editingDueDate || null,
-                      })
-                    : task,
-            );
-
-            setEditedPulse(sourceTask.id);
-            clearEditState();
-            success = 'Task updated.';
-        } catch (err) {
-            error = getMessage(err);
-        } finally {
-            busyAction = '';
-            busyTaskId = null;
-        }
-    };
-
-    const toggleCompleted = async (task: TaskSummary) => {
-        clearMessages();
-        busyAction = 'update';
-        busyTaskId = task.id;
-
-        try {
-            const updated = await updateTask(
-                task.id,
-                buildUpdatePayload(task, {
-                    completed: !task.completed,
-                }),
-            );
-
-            tasks = tasks.map((currentTask) =>
-                currentTask.id === task.id
-                    ? (updated ?? {
-                          ...currentTask,
-                          completed: !currentTask.completed,
-                      })
-                    : currentTask,
-            );
-            setEditedPulse(task.id);
-        } catch (err) {
-            error = getMessage(err);
-        } finally {
-            busyAction = '';
-            busyTaskId = null;
-        }
-    };
-
-    const toggleStarred = async (task: TaskSummary) => {
-        clearMessages();
-        busyAction = 'update';
-        busyTaskId = task.id;
-
-        try {
-            const updated = await updateTask(
-                task.id,
-                buildUpdatePayload(task, {
-                    stared: !task.starred,
-                }),
-            );
-
-            tasks = tasks.map((currentTask) =>
-                currentTask.id === task.id
-                    ? (updated ?? {
-                          ...currentTask,
-                          starred: !currentTask.starred,
-                      })
-                    : currentTask,
-            );
-            setEditedPulse(task.id);
-        } catch (err) {
-            error = getMessage(err);
-        } finally {
-            busyAction = '';
-            busyTaskId = null;
-        }
-    };
-
-    const requestDeleteTask = (taskId: number) => {
-        confirmDeleteTaskId = taskId;
-    };
-
-    const removeTask = async (taskId: number) => {
-        clearMessages();
-        busyAction = 'delete';
-        busyTaskId = taskId;
-
-        try {
-            await deleteTask(taskId);
-            tasks = tasks.filter((task) => task.id !== taskId);
-            confirmDeleteTaskId = null;
-            if (editingTaskId === taskId) {
-                clearEditState();
-            }
-            success = 'Task deleted.';
-        } catch (err) {
-            error = getMessage(err);
-        } finally {
-            busyAction = '';
-            busyTaskId = null;
-        }
-    };
-
-    onMount(async () => {
-        await loadTeamsAndTasks();
-    });
+  // TODO(back-end): wire to PUT /api/tasks/{id}/update with edited fields.
+  async function saveEdit() {
+    void editingTask;
+  }
 </script>
 
-<AppHead title="Workspace Tasks" />
+<AppHead title="Tasks" />
 
-<AppLayout {breadcrumbs}>
-    <div
-        class="fx-stagger flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
-        data-test="tasks-page"
-    >
-        <Card>
-            <CardHeader>
-                <CardTitle>Task Board</CardTitle>
-                <CardDescription>
-                    Full workflow parity: create, edit, expand, star, complete,
-                    and delete tasks.
-                </CardDescription>
-            </CardHeader>
-            <CardContent class="space-y-4">
-                <div class="grid gap-3 lg:grid-cols-6">
-                    <label class="flex flex-col gap-1 text-sm lg:col-span-2">
-                        <span class="font-medium">Team</span>
-                        <select
-                            class="fx-input h-10 rounded-md border border-input bg-background px-3"
-                            disabled={teams.length === 0}
-                            value={selectedTeamId ?? ''}
-                            onchange={selectTeam}
-                        >
-                            {#if teams.length === 0}
-                                <option value="">No teams available</option>
-                            {:else}
-                                {#each teams as team (team.id)}
-                                    <option value={team.id}>{team.name}</option>
-                                {/each}
-                            {/if}
-                        </select>
-                    </label>
+<AppLayout>
+<div class="tasks-page">
+  <p class="feature-preview-banner">{FEATURE_STATUS_NOTE}</p>
+  <div class="feature-preview-disabled" aria-disabled="true" inert>
+  <div class="tasks-header">
+    <h1>Tasks</h1>
+  </div>
 
-                    <label class="flex flex-col gap-1 text-sm lg:col-span-2">
-                        <span class="font-medium">Task title</span>
-                        <input
-                            class="fx-input h-10 rounded-md border border-input bg-background px-3"
-                            placeholder="Add a new task..."
-                            value={newTaskTitle}
-                            oninput={(event) => {
-                                const target =
-                                    event.currentTarget as HTMLInputElement;
-                                newTaskTitle = target.value;
-                            }}
-                        />
-                    </label>
+  <div class="tasks-group">
+    <div class="tasks-list">
+      {#each tasks as task (task.id)}
+        {#if editingTask && editingTask.id === task.id}
+          <div class="task-edit-form">
+            <div class="task-edit-content">
+              <div class="edit-field">
+                <label>Title</label>
+                <input class="task-edit-input" bind:value={editingTask.title} />
+              </div>
+              <div class="edit-field">
+                <label>Description</label>
+                <textarea class="task-edit-description" bind:value={editingTask.description}></textarea>
+              </div>
+              <div class="edit-field">
+                <label>Due Date</label>
+                <input type="date" class="task-edit-due" bind:value={editingTask.end} />
+              </div>
+            </div>
+            <div class="edit-form-actions">
+              <button class="save-button" on:click={saveEdit}>Save</button>
+              <button class="cancel-button" on:click={() => { editingTask = null; }}>Cancel</button>
+            </div>
+          </div>
+        {:else}
+          <div class="task-row" class:starred={task.stared}>
+            <div class="task-content">
+              <div class="task-left">
+                <button class="check-button" on:click={() => toggleComplete(task)}>
+                  <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                </button>
+                <span class="task-title">{task.title}</span>
+              </div>
 
-                    <label class="flex flex-col gap-1 text-sm lg:col-span-1">
-                        <span class="font-medium">Due date</span>
-                        <input
-                            type="datetime-local"
-                            class="fx-input h-10 rounded-md border border-input bg-background px-3"
-                            value={newTaskDueDate}
-                            oninput={(event) => {
-                                const target =
-                                    event.currentTarget as HTMLInputElement;
-                                newTaskDueDate = target.value;
-                            }}
-                        />
-                    </label>
+              <div class="task-center">
+                {#if task.end}
+                  <span class="due-label">Due:</span>{task.end}
+                {/if}
+              </div>
 
-                    <div class="flex items-end lg:col-span-1">
-                        <Button
-                            class="w-full"
-                            disabled={busyAction === 'create' ||
-                                !selectedTeamId}
-                            onClick={createNewTask}
-                        >
-                            {busyAction === 'create'
-                                ? 'Creating...'
-                                : 'Create Task'}
-                        </Button>
-                    </div>
+              <div class="task-right">
+                <button class="caret-button" on:click={() => expandedId = expandedId === task.id ? null : task.id}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points={expandedId === task.id ? "18 15 12 9 6 15" : "6 9 12 15 18 9"}/></svg>
+                </button>
+                <span class="star-icon" class:active={task.stared} role="button" tabindex="0" on:click={() => toggleStar(task)} on:keydown={(e) => { if (e.key === 'Enter') toggleStar(task); }}>★</span>
+                <span class="edit-icon" role="button" tabindex="0" on:click={() => { editingTask = {...task}; }} on:keydown={(e) => { if (e.key === 'Enter') editingTask = {...task}; }}>✏️</span>
+                <span class="delete-icon" role="button" tabindex="0" on:click={() => { confirmDeleteId = task.id; }} on:keydown={(e) => { if (e.key === 'Enter') confirmDeleteId = task.id; }}>🗑️</span>
+              </div>
+            </div>
+
+            {#if confirmDeleteId === task.id}
+              <div class="confirm-dialog">
+                <span>Delete?</span>
+                <div class="confirm-buttons">
+                  <button class="confirm-yes" on:click={() => deleteTask(task.id)}>Yes</button>
+                  <button class="confirm-no" on:click={() => { confirmDeleteId = null; }}>No</button>
                 </div>
+              </div>
+            {/if}
 
-                <label class="flex flex-col gap-1 text-sm">
-                    <span class="font-medium">Description</span>
-                    <textarea
-                        class="fx-input min-h-20 rounded-md border border-input bg-background px-3 py-2"
-                        placeholder="Optional task details"
-                        value={newTaskDescription}
-                        oninput={(event) => {
-                            const target =
-                                event.currentTarget as HTMLTextAreaElement;
-                            newTaskDescription = target.value;
-                        }}
-                    ></textarea>
-                </label>
-            </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader>
-                <CardTitle>Active Tasks ({activeTasks.length})</CardTitle>
-                <CardDescription>
-                    Star priority tasks, open details, and edit inline.
-                </CardDescription>
-            </CardHeader>
-            <CardContent class="space-y-3">
-                {#if loading}
-                    <p class="text-sm text-muted-foreground">
-                        Loading active tasks...
-                    </p>
-                {:else if activeTasks.length === 0}
-                    <p class="text-sm text-muted-foreground">
-                        No active tasks.
-                    </p>
-                {:else}
-                    {#each activeTasks as task (task.id)}
-                        {#if editingTaskId === task.id}
-                            <div
-                                class="space-y-3 rounded-md border p-3 text-sm"
-                            >
-                                <div class="grid gap-3 lg:grid-cols-3">
-                                    <label class="flex flex-col gap-1">
-                                        <span class="font-medium">Title</span>
-                                        <input
-                                            class="fx-input h-10 rounded-md border border-input bg-background px-3"
-                                            value={editingTitle}
-                                            oninput={(event) => {
-                                                const target =
-                                                    event.currentTarget as HTMLInputElement;
-                                                editingTitle = target.value;
-                                            }}
-                                        />
-                                    </label>
-                                    <label class="flex flex-col gap-1">
-                                        <span class="font-medium">Due date</span
-                                        >
-                                        <input
-                                            type="datetime-local"
-                                            class="fx-input h-10 rounded-md border border-input bg-background px-3"
-                                            value={editingDueDate}
-                                            oninput={(event) => {
-                                                const target =
-                                                    event.currentTarget as HTMLInputElement;
-                                                editingDueDate = target.value;
-                                            }}
-                                        />
-                                    </label>
-                                    <div
-                                        class="flex items-end justify-start gap-2 lg:justify-end"
-                                    >
-                                        <Button
-                                            size="sm"
-                                            disabled={busyTaskId === task.id}
-                                            onClick={saveTaskEdit}
-                                        >
-                                            Save
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            disabled={busyTaskId === task.id}
-                                            onClick={clearEditState}
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </div>
-                                </div>
-                                <label class="flex flex-col gap-1">
-                                    <span class="font-medium">Description</span>
-                                    <textarea
-                                        class="fx-input min-h-24 rounded-md border border-input bg-background px-3 py-2"
-                                        value={editingDescription}
-                                        oninput={(event) => {
-                                            const target =
-                                                event.currentTarget as HTMLTextAreaElement;
-                                            editingDescription = target.value;
-                                        }}
-                                    ></textarea>
-                                </label>
-                            </div>
-                        {:else}
-                            <div
-                                class="rounded-md border p-3 text-sm {task.starred
-                                    ? 'border-amber-400 bg-amber-500/5'
-                                    : ''} {editedTaskId === task.id
-                                    ? 'ring-1 ring-emerald-500'
-                                    : ''}"
-                            >
-                                <div
-                                    class="mb-2 flex flex-wrap items-start justify-between gap-2"
-                                >
-                                    <div class="space-y-1">
-                                        <div class="flex items-center gap-2">
-                                            <p class="font-medium">
-                                                {task.title}
-                                            </p>
-                                            {#if task.starred}
-                                                <Badge>Starred</Badge>
-                                            {/if}
-                                        </div>
-                                        {#if task.endAt}
-                                            <p class="text-muted-foreground">
-                                                Due: {formatDate(task.endAt)}
-                                            </p>
-                                        {/if}
-                                    </div>
-                                    <div class="flex flex-wrap gap-2">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            disabled={busyTaskId === task.id}
-                                            onClick={() =>
-                                                toggleCompleted(task)}
-                                        >
-                                            Complete
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            disabled={busyTaskId === task.id}
-                                            onClick={() => toggleStarred(task)}
-                                        >
-                                            {task.starred ? 'Unstar' : 'Star'}
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            disabled={busyTaskId === task.id}
-                                            onClick={() => startEditTask(task)}
-                                        >
-                                            Edit
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() =>
-                                                toggleExpand(task.id)}
-                                        >
-                                            {expandedTaskIds.includes(task.id)
-                                                ? 'Hide'
-                                                : 'Details'}
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="destructive"
-                                            disabled={busyTaskId === task.id}
-                                            onClick={() =>
-                                                requestDeleteTask(task.id)}
-                                        >
-                                            Delete
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                {#if confirmDeleteTaskId === task.id}
-                                    <div
-                                        class="mb-2 flex items-center gap-2 rounded-md border border-red-300 bg-red-500/10 p-2 text-xs"
-                                    >
-                                        <span>Delete this task?</span>
-                                        <Button
-                                            size="sm"
-                                            variant="destructive"
-                                            disabled={busyTaskId === task.id}
-                                            onClick={() => removeTask(task.id)}
-                                        >
-                                            Confirm
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            disabled={busyTaskId === task.id}
-                                            onClick={() => {
-                                                confirmDeleteTaskId = null;
-                                            }}
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </div>
-                                {/if}
-
-                                {#if expandedTaskIds.includes(task.id)}
-                                    <div
-                                        class="space-y-1 rounded-md border bg-muted/30 p-2 text-xs"
-                                    >
-                                        <p>
-                                            <span class="font-semibold"
-                                                >Description:</span
-                                            >
-                                            {task.description ||
-                                                'No description'}
-                                        </p>
-                                        <p>
-                                            <span class="font-semibold"
-                                                >Created:</span
-                                            >
-                                            {formatDate(task.createdAt)}
-                                        </p>
-                                        <p>
-                                            <span class="font-semibold"
-                                                >Due:</span
-                                            >
-                                            {formatDate(task.endAt)}
-                                        </p>
-                                    </div>
-                                {/if}
-                            </div>
-                        {/if}
-                    {/each}
-                {/if}
-            </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader>
-                <CardTitle>Completed Tasks ({completedTasks.length})</CardTitle>
-                <CardDescription>
-                    Expand to review finished work and re-open tasks.
-                </CardDescription>
-            </CardHeader>
-            <CardContent class="space-y-3">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                        showCompleted = !showCompleted;
-                    }}
-                >
-                    {showCompleted ? 'Hide Completed' : 'Show Completed'}
-                </Button>
-
-                {#if showCompleted}
-                    {#if completedTasks.length === 0}
-                        <p class="text-sm text-muted-foreground">
-                            No completed tasks yet.
-                        </p>
-                    {:else}
-                        {#each completedTasks as task (task.id)}
-                            <div
-                                class="flex flex-wrap items-center justify-between gap-2 rounded-md border p-3 text-sm"
-                            >
-                                <div>
-                                    <p class="font-medium">{task.title}</p>
-                                    <p class="text-xs text-muted-foreground">
-                                        Completed item
-                                    </p>
-                                </div>
-                                <div class="flex gap-2">
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        disabled={busyTaskId === task.id}
-                                        onClick={() => toggleCompleted(task)}
-                                    >
-                                        Re-open
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        disabled={busyTaskId === task.id}
-                                        onClick={() => toggleStarred(task)}
-                                    >
-                                        {task.starred ? 'Unstar' : 'Star'}
-                                    </Button>
-                                </div>
-                            </div>
-                        {/each}
-                    {/if}
-                {/if}
-            </CardContent>
-        </Card>
-
-        {#if error}
-            <p class="text-sm text-red-600">{error}</p>
+            {#if expandedId === task.id}
+              <div class="task-extra">
+                <p>{task.description || 'No description'}</p>
+              </div>
+            {/if}
+          </div>
         {/if}
-        {#if success}
-            <p class="text-sm text-green-600">{success}</p>
-        {/if}
+      {/each}
     </div>
+  </div>
+
+  <!-- Completed Section -->
+  <div class="completed-section">
+    <div class="completed-header" on:click={() => { completedOpen = !completedOpen; }} role="button" tabindex="0" on:keydown={(e) => { if (e.key === 'Enter') completedOpen = !completedOpen; }}>
+      <span>Completed ({completedTasks.length})</span>
+      <span>{completedOpen ? '▲' : '▼'}</span>
+    </div>
+    {#if completedOpen}
+      <div class="completed-list">
+        {#each completedTasks as task (task.id)}
+          <div class="completed-task">
+            <span class="completed-icon" role="button" tabindex="0" on:click={() => toggleComplete(task)} on:keydown={(e) => { if (e.key === 'Enter') toggleComplete(task); }}>✅</span>
+            <span>{task.title}</span>
+          </div>
+        {/each}
+      </div>
+    {/if}
+  </div>
+
+  <!-- Add Task Bar -->
+  <div class="add-task-container">
+    <input
+      type="text"
+      placeholder="Add a new task..."
+      bind:value={newTaskTitle}
+      on:keydown={(e) => { if (e.key === 'Enter') addTask(); }}
+    />
+    <button class="add-button" on:click={addTask}>
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+  </div>
+</div>
 </AppLayout>
+
+<style>
+  .tasks-page { padding: 1rem; height: calc(100vh - 60px); display: flex; flex-direction: column; background: #f9fafc; width: 100%; overflow: hidden; }
+  .feature-preview-banner { margin: 0 0 12px; padding: 12px 16px; border-radius: 12px; border: 1px solid #f0d27a; background: #fff6db; color: #6a5000; font-size: 0.95rem; font-weight: 500; }
+  .feature-preview-disabled { pointer-events: none; opacity: 0.88; filter: saturate(0.9); }
+  .tasks-header h1 { font-size: 2rem; color: #2d3748; font-weight: 600; margin-bottom: 20px; }
+  .tasks-group { flex: 1; overflow-y: auto; padding-bottom: 1rem; }
+  .tasks-list { display: flex; flex-direction: column; gap: 0.8rem; }
+
+  .task-row { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.04); animation: slideIn 0.3s ease both; transition: var(--transition); }
+  .task-row.starred { border: 2px solid #f6e05e; background-color: #fffcf0; box-shadow: 0 2px 8px rgba(246,224,94,0.15); }
+
+  .task-content { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .task-left { display: flex; align-items: center; gap: 0.5rem; }
+  .task-title { font-weight: 700; font-size: 1rem; color: #2d3748; }
+  .task-center { flex: 1; text-align: center; color: #a0aec0; font-size: 0.95rem; }
+  .task-right { display: flex; gap: 0.6rem; align-items: center; }
+  .due-label { font-weight: 500; margin-right: 4px; }
+
+  .check-button { background: none; border: none; cursor: pointer; padding: 0; }
+  .check-icon { color: #cbd5e0; transition: var(--transition); }
+  .check-button:hover .check-icon { color: #4299e1; transform: scale(1.1); }
+
+  .caret-button { background: none; border: none; cursor: pointer; color: #718096; transition: transform 0.2s ease; padding: 0; }
+  .caret-button:hover { transform: scale(1.2); }
+
+  .star-icon, .edit-icon, .delete-icon { font-size: 1.3rem; cursor: pointer; transition: var(--transition); }
+  .star-icon:hover { transform: scale(1.2); color: #f6ad55; }
+  .star-icon.active { color: #f6ad55; }
+  .edit-icon:hover { color: #4299e1; transform: scale(1.1); }
+  .delete-icon:hover { color: #f56565; transform: scale(1.1); }
+
+  .confirm-dialog { position: relative; background: white; padding: 0.8rem 1rem; border-radius: 8px; box-shadow: var(--shadow-light); display: flex; gap: 1rem; align-items: center; border: 1px solid #e2e8f0; height: 60px; width: 260px; z-index: 1000; margin-top: 8px; }
+  .confirm-buttons { display: flex; gap: 0.5rem; }
+  .confirm-yes, .confirm-no { padding: 0.4rem 0.6rem; border: 2px solid; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: white; }
+  .confirm-yes { background: #48bb78; }
+  .confirm-no { background: #f56565; }
+  .confirm-yes:hover { border-color: #48bb78; background: white; color: #48bb78; }
+  .confirm-no:hover { border-color: #f56565; background: white; color: #f56565; }
+
+  .task-extra { margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid #e2e8f0; animation: fadeIn 0.3s ease; }
+  .task-extra p { margin: 0; font-size: 0.95rem; color: #4a5568; }
+
+  .completed-section { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; margin-top: auto; box-shadow: 0 2px 4px rgba(0,0,0,0.04); overflow: hidden; }
+  .completed-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 0.8rem 1rem; background: #f8f9fa; border-radius: 8px; transition: background 0.2s ease; }
+  .completed-header:hover { background: #f1f3f5; }
+  .completed-list { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.5rem; }
+  .completed-task { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #48bb78; }
+  .completed-icon { cursor: pointer; font-size: 1.4rem; transition: transform 0.2s ease; }
+  .completed-icon:hover { transform: scale(1.1); }
+
+  .add-task-container { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1rem 1.5rem; display: flex; gap: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-top: 1rem; }
+  .add-task-container input { flex: 1; padding: 0.8rem 1.2rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; background: #f8f9fa; transition: var(--transition); }
+  .add-task-container input:focus { border-color: #4299e1; outline: none; background: #fff; box-shadow: var(--shadow-focus); }
+  .add-button { background: #0052d4; color: white; border: none; padding: 0.8rem 1.4rem; border-radius: 8px; cursor: pointer; transition: var(--transition); display: flex; align-items: center; }
+  .add-button:hover { background: #0041ac; transform: scale(1.1); }
+
+  .task-edit-form { padding: 1rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; display: flex; flex-direction: column; gap: 1rem; }
+  .task-edit-content { display: flex; flex-direction: column; gap: 1rem; }
+  .edit-field { display: flex; flex-direction: column; gap: 6px; }
+  .edit-field label { font-size: 0.9rem; color: #4a5568; font-weight: 600; }
+  .task-edit-input, .task-edit-due, .task-edit-description { padding: 0.8rem; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 1rem; color: #2d3748; }
+  .task-edit-description { min-height: 80px; resize: vertical; }
+  .edit-form-actions { display: flex; gap: 1rem; justify-content: flex-end; }
+  .save-button, .cancel-button { background: #4dabf7; color: white; padding: 0.8rem 1.4rem; border-radius: 8px; cursor: pointer; transition: var(--transition); }
+  .save-button:hover, .cancel-button:hover { background: #0041ac; transform: scale(1.1); }
+
+  @keyframes slideIn {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+</style>
