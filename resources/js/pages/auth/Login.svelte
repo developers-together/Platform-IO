@@ -45,7 +45,7 @@
         </div>
 
         {#if status}
-            <div class="success-message2">{status}</div>
+            <div class="success-message2" role="status">{status}</div>
         {/if}
 
         <!-- Submit directly to backend auth endpoint -->
@@ -58,7 +58,7 @@
         >
             {#snippet children({ errors, processing })}
                 {#if hasErrors(errors)}
-                    <div class="error-message2">
+                    <div class="error-message2" role="alert">
                         <svg class="error-icon2" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                         <span>{errors.email ?? errors.password}</span>
                     </div>
