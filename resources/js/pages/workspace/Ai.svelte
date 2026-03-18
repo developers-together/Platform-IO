@@ -175,6 +175,13 @@
   .session-list li:hover { background: #f0f0f0; }
   .session-list li.active { background: #e3f2fd; font-weight: 600; }
   .session-row-btn { border: none; background: transparent; padding: 0; text-align: left; flex: 1; cursor: pointer; font-size: 0.9rem; }
+  .session-row-btn:focus-visible,
+  .session-actions button:focus-visible,
+  .ai-input button:focus-visible {
+    outline: 2px solid #2b5ce7;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
   .session-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s; }
   .session-list li:hover .session-actions { opacity: 1; }
   .session-actions button { background: none; border: none; cursor: pointer; font-size: 0.85rem; }
