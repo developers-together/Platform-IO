@@ -143,11 +143,11 @@ class UserController extends Controller
         // if (isset($validatedData['password'])) {
         //     $validatedData['password'] = Hash::make($validatedData['password']);
         // }
-        if($validatedData->hasFile('profile')){
-             if ($user->avatar) {
-                Storage::disk('public')->delete($user->avatar);
+        if($request->hasFile('profile')){
+             if ($user->profile) {
+                Storage::disk('public')->delete($user->profile);
             }
-            $path = $validatedData->file('profile')->store('user_profiles','public');
+            $path = $request->file('profile')->store('user_profiles','public');
             $validatedData['profile']= $path;
         }
 

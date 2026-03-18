@@ -25,6 +25,7 @@ class CreateNewUser implements CreatesNewUsers
             'gender' => 'nullable|string',
             'job' => 'nullable|string',
             'phone' => 'nullable|string',
+            'timezone' => 'required|string|max:50',
             'profile' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
 
         ])->validate();
@@ -42,6 +43,7 @@ class CreateNewUser implements CreatesNewUsers
             'gender'   => $input['gender'] ?? null,
             'job'      => $input['job'] ?? null,
             'phone'    => $input['phone'] ?? null,
+            'timezone' => $input['timezone'],
             'profile'  => $profilePath,
         ]);
     }

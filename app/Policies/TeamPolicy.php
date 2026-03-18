@@ -39,8 +39,8 @@ class TeamPolicy
     {
         return $team->users()
         ->where('user_id', $user->id)
-        ->wherePivot('role', 'leader')
-        ->exists();    
+        ->wherePivot('role', 'owner')
+        ->exists();
     }
 
     /**
@@ -50,8 +50,14 @@ class TeamPolicy
     {
         return $team->users()
         ->where('user_id', $user->id)
-        ->wherePivot('role', 'leader')
-        ->exists(); 
+        ->wherePivot('role', 'owner')
+        ->exists();
+    }
+
+    public function removeMember(User $user, Team $team): bool
+    {
+        return $team->users()->where('user_id',$user->id)
+        ->wherePivot('role','owner')->exists();
     }
 
     /**

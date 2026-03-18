@@ -80,7 +80,7 @@ class TeamController extends Controller
 
         // Storage::makeDirectory('public/teams/'.$team->id);
 
-        $team->users()->attach($userId, ['role' => 'admin']);
+        $team->users()->attach($userId, ['role' => 'owner']);
 
 
         return Inertia::render("/team/{$team->id}",[
@@ -180,8 +180,9 @@ class TeamController extends Controller
 
     public function removeMembers(Request $request, Team $team)
     {
+        $user = Auth::user();
         // Authorize the action (ensure the user can update the team)
-        Gate::authorize('update', $team);
+        Gate::authorize('removeMember',$user, $team);
 
         // Validate the request data
         $validated = $request->validate([
@@ -192,12 +193,15 @@ class TeamController extends Controller
         // $usersInTeam = $team->users()->whereIn('user_id', $validated['user_ids'])->pluck('user_id');
 
         $user = $team->users->where('id','user_id')->first();
-        if($user->role == 'admin'){
+        if($user->role == 'owner'){
             // return Inertia::render('teams/{$team}/removeMember',['status','500']);
             return back()->with([
-                'error' =>'Cannot remove the admin',
+                'error' =>'Cannot remove the owner',
             ]);
         }
+
+        $user = $team->users->where('id','user_id')->first();
+
 
         if ($user->isEmpty()) {
             // return response()->json([
@@ -216,7 +220,8 @@ class TeamController extends Controller
         //     'message' => 'Members removed successfully',
         //     'data' => $team->load('users'), // Load related users
         // ], 200);
-        return Inertia::render('/teams/{$team}');
+        // return Inertia::render('/teams/{$team}');
+        return back()->with(['success'=>'member removed']);
     }
 
     public function changeRoles(Request $request, Team $team)
