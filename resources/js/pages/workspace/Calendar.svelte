@@ -58,15 +58,15 @@
 
 <AppLayout>
 <div class="calendar-page">
-  <p class="feature-preview-banner">{FEATURE_STATUS_NOTE}</p>
+  <p class="feature-preview-banner" data-test="calendar-preview-banner">{FEATURE_STATUS_NOTE}</p>
   <div class="feature-preview-disabled" aria-disabled="true" inert>
-  <div class="calendar-header">
-    <button type="button" class="nav-btn" on:click={prevMonth}>◀</button>
+  <div class="calendar-header" data-test="calendar-header">
+    <button type="button" class="nav-btn" data-test="calendar-prev-month" on:click={prevMonth}>◀</button>
     <h1>{monthName} {year}</h1>
-    <button type="button" class="nav-btn" on:click={nextMonth}>▶</button>
+    <button type="button" class="nav-btn" data-test="calendar-next-month" on:click={nextMonth}>▶</button>
   </div>
 
-  <div class="calendar-grid">
+  <div class="calendar-grid" data-test="calendar-grid">
     <div class="day-name">Sun</div>
     <div class="day-name">Mon</div>
     <div class="day-name">Tue</div>
