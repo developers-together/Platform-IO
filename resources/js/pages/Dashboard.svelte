@@ -164,7 +164,7 @@
                 />
                 <span class="task-name">{task.title}</span>
               </div>
-              <span class="task-options">•••</span>
+              <span class="task-options" aria-hidden="true">•••</span>
             </li>
           {/each}
         {/if}
@@ -276,7 +276,7 @@
                 <div class="event-title">{evt.title}</div>
                 <div class="event-desc">{evt.desc}</div>
               </div>
-              <div class="event-options">•••</div>
+              <div class="event-options" aria-hidden="true">•••</div>
             </li>
           {/each}
         {/if}
