@@ -140,7 +140,7 @@
                 </button>
                 <button type="button" class="star-icon icon-btn" class:active={task.stared} aria-label={`Toggle star for ${task.title}`} on:click={() => toggleStar(task)}>★</button>
                 <button type="button" class="edit-icon icon-btn" aria-label={`Edit ${task.title}`} on:click={() => { editingTask = {...task}; }}>✏️</button>
-                <span class="delete-icon" role="button" tabindex="0" on:click={() => { confirmDeleteId = task.id; }} on:keydown={(e) => { if (e.key === 'Enter') confirmDeleteId = task.id; }}>🗑️</span>
+                <button type="button" class="delete-icon icon-btn" aria-label={`Delete ${task.title}`} on:click={() => { confirmDeleteId = task.id; }}>🗑️</button>
               </div>
             </div>
 
