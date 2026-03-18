@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             // Team-dependent
             ChatSeeder::class,
             CalendarSeeder::class,
+            TaskListSeeder::class,
             TaskSeeder::class,
 
             // Stand-alone

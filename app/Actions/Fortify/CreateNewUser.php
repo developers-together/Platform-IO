@@ -25,17 +25,24 @@ class CreateNewUser implements CreatesNewUsers
             'gender' => 'nullable|string',
             'job' => 'nullable|string',
             'phone' => 'nullable|string',
+            'profile' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
 
         ])->validate();
 
-        return User::create([
-            'name' => $input['name'],
-            'email' => $input['email'],
-            'password' => $input['password'],
-            'password' => $input['password'],
-            'gender' => $input['gender'],
-            'phone' => $input['phone']
+        $profilePath = null;
 
+        if (! empty($input['profile'])) {
+            $profilePath = $input['profile']->store('user_profiles', 'public');
+        }
+
+        return User::create([
+            'name'     => $input['name'],
+            'email'    => $input['email'],
+            'password' => $input['password'],
+            'gender'   => $input['gender'] ?? null,
+            'job'      => $input['job'] ?? null,
+            'phone'    => $input['phone'] ?? null,
+            'profile'  => $profilePath,
         ]);
     }
 }

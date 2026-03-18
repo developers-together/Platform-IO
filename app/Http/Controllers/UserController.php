@@ -9,19 +9,20 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
+    // public function index()
+    // {
         // $users = User::paginate(15);
         // return response()->json($users);
 
 
-    }
+    // }
 /*
     public function login(Request $request){
 
@@ -41,7 +42,7 @@ class UserController extends Controller
 */
 
         // return Inertia::render('auth/Login');
-    }
+    // }
 
     /**
      * Show the form for creating a new resource.
@@ -103,7 +104,7 @@ class UserController extends Controller
         $user = Auth::user();
 
 
-        return Inertia::render('profile',[
+        return Inertia::render('profile/show',[
             'user_data' => $user,
             'contacts' => $user->contacts
 
@@ -135,15 +136,26 @@ class UserController extends Controller
             'job' => 'nullable|string',
             // 'location' => 'nullable|string',
             'phone' => 'nullable|string',
+            'profile' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+
         ]);
 
         // if (isset($validatedData['password'])) {
         //     $validatedData['password'] = Hash::make($validatedData['password']);
         // }
+        if($validatedData->hasFile('profile')){
+             if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $path = $validatedData->file('profile')->store('user_profiles','public');
+            $validatedData['profile']= $path;
+        }
 
         $user->update($validatedData);
 
-        return Inertia::render('update/{$user}',['user' => $user]);
+        return back()->with(['success'=>'user updated sucesfully']);
+
+        // return Inertia::render('update/{$user}',['user' => $user]);
         // return response()->json($user);
     }
 /*
@@ -173,17 +185,19 @@ class UserController extends Controller
     {
         $user = Auth::user();
 
-        $teams = $user->teams->map(function ($team) {
-            return [
-                'id' => $team->id,
-                'name' => $team->name,
-                'projectname' => $team->projectname,
-                'description' => $team->description,
-                // 'code' => $team->code,
-            ];
-        });
+        // $teams = $user->teams->map(function ($team) {
+        //     return [
+        //         'id' => $team->id,
+        //         'name' => $team->name,
+        //         'projectname' => $team->projectname,
+        //         'description' => $team->description,
+        //         // 'code' => $team->code,
+        //     ];
+        // });
 
-        return Inertia::render('teams/', ['teams'=>$teams]);
+        $teams = $user->teams->get();
+
+        return Inertia::render('teams/index', ['teams'=>$teams]);
         // return response()->json($teams);
     }
 

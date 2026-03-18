@@ -11,8 +11,8 @@ class Task extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title','starred','description','deadline',
-    'completed','team_id','priority','parent_task_id'];
+    protected $fillable = ['title', 'description', 'deadline',
+    'completed', 'team_id', 'priority', 'task_list_id'];
 
 
 
@@ -23,6 +23,11 @@ class Task extends Model
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
+    }
+
+    public function taskList(): BelongsTo
+    {
+        return $this->belongsTo(TaskList::class);
     }
 
     public function event(): HasMany

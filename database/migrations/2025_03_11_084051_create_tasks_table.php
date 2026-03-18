@@ -14,15 +14,16 @@ return new class extends Migration
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
             $table->string('title', 150);
-            $table->boolean('starred')->default(false);
+            // $table->boolean('starred')->default(false);
             $table->text('description')->nullable();
             $table->dateTime('deadline')->nullable();
             // $table->dateTime('start')->nullable();
             $table->boolean('completed')->default(false);
             $table->foreignId('team_id')->constrained()->cascadeOnDelete();
             // $table->string("categroy")->nullable();
-            $table->enum('priority', ['must','should','could','willnot']);
-            $table->foreignId('parent_task_id')->nullable()->constrained('tasks')->nullOnDelete();
+            $table->enum('priority', ['high','medium','low'])->default('medium');
+            $table->foreignId('task_list_id')->constrained('task_lists')->onDelete('cascade');
+            // $table->foreignId('parent_task_id')->nullable()->constrained('tasks')->nullOnDelete();
             $table->timestamps();
         });
 

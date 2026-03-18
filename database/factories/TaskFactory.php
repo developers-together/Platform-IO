@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\TaskList;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -18,14 +19,13 @@ class TaskFactory extends Factory
     public function definition(): array
     {
         return [
-            'title'          => fake()->sentence(4),
-            'starred'        => fake()->boolean(20),
-            'description'    => fake()->optional(0.7)->paragraph(),
-            'deadline'       => fake()->optional(0.6)->dateTimeBetween('now', '+3 months'),
-            'completed'      => false,
-            'team_id'        => Team::factory(),
-            'priority'       => fake()->randomElement(['must', 'should', 'could', 'willnot']),
-            'parent_task_id' => null,
+            'title'        => fake()->sentence(4),
+            'description'  => fake()->optional(0.7)->paragraph(),
+            'deadline'     => fake()->optional(0.6)->dateTimeBetween('now', '+3 months'),
+            'completed'    => false,
+            'team_id'      => Team::factory(),
+            'priority'     => fake()->randomElement(['high', 'medium', 'low']),
+            'task_list_id' => TaskList::factory(),
         ];
     }
 
@@ -40,32 +40,22 @@ class TaskFactory extends Factory
     }
 
     /**
-     * Mark the task as starred.
+     * Set task priority to "high".
      */
-    public function starred(): static
+    public function highPriority(): static
     {
         return $this->state(fn (array $attributes) => [
-            'starred' => true,
+            'priority' => 'high',
         ]);
     }
 
     /**
-     * Set task priority to "must".
+     * Set task priority to "low".
      */
-    public function mustPriority(): static
+    public function lowPriority(): static
     {
         return $this->state(fn (array $attributes) => [
-            'priority' => 'must',
-        ]);
-    }
-
-    /**
-     * Set task priority to "should".
-     */
-    public function shouldPriority(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'priority' => 'should',
+            'priority' => 'low',
         ]);
     }
 }
