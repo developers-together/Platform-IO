@@ -101,8 +101,8 @@
           <div class="task-edit-form">
             <div class="task-edit-content">
               <div class="edit-field">
-                <label>Title</label>
-                <input class="task-edit-input" bind:value={editingTask.title} />
+                <label for={`task-title-${task.id}`}>Title</label>
+                <input id={`task-title-${task.id}`} class="task-edit-input" bind:value={editingTask.title} />
               </div>
               <div class="edit-field">
                 <label>Description</label>
