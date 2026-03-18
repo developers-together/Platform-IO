@@ -1,10 +1,13 @@
 <script>
-    import { Form } from '@inertiajs/svelte';
+    import { Form, router } from '@inertiajs/svelte';
     import AppHead from '@/components/AppHead.svelte';
     import { store } from '@/routes/register';
 
+    // Keep links explicit so auth navigation stays predictable.
     const loginPath = '/login';
 
+    // Route helper generated from Laravel routes.
+    // `store.form()` points to POST /register handled by Fortify.
     const hasErrors = (errors) =>
         Boolean(
             errors?.name ||
@@ -12,6 +15,22 @@
                 errors?.password ||
                 errors?.password_confirmation,
         );
+
+    // After successful registration, move authenticated users to dashboard.
+    function redirectToDashboardIfAuthenticated(inertiaPage) {
+        const authenticatedUser = inertiaPage?.props?.auth?.user;
+        const componentName = inertiaPage?.component ?? '';
+
+        if (!authenticatedUser || componentName === 'Dashboard') {
+            return;
+        }
+
+        router.visit('/dashboard', {
+            replace: true,
+            preserveState: false,
+            preserveScroll: false,
+        });
+    }
 </script>
 
 <AppHead title="Register" />
@@ -23,10 +42,14 @@
             <p class="register-subtitle">Get started with your free account</p>
         </div>
 
+        <!-- Submit directly to backend register endpoint -->
         <Form
             {...store.form()}
             resetOnSuccess={['password', 'password_confirmation']}
+            resetOnError={['password', 'password_confirmation']}
+            options={{ preserveScroll: true }}
             class="register-form"
+            onSuccess={redirectToDashboardIfAuthenticated}
         >
             {#snippet children({ errors, processing })}
                 {#if hasErrors(errors)}
@@ -47,6 +70,9 @@
                         autocomplete="name"
                     />
                 </div>
+                {#if errors.name}
+                    <p class="field-error">{errors.name}</p>
+                {/if}
 
                 <div class="input-group">
                     <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
@@ -59,6 +85,9 @@
                         autocomplete="email"
                     />
                 </div>
+                {#if errors.email}
+                    <p class="field-error">{errors.email}</p>
+                {/if}
 
                 <div class="input-group">
                     <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -71,6 +100,9 @@
                         autocomplete="new-password"
                     />
                 </div>
+                {#if errors.password}
+                    <p class="field-error">{errors.password}</p>
+                {/if}
 
                 <div class="input-group">
                     <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -83,6 +115,9 @@
                         autocomplete="new-password"
                     />
                 </div>
+                {#if errors.password_confirmation}
+                    <p class="field-error">{errors.password_confirmation}</p>
+                {/if}
 
                 <button type="submit" class="register-button" disabled={processing}>
                     {#if processing}
@@ -190,6 +225,14 @@
 
     .input-group:focus-within .input-icon {
         color: #1e40af;
+    }
+
+    .field-error {
+        margin: -4px 0 10px;
+        color: #fecaca;
+        font-size: 0.82rem;
+        padding-left: 6px;
+        width: 100%;
     }
 
     .register-input {
