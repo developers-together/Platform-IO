@@ -157,7 +157,7 @@
             options={{ background: '0052d4', color: 'fff', bold: true, rounded: false }}
             className="team-avatar"
           />
-          <button type="button" class="team-menu-btn" on:click={(e) => toggleTeamMenu(team.id, e)}>&#8942;</button>
+          <button type="button" class="team-menu-btn" aria-label={`Open actions for ${team.name}`} on:click={(e) => toggleTeamMenu(team.id, e)}>&#8942;</button>
         </div>
         <div class="team-info">
           <div class="info-item"><span class="info-title">Team Name:</span><span class="info-value">{team.name}</span></div>
@@ -194,7 +194,7 @@
   {#if showAddDialog}
     <div class="add-dialog-overlay">
       <div class="add-dialog-content2">
-        <button type="button" class="close-dialog-btn" on:click={closeAddDialog}>&times;</button>
+        <button type="button" class="close-dialog-btn" aria-label="Close add team dialog" on:click={closeAddDialog}>&times;</button>
         <div class="join-create-options">
           <div class="join-team-box">
             <h3>Join Team</h3>
