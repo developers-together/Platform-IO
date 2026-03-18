@@ -13,10 +13,11 @@
     } = $props();
 </script>
 
-<div class="app-layout">
+<div class="app-layout" data-test="app-sidebar-layout">
     <LegacySidebar />
     <main
         class="content"
+        data-test="app-layout-content"
         style:margin-left={$sidebarOpen
             ? 'var(--sidebar-width-open, 240px)'
             : 'var(--sidebar-width-closed, 70px)'}
