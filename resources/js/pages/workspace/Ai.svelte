@@ -82,13 +82,13 @@
   <div class="ai-sidebar">
     <div class="ai-sidebar-header">
       <h3>🤖 AI Chats</h3>
-      <button on:click={() => showNewSession = !showNewSession}>+</button>
+      <button type="button" on:click={() => showNewSession = !showNewSession}>+</button>
     </div>
 
     {#if showNewSession}
       <div class="new-session-input">
         <input placeholder="Session name" bind:value={newSessionName} on:keydown={(e) => { if (e.key === 'Enter') createSession(); }} />
-        <button on:click={createSession}>Create</button>
+        <button type="button" on:click={createSession}>Create</button>
       </div>
     {/if}
 
@@ -98,15 +98,15 @@
           {#if editSessionId === session.id}
             <div class="edit-session">
               <input bind:value={editSessionName} on:keydown={(e) => { if (e.key === 'Enter') renameSession(); }} />
-              <button on:click={renameSession}>✓</button>
+              <button type="button" on:click={renameSession}>✓</button>
             </div>
           {:else}
             <button type="button" class="session-row-btn" on:click={() => selectSession(session)}>
               <span>{session.name}</span>
             </button>
             <div class="session-actions">
-              <button on:click|stopPropagation={() => { editSessionId = session.id; editSessionName = session.name; }}>✏️</button>
-              <button on:click|stopPropagation={() => deleteSession(session.id)}>🗑️</button>
+              <button type="button" on:click|stopPropagation={() => { editSessionId = session.id; editSessionName = session.name; }}>✏️</button>
+              <button type="button" on:click|stopPropagation={() => deleteSession(session.id)}>🗑️</button>
             </div>
           {/if}
         </li>
@@ -143,8 +143,8 @@
           on:keydown={(e) => { if (e.key === 'Enter') sendMessage(); }}
           disabled={isLoading}
         />
-        <button on:click={sendMessage} disabled={isLoading}>📤</button>
-        <button on:click={webSearch} disabled={isLoading} title="Web Search">🔍</button>
+        <button type="button" on:click={sendMessage} disabled={isLoading}>📤</button>
+        <button type="button" on:click={webSearch} disabled={isLoading} title="Web Search">🔍</button>
       </div>
     {:else}
       <div class="no-session">
