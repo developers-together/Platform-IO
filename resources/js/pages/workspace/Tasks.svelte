@@ -122,7 +122,7 @@
           <div class="task-row" class:starred={task.stared}>
             <div class="task-content">
               <div class="task-left">
-                <button class="check-button" on:click={() => toggleComplete(task)}>
+                <button class="check-button" aria-label={`Toggle completion for ${task.title}`} on:click={() => toggleComplete(task)}>
                   <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
                 </button>
                 <span class="task-title">{task.title}</span>
