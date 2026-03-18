@@ -84,11 +84,12 @@
   };
 </script>
 
-<div class="sidebar" class:open={$sidebarOpen} class:closed={!$sidebarOpen}>
+<div class="sidebar" data-test="legacy-sidebar" class:open={$sidebarOpen} class:closed={!$sidebarOpen}>
   <div class="menu-section top-menu">
     {#each topMenu as item}
       <div
         class="sidebar-item"
+        data-test={`sidebar-item-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
         class:active={isActive(item.href)}
         class:ai={item.label === 'AI'}
         class:preview={isPreviewFeature(item)}
@@ -126,6 +127,7 @@
     {#each bottomMenu as item}
       <div
         class="sidebar-item"
+        data-test={`sidebar-item-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
         class:active={isActive(item.href)}
         role="button"
         tabindex="0"
