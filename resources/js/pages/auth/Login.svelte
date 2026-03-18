@@ -37,8 +37,8 @@
 
 <AppHead title="Login" />
 
-<div class="login-container">
-    <div class="login-card">
+<div class="login-container" data-test="login-page">
+    <div class="login-card" data-test="login-card">
         <div class="login-header">
             <h2 class="login-title">Welcome Back</h2>
             <p class="login-subtitle">Sign in to continue</p>
@@ -69,6 +69,7 @@
                     <input
                         type="email"
                         name="email"
+                        data-test="login-email-input"
                         class="login-input"
                         placeholder="Email"
                         required
@@ -84,6 +85,7 @@
                     <input
                         type="password"
                         name="password"
+                        data-test="login-password-input"
                         class="login-input"
                         placeholder="Password"
                         required
@@ -102,7 +104,7 @@
                     </label>
                 </div>
 
-                <button type="submit" class="login-button" disabled={processing}>
+                <button type="submit" class="login-button" data-test="login-submit-button" disabled={processing}>
                     {#if processing}
                         <div class="spinner"></div>
                     {:else}
