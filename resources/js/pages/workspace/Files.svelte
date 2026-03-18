@@ -1,478 +1,508 @@
-<script lang="ts">
-    import { onMount } from 'svelte';
-    import AppHead from '@/components/AppHead.svelte';
-    import { Button } from '@/components/ui/button';
-    import {
-        Card,
-        CardContent,
-        CardDescription,
-        CardHeader,
-        CardTitle,
-    } from '@/components/ui/card';
-    import { Input } from '@/components/ui/input';
-    import AppLayout from '@/layouts/AppLayout.svelte';
-    import {
-        createFolder,
-        deleteFile,
-        deleteFolder,
-        downloadFile,
-        listWorkspaceEntries,
-        uploadFile,
-    } from '@/lib/api/files';
-    import { fetchUserTeams } from '@/lib/api/teams';
-    import {
-        MAX_FILE_UPLOAD_SIZE_BYTES,
-        normalizeWorkspacePath,
-        validateUploadFile,
-    } from '@/lib/security';
-    import {
-        initializeWorkspaceTeam,
-        setWorkspaceTeam,
-        workspaceState,
-    } from '@/lib/workspace.svelte';
-    import { workspaceFiles } from '@/lib/appRoutes';
-    import type { BreadcrumbItem, TeamSummary, WorkspaceEntry } from '@/types';
+<svelte:options runes={false} />
 
-    const breadcrumbs: BreadcrumbItem[] = [
-        {
-            title: 'Files',
-            href: workspaceFiles(),
-        },
-    ];
+<script>
+  import AppHead from '@/components/AppHead.svelte';
+  import AppLayout from '@/layouts/AppLayout.svelte';
 
-    const workspace = workspaceState();
+  // Preview mode keeps Files UI visible while backend integration is pending.
+  // TODO(back-end): replace these mock datasets with /api/folders and /api/files responses.
+  const FEATURE_STATUS_NOTE = 'Shared File System is currently in preview mode. Backend actions are temporarily disabled.';
 
-    let teams = $state<TeamSummary[]>([]);
-    let selectedTeamId = $state<number | null>(workspace.selectedTeamId);
+  let directories = [
+    'design',
+    'design/icons',
+    'engineering',
+    'engineering/api',
+    'qa',
+  ];
+  let files = [
+    { path: 'design/landing-wireframe.fig', type: 'figma' },
+    { path: 'engineering/api/contracts.md', type: 'markdown' },
+    { path: 'engineering/release-plan.pdf', type: 'pdf' },
+    { path: 'qa/smoke-checklist.txt', type: 'text' },
+  ];
+  let currentPath = '/';
+  let newFolderName = '';
+  let showNewFolder = false;
+  let aiPrompt = '';
+  let aiFileName = '';
+  let showAiCreate = false;
 
-    let currentPath = $state('/');
-    let entries = $state<WorkspaceEntry[]>([]);
+  const ROOT = '/';
 
-    let loading = $state(true);
-    let busyAction = $state<'' | 'create-folder' | 'upload-file' | 'refresh'>(
-        '',
-    );
+  function normalize(path) {
+    if (!path || path === ROOT) return '';
+    return String(path).replace(/^\/+|\/+$/g, '');
+  }
 
-    let newFolderName = $state('');
-    let error = $state('');
-    let success = $state('');
+  function toDisplayPath(path) {
+    const clean = normalize(path);
+    return clean ? `/${clean}` : ROOT;
+  }
 
-    let fileInput = $state<HTMLInputElement | null>(null);
+  function getName(path) {
+    const clean = normalize(path);
+    if (!clean) return 'Root';
+    const parts = clean.split('/');
+    return parts[parts.length - 1];
+  }
 
-    const breadcrumbSegments = $derived.by(() => {
-        const normalized = normalizeWorkspacePath(currentPath);
-        if (normalized === '/') {
-            return [] as { label: string; path: string }[];
-        }
+  function getParentPath(path) {
+    const clean = normalize(path);
+    if (!clean) return ROOT;
+    const parts = clean.split('/');
+    parts.pop();
+    return parts.length ? parts.join('/') : ROOT;
+  }
 
-        const parts = normalized.split('/').filter(Boolean);
-        return parts.map((part, index) => ({
-            label: part,
-            path: `/${parts.slice(0, index + 1).join('/')}`,
-        }));
-    });
+  function isImmediateChild(itemPath, parentPath) {
+    const item = normalize(itemPath);
+    const parent = normalize(parentPath);
 
-    const clearNotices = () => {
-        error = '';
-        success = '';
-    };
+    if (!parent) {
+      return item.length > 0 && !item.includes('/');
+    }
 
-    const getErrorMessage = (err: unknown): string => {
-        if (err instanceof Error) {
-            return err.message;
-        }
+    const prefix = `${parent}/`;
+    if (!item.startsWith(prefix)) return false;
 
-        return 'Action failed.';
-    };
+    const remainder = item.slice(prefix.length);
+    return remainder.length > 0 && !remainder.includes('/');
+  }
 
-    const loadEntries = async () => {
-        if (!selectedTeamId) {
-            entries = [];
-            return;
-        }
+  // TODO(back-end): wire to POST /api/folders/{teamId}/store.
+  async function createFolder() {
+    void newFolderName;
+    void currentPath;
+  }
 
-        busyAction = 'refresh';
-        clearNotices();
+  // TODO(back-end): wire to DELETE /api/folders/{teamId}/delete.
+  async function deleteFolder(path) {
+    void path;
+  }
 
-        try {
-            entries = await listWorkspaceEntries(selectedTeamId, currentPath);
-        } catch (err) {
-            entries = [];
-            error = getErrorMessage(err);
-        } finally {
-            busyAction = '';
-        }
-    };
+  // TODO(back-end): wire to POST /api/files/{teamId}/store.
+  async function uploadFile(event) {
+    void event;
+  }
 
-    const loadWorkspace = async () => {
-        loading = true;
-        clearNotices();
+  // TODO(back-end): wire to DELETE /api/files/{teamId}/delete.
+  async function deleteFile(path) {
+    void path;
+  }
 
-        try {
-            teams = await fetchUserTeams();
-            const persistedTeamId = initializeWorkspaceTeam();
-            const persistedTeam = teams.find(
-                (team) => team.id === persistedTeamId,
-            );
+  // TODO(back-end): wire to GET /api/files/{teamId}/download.
+  async function downloadFile(path, filename) {
+    void path;
+    void filename;
+  }
 
-            selectedTeamId = persistedTeam
-                ? persistedTeam.id
-                : (teams[0]?.id ?? null);
-            setWorkspaceTeam(selectedTeamId);
+  // TODO(back-end): wire to POST /api/files/{teamId}/aicreate.
+  async function aiCreateFile() {
+    void aiPrompt;
+    void aiFileName;
+    void currentPath;
+  }
 
-            currentPath = '/';
-            await loadEntries();
-        } catch (err) {
-            teams = [];
-            selectedTeamId = null;
-            entries = [];
-            error = getErrorMessage(err);
-        } finally {
-            loading = false;
-        }
-    };
+  function openFolder(path) {
+    currentPath = normalize(path) || ROOT;
+  }
 
-    const selectTeam = async (event: Event) => {
-        const target = event.currentTarget as HTMLSelectElement;
-        const value = Number(target.value);
+  function goUp() {
+    currentPath = getParentPath(currentPath);
+  }
 
-        selectedTeamId = Number.isFinite(value) && value > 0 ? value : null;
-        setWorkspaceTeam(selectedTeamId);
+  $: visibleDirectories = directories
+    .filter((dir) => isImmediateChild(dir, currentPath))
+    .map((dir) => ({ path: dir, name: getName(dir) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
-        currentPath = '/';
-        await loadEntries();
-    };
-
-    const openFolder = async (path: string) => {
-        currentPath = normalizeWorkspacePath(path);
-        await loadEntries();
-    };
-
-    const goBack = async () => {
-        if (currentPath === '/') {
-            return;
-        }
-
-        const parts = normalizeWorkspacePath(currentPath)
-            .split('/')
-            .filter(Boolean);
-
-        parts.pop();
-        currentPath = parts.length > 0 ? `/${parts.join('/')}` : '/';
-        await loadEntries();
-    };
-
-    const navigateTo = async (path: string) => {
-        currentPath = normalizeWorkspacePath(path);
-        await loadEntries();
-    };
-
-    const createFolderAction = async () => {
-        clearNotices();
-        if (!selectedTeamId) {
-            error = 'Select a team first.';
-            return;
-        }
-
-        if (!newFolderName.trim()) {
-            error = 'Folder name is required.';
-            return;
-        }
-
-        busyAction = 'create-folder';
-        try {
-            await createFolder(selectedTeamId, newFolderName, currentPath);
-            newFolderName = '';
-            success = 'Folder created.';
-            await loadEntries();
-        } catch (err) {
-            error = getErrorMessage(err);
-        } finally {
-            busyAction = '';
-        }
-    };
-
-    const removeEntry = async (entry: WorkspaceEntry) => {
-        clearNotices();
-        if (!selectedTeamId) {
-            error = 'Select a team first.';
-            return;
-        }
-
-        const confirmed = window.confirm(`Delete ${entry.name}?`);
-        if (!confirmed) {
-            return;
-        }
-
-        try {
-            if (entry.type === 'folder') {
-                await deleteFolder(selectedTeamId, entry.path);
-            } else {
-                await deleteFile(selectedTeamId, entry.path);
-            }
-            success = `${entry.type === 'folder' ? 'Folder' : 'File'} deleted.`;
-            await loadEntries();
-        } catch (err) {
-            error = getErrorMessage(err);
-        }
-    };
-
-    const triggerUpload = () => {
-        fileInput?.click();
-    };
-
-    const onUploadFile = async (event: Event) => {
-        clearNotices();
-        if (!selectedTeamId) {
-            error = 'Select a team first.';
-            return;
-        }
-
-        const target = event.currentTarget as HTMLInputElement;
-        const file = target.files?.[0] ?? null;
-
-        if (!file) {
-            return;
-        }
-
-        const fileError = validateUploadFile(file, MAX_FILE_UPLOAD_SIZE_BYTES);
-        if (fileError) {
-            error = fileError;
-            target.value = '';
-            return;
-        }
-
-        busyAction = 'upload-file';
-        try {
-            await uploadFile(selectedTeamId, file, currentPath);
-            success = 'File uploaded.';
-            await loadEntries();
-        } catch (err) {
-            error = getErrorMessage(err);
-        } finally {
-            busyAction = '';
-            target.value = '';
-        }
-    };
-
-    const downloadEntry = async (entry: WorkspaceEntry) => {
-        clearNotices();
-        if (!selectedTeamId) {
-            error = 'Select a team first.';
-            return;
-        }
-
-        try {
-            const result = await downloadFile(selectedTeamId, entry.path);
-            const objectUrl = URL.createObjectURL(result.blob);
-
-            const anchor = document.createElement('a');
-            anchor.href = objectUrl;
-            anchor.download = result.filename;
-            document.body.append(anchor);
-            anchor.click();
-            anchor.remove();
-
-            URL.revokeObjectURL(objectUrl);
-            success = 'Download started.';
-        } catch (err) {
-            error = getErrorMessage(err);
-        }
-    };
-
-    onMount(async () => {
-        await loadWorkspace();
-    });
+  $: visibleFiles = files
+    .filter((file) => isImmediateChild(file.path, currentPath))
+    .map((file) => ({
+      path: file.path,
+      name: getName(file.path),
+      type: file.type || 'file',
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 </script>
 
-<AppHead title="Workspace Files" />
+<AppHead title="Files" />
 
-<AppLayout {breadcrumbs}>
-    <div
-        class="fx-stagger flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
-        data-test="files-page"
-    >
-        <Card>
-            <CardHeader>
-                <CardTitle>Team File Workspace</CardTitle>
-                <CardDescription>
-                    Browse folders and files with the existing backend storage
-                    API.
-                </CardDescription>
-            </CardHeader>
-            <CardContent class="grid gap-4 lg:grid-cols-3">
-                <label class="flex flex-col gap-1 text-sm">
-                    <span class="font-medium">Team</span>
-                    <select
-                        class="fx-input h-10 rounded-md border border-input bg-background px-3"
-                        value={selectedTeamId ?? ''}
-                        disabled={loading || teams.length === 0}
-                        onchange={selectTeam}
-                    >
-                        {#if teams.length === 0}
-                            <option value="">No teams available</option>
-                        {:else}
-                            {#each teams as team (team.id)}
-                                <option value={team.id}>{team.name}</option>
-                            {/each}
-                        {/if}
-                    </select>
-                </label>
-
-                <label class="flex flex-col gap-1 text-sm lg:col-span-2">
-                    <span class="font-medium"
-                        >Create folder in current path</span
-                    >
-                    <div class="flex gap-2">
-                        <Input
-                            placeholder="Folder name"
-                            bind:value={newFolderName}
-                            class="flex-1"
-                        />
-                        <Button
-                            variant="outline"
-                            disabled={busyAction === 'create-folder' ||
-                                !selectedTeamId}
-                            onClick={createFolderAction}
-                        >
-                            {busyAction === 'create-folder'
-                                ? 'Creating...'
-                                : 'Create'}
-                        </Button>
-                        <Button
-                            variant="outline"
-                            disabled={busyAction === 'upload-file' ||
-                                !selectedTeamId}
-                            onClick={triggerUpload}
-                        >
-                            {busyAction === 'upload-file'
-                                ? 'Uploading...'
-                                : 'Upload'}
-                        </Button>
-                        <input
-                            bind:this={fileInput}
-                            type="file"
-                            class="hidden"
-                            onchange={onUploadFile}
-                        />
-                    </div>
-                </label>
-
-                <div
-                    class="rounded-md border bg-muted/30 p-3 text-sm lg:col-span-3"
-                >
-                    <div class="flex flex-wrap items-center gap-2">
-                        <button
-                            type="button"
-                            class="text-blue-600 underline"
-                            onclick={() => navigateTo('/')}
-                        >
-                            Root
-                        </button>
-                        {#each breadcrumbSegments as segment (segment.path)}
-                            <span class="text-muted-foreground">/</span>
-                            <button
-                                type="button"
-                                class="text-blue-600 underline"
-                                onclick={() => navigateTo(segment.path)}
-                            >
-                                {segment.label}
-                            </button>
-                        {/each}
-                    </div>
-
-                    <div class="mt-2 flex gap-2">
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={currentPath === '/'}
-                            onClick={goBack}
-                        >
-                            Back
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={!selectedTeamId ||
-                                busyAction === 'refresh'}
-                            onClick={loadEntries}
-                        >
-                            {busyAction === 'refresh'
-                                ? 'Refreshing...'
-                                : 'Refresh'}
-                        </Button>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-
-        {#if error}
-            <p class="text-sm text-red-600">{error}</p>
-        {/if}
-
-        {#if success}
-            <p class="text-sm text-emerald-600">{success}</p>
-        {/if}
-
-        <Card>
-            <CardHeader>
-                <CardTitle>Current Path</CardTitle>
-                <CardDescription
-                    >{normalizeWorkspacePath(currentPath)}</CardDescription
-                >
-            </CardHeader>
-            <CardContent class="space-y-2">
-                {#if loading}
-                    <p class="text-sm text-muted-foreground">
-                        Loading workspace...
-                    </p>
-                {:else if entries.length === 0}
-                    <p class="text-sm text-muted-foreground">
-                        No files or folders here.
-                    </p>
-                {:else}
-                    {#each entries as entry (entry.path)}
-                        <div
-                            class="flex flex-wrap items-center justify-between gap-3 rounded-md border p-3 text-sm"
-                        >
-                            <div>
-                                <p class="font-medium">{entry.name}</p>
-                                <p class="text-xs text-muted-foreground">
-                                    {entry.path}
-                                </p>
-                            </div>
-
-                            <div class="flex gap-2">
-                                {#if entry.type === 'folder'}
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => openFolder(entry.path)}
-                                    >
-                                        Open
-                                    </Button>
-                                {:else}
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => downloadEntry(entry)}
-                                    >
-                                        Download
-                                    </Button>
-                                {/if}
-
-                                <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    onClick={() => removeEntry(entry)}
-                                >
-                                    Delete
-                                </Button>
-                            </div>
-                        </div>
-                    {/each}
-                {/if}
-            </CardContent>
-        </Card>
+<AppLayout>
+<div class="file-page">
+  <div class="feature-preview-banner">{FEATURE_STATUS_NOTE}</div>
+  <div class="feature-preview-disabled" aria-disabled="true" inert>
+  <div class="file-sidebar">
+    <div class="file-sidebar-header">
+      <h3>📁 Folders</h3>
+      <button on:click={() => (showNewFolder = !showNewFolder)}>+</button>
     </div>
+
+    <div class="path-indicator">{toDisplayPath(currentPath)}</div>
+
+    {#if showNewFolder}
+      <div class="new-folder-input">
+        <input
+          placeholder="Folder name"
+          bind:value={newFolderName}
+          on:keydown={(e) => {
+            if (e.key === 'Enter') createFolder();
+          }}
+        />
+        <button on:click={createFolder}>Create</button>
+      </div>
+    {/if}
+
+    <ul class="folder-list">
+      {#if currentPath !== ROOT}
+        <li on:click={goUp} role="button" tabindex="0" on:keydown={(e) => {
+          if (e.key === 'Enter') goUp();
+        }}>
+          ⬅ Back
+        </li>
+      {/if}
+
+      <li class:active={currentPath === ROOT} on:click={() => openFolder(ROOT)} role="button" tabindex="0" on:keydown={(e) => {
+        if (e.key === 'Enter') openFolder(ROOT);
+      }}>
+        📂 Root
+      </li>
+
+      {#each visibleDirectories as folder (folder.path)}
+        <li on:click={() => openFolder(folder.path)} role="button" tabindex="0" on:keydown={(e) => {
+          if (e.key === 'Enter') openFolder(folder.path);
+        }}>
+          <span>📂 {folder.name}</span>
+          <button class="delete-folder-btn" on:click|stopPropagation={() => deleteFolder(folder.path)}>🗑️</button>
+        </li>
+      {/each}
+
+      {#if visibleDirectories.length === 0}
+        <li class="empty-entry">No subfolders</li>
+      {/if}
+    </ul>
+  </div>
+
+  <div class="file-content">
+    <div class="file-toolbar">
+      <h2>{toDisplayPath(currentPath)}</h2>
+      <div class="toolbar-actions">
+        <label class="upload-btn">
+          📤 Upload
+          <input type="file" on:change={uploadFile} style="display: none" />
+        </label>
+        <button class="ai-create-btn" on:click={() => (showAiCreate = !showAiCreate)}>🤖 AI Create</button>
+      </div>
+    </div>
+
+    {#if showAiCreate}
+      <div class="ai-create-form">
+        <input placeholder="Preferred file name (optional)" bind:value={aiFileName} />
+        <textarea placeholder="Describe what the file should contain..." bind:value={aiPrompt}></textarea>
+        <button on:click={aiCreateFile}>Create with AI</button>
+      </div>
+    {/if}
+
+    <div class="file-grid">
+      {#each visibleFiles as file (file.path)}
+        <div class="file-card">
+          <div class="file-icon">📄</div>
+          <span class="file-name">{file.name}</span>
+          <div class="file-actions">
+            <button on:click={() => downloadFile(file.path, file.name)} title="Download">⬇️</button>
+            <button on:click={() => deleteFile(file.path)} title="Delete">🗑️</button>
+          </div>
+        </div>
+      {:else}
+        <div class="empty-files">No files in this folder</div>
+      {/each}
+    </div>
+  </div>
+  </div>
+</div>
 </AppLayout>
+
+<style>
+  .file-page {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    grid-template-rows: auto 1fr;
+    height: 100vh;
+    background: var(--gray-100);
+  }
+
+  .feature-preview-banner {
+    grid-column: 1 / -1;
+    margin: 12px 20px 0;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #f0d27a;
+    background: #fff6db;
+    color: #6a5000;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .feature-preview-disabled {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    min-height: 0;
+    pointer-events: none;
+    opacity: 0.88;
+    filter: saturate(0.9);
+  }
+
+  .file-sidebar {
+    padding: 20px;
+    border-right: 1px solid var(--gray-300);
+    background: white;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .file-sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .file-sidebar-header h3 {
+    font-size: 1.1rem;
+    color: var(--gray-800);
+  }
+
+  .file-sidebar-header button {
+    background: var(--brand-blue);
+    color: white;
+    border-radius: var(--radius-sm);
+    padding: 4px 10px;
+    font-size: 1rem;
+  }
+
+  .path-indicator {
+    font-size: 0.85rem;
+    color: var(--gray-600);
+    word-break: break-word;
+  }
+
+  .new-folder-input {
+    display: flex;
+    gap: 8px;
+  }
+
+  .new-folder-input input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+  }
+
+  .new-folder-input button {
+    background: var(--brand-blue);
+    color: white;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+  }
+
+  .folder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .folder-list li {
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+  }
+
+  .folder-list li:hover {
+    background: #f0f0f0;
+  }
+
+  .folder-list li.active {
+    background: #e3f2fd;
+    font-weight: 600;
+  }
+
+  .folder-list .empty-entry {
+    cursor: default;
+    color: var(--gray-500);
+    justify-content: center;
+    font-style: italic;
+  }
+
+  .folder-list .empty-entry:hover {
+    background: transparent;
+  }
+
+  .delete-folder-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .folder-list li:hover .delete-folder-btn {
+    opacity: 1;
+  }
+
+  .file-content {
+    padding: 20px;
+    overflow-y: auto;
+  }
+
+  .file-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .file-toolbar h2 {
+    font-size: 1.2rem;
+    color: var(--gray-800);
+    word-break: break-word;
+  }
+
+  .toolbar-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .upload-btn,
+  .ai-create-btn {
+    background: var(--brand-blue);
+    color: white;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .upload-btn:hover,
+  .ai-create-btn:hover {
+    background: var(--brand-blue-hover);
+  }
+
+  .ai-create-form {
+    background: white;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .ai-create-form input,
+  .ai-create-form textarea {
+    padding: 10px;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+  }
+
+  .ai-create-form textarea {
+    min-height: 80px;
+    resize: vertical;
+  }
+
+  .ai-create-form button {
+    background: var(--brand-blue);
+    color: white;
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    align-self: flex-end;
+  }
+
+  .file-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+  }
+
+  .file-card {
+    background: white;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition);
+    animation: fadeIn 0.3s ease;
+  }
+
+  .file-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-light);
+  }
+
+  .file-icon {
+    font-size: 2rem;
+  }
+
+  .file-name {
+    font-size: 0.85rem;
+    color: var(--gray-700);
+    text-align: center;
+    word-break: break-word;
+  }
+
+  .file-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .file-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: var(--transition);
+  }
+
+  .file-actions button:hover {
+    transform: scale(1.2);
+  }
+
+  .empty-files {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--gray-500);
+    padding: 40px;
+  }
+
+  @media (max-width: 768px) {
+    .file-page {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+    }
+
+    .feature-preview-disabled {
+      grid-template-columns: 1fr;
+    }
+
+    .file-sidebar {
+      border-right: none;
+      border-bottom: 1px solid var(--gray-300);
+    }
+  }
+</style>
