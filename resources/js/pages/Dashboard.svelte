@@ -255,9 +255,9 @@
 
     <!-- EVENTS CARD -->
     <div class="card events-card">
-      <h3 class="events-title" on:click={() => goto('/workspace/calendar')} style="cursor:pointer">
+      <button type="button" class="events-title card-title-link" on:click={() => goto('/workspace/calendar')}>
         Upcoming events <span class="locked-tag">Preview</span>
-      </h3>
+      </button>
       <ul>
         {#if events.length === 0}
           <li style="color:gray">No upcoming events</li>
