@@ -238,11 +238,11 @@
     {/if}
 
     {#if chatUnavailableMessage}
-      <div class="chat-notice">{chatUnavailableMessage}</div>
+      <div class="chat-notice" data-test="chat-preview-notice">{chatUnavailableMessage}</div>
     {/if}
 
-    <div class="left-card-content">
-      <ul>
+    <div class="left-card-content" data-test="chat-channel-panel">
+      <ul data-test="chat-channel-list">
         {#if loadingChannels}
           <li class="empty-channel-state">Loading channels...</li>
         {:else if channels.length === 0}
@@ -314,9 +314,9 @@
             <button type="button" class="cancel-reply1" aria-label="Cancel reply" on:click={() => replyTo = null}>✕</button>
           </div>
         {/if}
-        <div class="chat-input-row">
+        <div class="chat-input-row" data-test="chat-input-row">
           <input placeholder="Type a message..." bind:value={newMessage} on:keydown={(e) => { if (e.key === 'Enter') sendMessage(); }} />
-          <button type="button" aria-label="Send message" on:click={sendMessage}>📤</button>
+          <button type="button" data-test="chat-send-button" aria-label="Send message" on:click={sendMessage}>📤</button>
           <button type="button" aria-label="Ask AI (Coming Soon)" on:click={askAI} title="Ask AI (Coming Soon)" disabled>🤖</button>
         </div>
       </div>
