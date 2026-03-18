@@ -1,16 +1,11 @@
 <script lang="ts">
     import { Link, page } from '@inertiajs/svelte';
     import BookOpen from 'lucide-svelte/icons/book-open';
-    import Bot from 'lucide-svelte/icons/bot';
-    import CalendarDays from 'lucide-svelte/icons/calendar-days';
     import Folder from 'lucide-svelte/icons/folder';
-    import FolderOpen from 'lucide-svelte/icons/folder-open';
     import LayoutGrid from 'lucide-svelte/icons/layout-grid';
-    import ListTodo from 'lucide-svelte/icons/list-todo';
     import Menu from 'lucide-svelte/icons/menu';
     import MessageSquare from 'lucide-svelte/icons/message-square';
     import Search from 'lucide-svelte/icons/search';
-    import Users from 'lucide-svelte/icons/users';
     import AppLogo from '@/components/AppLogo.svelte';
     import AppLogoIcon from '@/components/AppLogoIcon.svelte';
     import Breadcrumbs from '@/components/Breadcrumbs.svelte';
@@ -50,12 +45,7 @@
     import { toUrl } from '@/lib/utils';
     import {
         dashboard,
-        workspaceAi,
-        workspaceCalendar,
         workspaceChat,
-        workspaceFiles,
-        workspaceTasks,
-        workspaceTeams,
     } from '@/lib/appRoutes';
     import type { BreadcrumbItem, NavItem } from '@/types';
 
@@ -78,34 +68,9 @@
             icon: LayoutGrid,
         },
         {
-            title: 'Teams',
-            href: workspaceTeams(),
-            icon: Users,
-        },
-        {
-            title: 'Tasks',
-            href: workspaceTasks(),
-            icon: ListTodo,
-        },
-        {
-            title: 'Calendar',
-            href: workspaceCalendar(),
-            icon: CalendarDays,
-        },
-        {
             title: 'Chat',
             href: workspaceChat(),
             icon: MessageSquare,
-        },
-        {
-            title: 'Files',
-            href: workspaceFiles(),
-            icon: FolderOpen,
-        },
-        {
-            title: 'AI',
-            href: workspaceAi(),
-            icon: Bot,
         },
     ];
 

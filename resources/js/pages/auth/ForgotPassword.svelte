@@ -8,7 +8,6 @@
     import { Label } from '@/components/ui/label';
     import { Spinner } from '@/components/ui/spinner';
     import AuthLayout from '@/layouts/AuthLayout.svelte';
-    import { login } from '@/routes';
     import { email } from '@/routes/password';
 
     let {
@@ -16,6 +15,8 @@
     }: {
         status?: string;
     } = $props();
+
+    const loginPath = '/login';
 </script>
 
 <AppHead title="Forgot password" />
@@ -61,7 +62,7 @@
 
         <div class="space-x-1 text-center text-sm text-muted-foreground">
             <span>Or, return to</span>
-            <TextLink href={login()}>log in</TextLink>
+            <TextLink href={loginPath}>log in</TextLink>
         </div>
     </div>
 </AuthLayout>

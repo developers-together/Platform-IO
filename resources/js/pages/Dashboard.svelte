@@ -22,9 +22,7 @@
     import { fetchUserTeams } from '@/lib/api/teams';
     import {
         dashboard,
-        workspaceCalendar,
         workspaceChat,
-        workspaceTasks,
     } from '@/lib/appRoutes';
     import {
         initializeWorkspaceTeam,
@@ -431,11 +429,7 @@
         <div class="grid gap-4 xl:grid-cols-3">
             <Card>
                 <CardHeader>
-                    <CardTitle>
-                        <Link href={workspaceTasks()} class="hover:underline">
-                            My Tasks
-                        </Link>
-                    </CardTitle>
+                    <CardTitle>My Tasks</CardTitle>
                     <CardDescription>
                         Quick completion for top active tasks.
                     </CardDescription>
@@ -618,14 +612,7 @@
 
             <Card>
                 <CardHeader>
-                    <CardTitle>
-                        <Link
-                            href={workspaceCalendar()}
-                            class="hover:underline"
-                        >
-                            Calendar
-                        </Link>
-                    </CardTitle>
+                    <CardTitle>Calendar</CardTitle>
                     <CardDescription>
                         Current month with deadline indicators.
                     </CardDescription>
@@ -649,14 +636,7 @@
 
             <Card class="xl:col-span-2">
                 <CardHeader>
-                    <CardTitle>
-                        <Link
-                            href={workspaceCalendar()}
-                            class="hover:underline"
-                        >
-                            Upcoming Events
-                        </Link>
-                    </CardTitle>
+                    <CardTitle>Upcoming Events</CardTitle>
                     <CardDescription>
                         Nearest task deadlines for this team.
                     </CardDescription>
