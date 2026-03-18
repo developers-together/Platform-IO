@@ -348,6 +348,10 @@
         transform: scale(1.02);
         box-shadow: 0 0 20px rgba(0, 82, 212, 0.8);
     }
+    .login-button:focus-visible {
+        outline: 2px solid #93c5fd;
+        outline-offset: 2px;
+    }
 
     .login-button:disabled {
         opacity: 0.7;
@@ -388,6 +392,11 @@
     .register-link:hover {
         color: #003a9b;
         text-decoration: underline;
+    }
+    .register-link:focus-visible {
+        outline: 2px solid #93c5fd;
+        outline-offset: 2px;
+        border-radius: 4px;
     }
 
     @media (max-width: 768px) {
