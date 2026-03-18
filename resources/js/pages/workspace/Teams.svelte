@@ -1,556 +1,411 @@
-<script lang="ts">
-    import { Link } from '@inertiajs/svelte';
-    import { onMount, tick } from 'svelte';
-    import { cubicInOut, cubicOut } from 'svelte/easing';
-    import { fly } from 'svelte/transition';
-    import AppHead from '@/components/AppHead.svelte';
-    import { Badge } from '@/components/ui/badge';
-    import { Button } from '@/components/ui/button';
-    import {
-        Card,
-        CardContent,
-        CardDescription,
-        CardHeader,
-        CardTitle,
-    } from '@/components/ui/card';
-    import AppLayout from '@/layouts/AppLayout.svelte';
-    import {
-        createTeam,
-        deleteTeam,
-        fetchUserTeams,
-        joinTeam,
-    } from '@/lib/api/teams';
-    import {
-        initializeWorkspaceTeam,
-        setWorkspaceTeam,
-        workspaceState,
-    } from '@/lib/workspace.svelte';
-    import { dashboard, workspaceTeams } from '@/lib/appRoutes';
-    import type { BreadcrumbItem, TeamSummary } from '@/types';
+<svelte:options runes={false} />
 
-    const breadcrumbs: BreadcrumbItem[] = [
-        {
-            title: 'Teams',
-            href: workspaceTeams(),
-        },
-    ];
+<script>
+  import { onMount, onDestroy } from 'svelte';
+  import Avatar from '@/legacy/lib/components/Avatar.svelte';
+  import AppHead from '@/components/AppHead.svelte';
+  import AppLayout from '@/layouts/AppLayout.svelte';
 
-    const workspace = workspaceState();
+  // Preview mode keeps Teams UI visible while backend work is still in progress.
+  // TODO(back-end): swap this mock list with /api/user/teams and remove preview locking.
+  const FEATURE_STATUS_NOTE = 'Teams is currently in preview mode. Backend actions are temporarily disabled.';
 
-    let loading = $state(true);
-    let teams = $state<TeamSummary[]>([]);
-    let selectedTeamId = $state<number | null>(workspace.selectedTeamId);
+  let teams = [
+    {
+      id: 101,
+      name: 'Core Platform',
+      projectname: 'Platform-IO',
+      description: 'Main product delivery team',
+      code: 'CORE01',
+    },
+    {
+      id: 102,
+      name: 'Growth Squad',
+      projectname: 'Activation Funnel',
+      description: 'Onboarding and retention experiments',
+      code: 'GRWTH2',
+    },
+    {
+      id: 103,
+      name: 'Design Ops',
+      projectname: 'UI Refresh',
+      description: 'Component systems and UX quality',
+      code: 'UXOPS3',
+    },
+  ];
+  let menuTeamId = null;
+  let showTeamCode = false;
+  let showAddDialog = false;
+  let joinCode = '';
+  let teamName = '';
+  let projectName = '';
+  let teamDescription = '';
+  let leaveModalTeamId = null;
 
-    let error = $state('');
-    let success = $state('');
+  // Rotating fan icon state
+  let fanRotation = 0;
+  let fanHovered = false;
+  let fanFastMode = false;
+  let animationFrame;
+  let prevTime = null;
 
-    let joinCode = $state('');
-    let createName = $state('');
-    let createProject = $state('');
-    let createDescription = $state('');
-    let busyAction = $state<'join' | 'create' | `delete-${number}` | null>(
-        null,
-    );
-    let teamFlowMode = $state<'join' | 'create'>('join');
-    let teamFlowStep = $state<'form' | 'connecting' | 'success'>('form');
-    let teamFlowKey = $state(0);
-    let connectedTeamName = $state('');
+  function animateFan(time) {
+    if (prevTime === null) prevTime = time;
+    const delta = time - prevTime;
+    prevTime = time;
+    const normalSpeed = 360 / 5000;
+    const hoverSpeed = 360 / 2500;
+    const clickSpeed = 360 / 1000;
+    const speed = fanFastMode ? clickSpeed : (fanHovered ? hoverSpeed : normalSpeed);
+    fanRotation = (fanRotation + speed * delta) % 360;
+    animationFrame = requestAnimationFrame(animateFan);
+  }
 
-    const clearMessages = () => {
-        error = '';
-        success = '';
-    };
+  onMount(() => {
+    animationFrame = requestAnimationFrame(animateFan);
+  });
 
-    const getMessage = (err: unknown): string => {
-        if (err instanceof Error) return err.message;
-        return 'Unable to finish request.';
-    };
+  onDestroy(() => {
+    if (animationFrame) cancelAnimationFrame(animationFrame);
+  });
 
-    const nextFlowView = (
-        step: 'form' | 'connecting' | 'success',
-        mode?: 'join' | 'create',
-    ) => {
-        if (mode) {
-            teamFlowMode = mode;
-        }
-        teamFlowStep = step;
-        teamFlowKey += 1;
-    };
+  // TODO(back-end): restore team selection persistence once team backend is fully active.
+  function goToDashboard(id) {
+    void id;
+  }
 
-    const switchTeamFlow = (mode: 'join' | 'create') => {
-        if (busyAction === 'join' || busyAction === 'create') {
-            return;
-        }
-        nextFlowView('form', mode);
-    };
+  function toggleTeamMenu(id, e) {
+    e.stopPropagation();
+    menuTeamId = menuTeamId === id ? null : id;
+    showTeamCode = false;
+  }
 
-    const ensureVisibleConnectingStep = async (startedAt: number) => {
-        const minVisibleDurationMs = 450;
-        const elapsed = Date.now() - startedAt;
-        if (elapsed < minVisibleDurationMs) {
-            await new Promise((resolve) =>
-                setTimeout(resolve, minVisibleDurationMs - elapsed),
-            );
-        }
-    };
+  function handleShowCode(id, e) {
+    e.stopPropagation();
+    menuTeamId = id;
+    showTeamCode = true;
+  }
 
-    const refreshConnectedTeamName = () => {
-        connectedTeamName =
-            teams.find((team) => team.id === selectedTeamId)?.name ??
-            'your workspace';
-    };
+  function handleLeaveTeam(id, e) {
+    e.stopPropagation();
+    leaveModalTeamId = id;
+  }
 
-    const reloadTeams = async () => {
-        loading = true;
-        clearMessages();
+  // TODO(back-end): wire this to DELETE /api/team/{id}/delete.
+  async function confirmLeaveTeam(id) {
+    void id;
+    menuTeamId = null;
+    showTeamCode = false;
+    leaveModalTeamId = null;
+  }
 
-        try {
-            teams = await fetchUserTeams();
-            const storedId = initializeWorkspaceTeam();
-            const selected = teams.find((team) => team.id === storedId);
-            selectedTeamId = selected ? selected.id : (teams[0]?.id ?? null);
-            setWorkspaceTeam(selectedTeamId);
-        } catch (err) {
-            teams = [];
-            selectedTeamId = null;
-            setWorkspaceTeam(null);
-            error = getMessage(err);
-        } finally {
-            loading = false;
-        }
-    };
+  // TODO(back-end): wire this to POST /api/team/joinTeam.
+  async function joinTeam() {
+    if (!joinCode.trim()) return;
+    joinCode = '';
+    showAddDialog = false;
+  }
 
-    const selectTeam = (teamId: number) => {
-        selectedTeamId = teamId;
-        setWorkspaceTeam(teamId);
-        success = 'Team selected for workspace context.';
-    };
+  // TODO(back-end): wire this to POST /api/team/create.
+  async function createTeam() {
+    if (!teamName.trim() || !projectName.trim() || !teamDescription.trim()) return;
+    teamName = ''; projectName = ''; teamDescription = '';
+    showAddDialog = false;
+  }
 
-    const submitJoin = async () => {
-        clearMessages();
-        if (!joinCode.trim()) {
-            error = 'Team code is required.';
-            return;
-        }
+  function closeAddDialog() {
+    showAddDialog = false;
+    joinCode = ''; teamName = ''; projectName = ''; teamDescription = '';
+  }
 
-        nextFlowView('connecting', 'join');
-        await tick();
-        const startedAt = Date.now();
-        busyAction = 'join';
-        try {
-            await joinTeam(joinCode.trim().toUpperCase());
-            joinCode = '';
-            await reloadTeams();
-            await ensureVisibleConnectingStep(startedAt);
-            refreshConnectedTeamName();
-            nextFlowView('success');
-            success = 'Joined team successfully.';
-        } catch (err) {
-            nextFlowView('form', 'join');
-            error = getMessage(err);
-        } finally {
-            busyAction = null;
-        }
-    };
-
-    const submitCreate = async () => {
-        clearMessages();
-
-        if (!createName.trim() || !createProject.trim()) {
-            error = 'Team name and project name are required.';
-            return;
-        }
-
-        nextFlowView('connecting', 'create');
-        await tick();
-        const startedAt = Date.now();
-        busyAction = 'create';
-        try {
-            await createTeam({
-                name: createName.trim(),
-                projectname: createProject.trim(),
-                description: createDescription.trim(),
-            });
-
-            createName = '';
-            createProject = '';
-            createDescription = '';
-            await reloadTeams();
-            await ensureVisibleConnectingStep(startedAt);
-            refreshConnectedTeamName();
-            nextFlowView('success');
-            success = 'Team created successfully.';
-        } catch (err) {
-            nextFlowView('form', 'create');
-            error = getMessage(err);
-        } finally {
-            busyAction = null;
-        }
-    };
-
-    const removeTeam = async (teamId: number) => {
-        clearMessages();
-        busyAction = `delete-${teamId}`;
-
-        try {
-            await deleteTeam(teamId);
-            if (selectedTeamId === teamId) {
-                selectedTeamId = null;
-                setWorkspaceTeam(null);
-            }
-            await reloadTeams();
-            success = 'Team removed successfully.';
-        } catch (err) {
-            error = getMessage(err);
-        } finally {
-            busyAction = null;
-        }
-    };
-
-    onMount(async () => {
-        await reloadTeams();
-    });
+  // Fan icon SVG path
+  const fanPath = 'M258.6 0c-1.7 0-3.4.1-5.1.5C168 17 115.6 102.3 130.5 189.3c2.9 17 8.4 32.9 15.9 47.4L32 224l-2.6 0C13.2 224 0 237.2 0 253.4c0 1.7.1 3.4.5 5.1C17 344 102.3 396.4 189.3 381.5c17-2.9 32.9-8.4 47.4-15.9L224 480l0 2.6c0 16.2 13.2 29.4 29.4 29.4 1.7 0 3.4-.1 5.1-.5C344 495 396.4 409.7 381.5 322.7c-2.9-17-8.4-32.9-15.9-47.4L480 288l2.6 0c16.2 0 29.4-13.2 29.4-29.4 0-1.7-.1-3.4-.5-5.1C495 168 409.7 115.6 322.7 130.5c-17 2.9-32.9 8.4-47.4 15.9L288 32l0-2.6C288 13.2 274.8 0 258.6 0zM256 224a32 32 0 1 1 0 64 32 32 0 1 1 0-64z';
 </script>
 
-<AppHead title="Workspace Teams" />
+<AppHead title="Teams" />
 
-<AppLayout {breadcrumbs}>
+<AppLayout>
+<div class="teams-page">
+  <p class="feature-preview-banner">{FEATURE_STATUS_NOTE}</p>
+  <div class="feature-preview-disabled" aria-disabled="true" inert>
+  <!-- Header -->
+  <div class="teams-header">
     <div
-        class="fx-stagger flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
-        data-test="teams-page"
+      class="fan-icon-container"
+      on:mouseenter={() => fanHovered = true}
+      on:mouseleave={() => fanHovered = false}
+      on:click={() => fanFastMode = !fanFastMode}
     >
-        <div class="grid gap-4 xl:grid-cols-3">
-            <Card class="xl:col-span-2">
-                <CardHeader>
-                    <CardTitle>Team Workspace</CardTitle>
-                    <CardDescription>
-                        Choose the active team used by dashboard, tasks, and
-                        calendar.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent class="space-y-3">
-                    {#if loading}
-                        <p class="text-sm text-muted-foreground">
-                            Loading teams...
-                        </p>
-                    {:else if teams.length === 0}
-                        <p class="text-sm text-muted-foreground">
-                            You do not belong to any team yet.
-                        </p>
-                    {:else}
-                        <div class="grid gap-3 md:grid-cols-2">
-                            {#each teams as team (team.id)}
-                                <div
-                                    class="rounded-md border p-3 text-sm {selectedTeamId ===
-                                    team.id
-                                        ? 'border-primary bg-primary/5'
-                                        : ''}"
-                                >
-                                    <div
-                                        class="mb-2 flex items-center justify-between"
-                                    >
-                                        <p class="font-semibold">{team.name}</p>
-                                        {#if selectedTeamId === team.id}
-                                            <Badge>Active</Badge>
-                                        {/if}
-                                    </div>
-                                    <p class="text-muted-foreground">
-                                        {team.projectName || 'No project name'}
-                                    </p>
-                                    <p
-                                        class="mt-2 line-clamp-2 text-muted-foreground"
-                                    >
-                                        {team.description || 'No description'}
-                                    </p>
-                                    <div class="mt-3 flex gap-2">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => selectTeam(team.id)}
-                                        >
-                                            Use Team
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="destructive"
-                                            disabled={busyAction ===
-                                                `delete-${team.id}`}
-                                            onClick={() => removeTeam(team.id)}
-                                        >
-                                            {busyAction === `delete-${team.id}`
-                                                ? 'Removing...'
-                                                : 'Delete'}
-                                        </Button>
-                                    </div>
-                                </div>
-                            {/each}
-                        </div>
-                    {/if}
-                </CardContent>
-            </Card>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="60" height="60" fill="currentColor" style="transform: rotate({fanRotation}deg); cursor: pointer;">
+        <path d={fanPath} />
+      </svg>
+    </div>
+    <h2 class="teams-headline">Which team do you want to log into?</h2>
+  </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Quick Stats</CardTitle>
-                    <CardDescription
-                        >Current membership context.</CardDescription
-                    >
-                </CardHeader>
-                <CardContent class="space-y-2 text-sm">
-                    <p>
-                        <span class="font-semibold">Team count:</span>
-                        {teams.length}
-                    </p>
-                    <p>
-                        <span class="font-semibold">Selected:</span>
-                        {selectedTeamId ? `Team #${selectedTeamId}` : 'None'}
-                    </p>
-                </CardContent>
-            </Card>
+  <!-- Cards container -->
+  <div class="teams-cards-container">
+    {#each teams as team (team.id)}
+      <div class="team-card" on:click={() => goToDashboard(team.id)}>
+        <div class="team-avatar-container">
+          <!-- Square, full-width avatar banner for each team card -->
+          <Avatar
+            name={team.name}
+            fill={true}
+            options={{ background: '0052d4', color: 'fff', bold: true, rounded: false }}
+            className="team-avatar"
+          />
+          <button class="team-menu-btn" on:click={(e) => toggleTeamMenu(team.id, e)}>&#8942;</button>
+        </div>
+        <div class="team-info">
+          <div class="info-item"><span class="info-title">Team Name:</span><span class="info-value">{team.name}</span></div>
+          <div class="info-item"><span class="info-title">Project:</span><span class="info-value">{team.projectname}</span></div>
+          <div class="info-item"><span class="info-title">Description:</span><span class="info-value">{team.description}</span></div>
         </div>
 
-        <Card>
-            <CardHeader>
-                <CardTitle>Team Connection Flow</CardTitle>
-                <CardDescription>
-                    Team onboarding uses a dedicated transition flow. Each step
-                    slides down, fades out, and reveals the next step while you
-                    connect to a workspace.
-                </CardDescription>
-            </CardHeader>
-            <CardContent class="space-y-4">
-                <div class="flex flex-wrap gap-2">
-                    <Button
-                        variant={teamFlowMode === 'join'
-                            ? 'default'
-                            : 'outline'}
-                        disabled={busyAction === 'join' ||
-                            busyAction === 'create'}
-                        onClick={() => switchTeamFlow('join')}
-                    >
-                        Join Existing Team
-                    </Button>
-                    <Button
-                        variant={teamFlowMode === 'create'
-                            ? 'default'
-                            : 'outline'}
-                        disabled={busyAction === 'join' ||
-                            busyAction === 'create'}
-                        onClick={() => switchTeamFlow('create')}
-                    >
-                        Create New Team
-                    </Button>
-                </div>
-
-                {#key `${teamFlowMode}-${teamFlowStep}-${teamFlowKey}`}
-                    <div
-                        class="rounded-md border bg-muted/20 p-4 shadow-sm"
-                        in:fly={{
-                            y: 24,
-                            duration: 260,
-                            opacity: 0.15,
-                            easing: cubicOut,
-                        }}
-                        out:fly={{
-                            y: 16,
-                            duration: 180,
-                            opacity: 0,
-                            easing: cubicInOut,
-                        }}
-                    >
-                        {#if teamFlowStep === 'form' && teamFlowMode === 'join'}
-                            <div class="space-y-3">
-                                <h3 class="text-sm font-semibold">
-                                    Step 1: Enter team invitation
-                                </h3>
-                                <label class="flex flex-col gap-1 text-sm">
-                                    <span class="font-medium">Team Code</span>
-                                    <input
-                                        class="fx-input h-10 rounded-md border border-input bg-background px-3"
-                                        maxlength="6"
-                                        value={joinCode}
-                                        oninput={(event) => {
-                                            const target =
-                                                event.currentTarget as HTMLInputElement;
-                                            joinCode = target.value;
-                                        }}
-                                        placeholder="ABC123"
-                                    />
-                                </label>
-                                <Button
-                                    class="w-full"
-                                    disabled={busyAction === 'join'}
-                                    onClick={submitJoin}
-                                >
-                                    {busyAction === 'join'
-                                        ? 'Joining...'
-                                        : 'Start Connection'}
-                                </Button>
-                            </div>
-                        {:else if teamFlowStep === 'form' && teamFlowMode === 'create'}
-                            <div class="space-y-3">
-                                <h3 class="text-sm font-semibold">
-                                    Step 1: Create your team workspace
-                                </h3>
-                                <label class="flex flex-col gap-1 text-sm">
-                                    <span class="font-medium">Team Name</span>
-                                    <input
-                                        class="fx-input h-10 rounded-md border border-input bg-background px-3"
-                                        value={createName}
-                                        oninput={(event) => {
-                                            const target =
-                                                event.currentTarget as HTMLInputElement;
-                                            createName = target.value;
-                                        }}
-                                        placeholder="Platform Builders"
-                                    />
-                                </label>
-
-                                <label class="flex flex-col gap-1 text-sm">
-                                    <span class="font-medium">Project Name</span
-                                    >
-                                    <input
-                                        class="fx-input h-10 rounded-md border border-input bg-background px-3"
-                                        value={createProject}
-                                        oninput={(event) => {
-                                            const target =
-                                                event.currentTarget as HTMLInputElement;
-                                            createProject = target.value;
-                                        }}
-                                        placeholder="Platform-IO Remake"
-                                    />
-                                </label>
-
-                                <label class="flex flex-col gap-1 text-sm">
-                                    <span class="font-medium">Description</span>
-                                    <textarea
-                                        class="fx-input min-h-24 rounded-md border border-input bg-background px-3 py-2"
-                                        value={createDescription}
-                                        oninput={(event) => {
-                                            const target =
-                                                event.currentTarget as HTMLTextAreaElement;
-                                            createDescription = target.value;
-                                        }}
-                                        placeholder="Write what this team is building"
-                                    ></textarea>
-                                </label>
-
-                                <Button
-                                    class="w-full"
-                                    disabled={busyAction === 'create'}
-                                    onClick={submitCreate}
-                                >
-                                    {busyAction === 'create'
-                                        ? 'Creating...'
-                                        : 'Start Connection'}
-                                </Button>
-                            </div>
-                        {:else if teamFlowStep === 'connecting'}
-                            <div class="space-y-3 text-sm">
-                                <h3 class="font-semibold">
-                                    Step 2: Connecting you to team workspace
-                                </h3>
-                                <p class="text-muted-foreground">
-                                    Preparing team context, syncing workspace
-                                    access, and making this team available for
-                                    dashboard, tasks, chat, files, and AI.
-                                </p>
-                                <div class="team-flow-progress-track">
-                                    <div class="team-flow-progress-bar"></div>
-                                </div>
-                                <p class="text-xs text-muted-foreground">
-                                    Please wait while we finish your team
-                                    connection.
-                                </p>
-                            </div>
-                        {:else}
-                            <div class="space-y-3 text-sm">
-                                <h3 class="font-semibold">
-                                    Step 3: Team connection complete
-                                </h3>
-                                <p>
-                                    You are now connected to
-                                    <span class="font-semibold">
-                                        {connectedTeamName || 'your workspace'}
-                                    </span>.
-                                </p>
-                                <p class="text-muted-foreground">
-                                    Continue to your dashboard or connect
-                                    another team.
-                                </p>
-                                <div class="flex flex-wrap gap-2">
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => nextFlowView('form')}
-                                    >
-                                        Connect Another Team
-                                    </Button>
-                                    <Button asChild>
-                                        {#snippet children(props)}
-                                            <Link
-                                                {...props}
-                                                href={dashboard()}
-                                                class={props.class}
-                                            >
-                                                Go To Dashboard
-                                            </Link>
-                                        {/snippet}
-                                    </Button>
-                                </div>
-                            </div>
-                        {/if}
-                    </div>
-                {/key}
-            </CardContent>
-        </Card>
-
-        {#if error}
-            <p class="text-sm text-red-600">{error}</p>
+        {#if menuTeamId === team.id && !showTeamCode}
+          <div class="team-menu-dialog" on:click|stopPropagation>
+            <button class="team-menu-item" on:click={(e) => handleShowCode(team.id, e)}>Show Code</button>
+            <button class="team-menu-item2" on:click={(e) => handleLeaveTeam(team.id, e)}>Leave</button>
+          </div>
         {/if}
-        {#if success}
-            <p class="text-sm text-green-600">{success}</p>
+
+        {#if menuTeamId === team.id && showTeamCode}
+          <div class="team-code-dialog" on:click|stopPropagation>
+            <p>Team Code: {team.code}</p>
+            <button on:click={() => { menuTeamId = null; showTeamCode = false; }}>Close</button>
+          </div>
         {/if}
+      </div>
+    {/each}
+
+    <!-- Add card -->
+    <div class="team-card add-card" on:click={() => showAddDialog = true}>
+      <div class="add-card-content">
+        <span class="plus-icon">+</span>
+        <p>Add</p>
+      </div>
     </div>
+  </div>
+
+  <!-- Add Dialog -->
+  {#if showAddDialog}
+    <div class="add-dialog-overlay">
+      <div class="add-dialog-content2">
+        <button class="close-dialog-btn" on:click={closeAddDialog}>&times;</button>
+        <div class="join-create-options">
+          <div class="join-team-box">
+            <h3>Join Team</h3>
+            <input maxlength="6" type="text" placeholder="Team Code" bind:value={joinCode} class="join-input" />
+            <button class="join-btn" on:click={joinTeam}>Join</button>
+          </div>
+          <div class="create-team-box">
+            <h3>Create Team</h3>
+            <input type="text" placeholder="Team Name" bind:value={teamName} class="create-input" />
+            <input type="text" placeholder="Project Name" bind:value={projectName} class="create-input" />
+            <input type="text" placeholder="Team Description" bind:value={teamDescription} class="create-input" />
+            <button class="create-btn" on:click={createTeam}>Create</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Leave Modal -->
+  {#if leaveModalTeamId}
+    <div class="modal-overlay">
+      <div class="modal-content">
+        <h3>Leave Team</h3>
+        <p>Are you sure you want to leave this team?</p>
+        <div class="modal-actions">
+          <button on:click={() => confirmLeaveTeam(leaveModalTeamId)} class="btn confirm-btn">Yes, Leave</button>
+          <button on:click={() => leaveModalTeamId = null} class="btn cancel-btn">Don't Leave</button>
+        </div>
+      </div>
+    </div>
+  {/if}
+  </div>
+</div>
 </AppLayout>
 
 <style>
-    .team-flow-progress-track {
-        position: relative;
-        width: 100%;
-        height: 0.5rem;
-        border-radius: 9999px;
-        background: hsl(var(--primary) / 0.2);
-        overflow: hidden;
-    }
+  /* Teams page — exact React CSS */
+  .teams-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    padding: 1rem;
+    background: url('/bg.png') center center no-repeat;
+    background-size: cover;
+  }
 
-    .team-flow-progress-bar {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 35%;
-        height: 100%;
-        border-radius: 9999px;
-        background: linear-gradient(
-            90deg,
-            hsl(var(--primary) / 0.2),
-            hsl(var(--primary) / 0.85),
-            hsl(var(--primary) / 0.2)
-        );
-        animation: team-flow-progress 1.2s linear infinite;
-    }
+  .feature-preview-banner {
+    margin: 0.75rem 1rem 0;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #f0d27a;
+    background: #fff6db;
+    color: #6a5000;
+    font-size: 0.95rem;
+    font-weight: 500;
+    z-index: 2;
+  }
 
-    @keyframes team-flow-progress {
-        0% {
-            transform: translateX(-130%);
-        }
-        100% {
-            transform: translateX(360%);
-        }
-    }
+  .feature-preview-disabled {
+    pointer-events: none;
+    opacity: 0.88;
+    filter: saturate(0.9);
+  }
 
-    @media (prefers-reduced-motion: reduce) {
-        .team-flow-progress-bar {
-            animation-duration: 2.4s;
-        }
-    }
+  .teams-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+    justify-content: center;
+    background: transparent;
+  }
+
+  .fan-icon-container {
+    width: 60px; height: 60px;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: opacity 0.2s ease;
+  }
+  .fan-icon-container:hover { opacity: 0.8; }
+  .fan-icon-container :global(svg path) {
+    fill: #8e44ad !important;
+    stroke: #fff !important;
+    stroke-width: 0.5px !important;
+    paint-order: fill stroke !important;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .teams-headline { font-size: 1.8rem; margin: 0; color: #fff; font-weight: 600; }
+
+  .teams-cards-container {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem; padding: 2rem 3rem; flex: 1; overflow-y: auto;
+    background: rgba(255,255,255,0.3); border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin: 1rem;
+  }
+
+  .team-card {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 1rem;
+    overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex; flex-direction: column; position: relative; height: 300px;
+  }
+  .team-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,82,212,0.2); }
+
+  .team-avatar-container {
+    position: relative;
+    height: 52%;
+    min-height: 150px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0052d4, #4364f7);
+  }
+  :global(.team-avatar) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
+  }
+
+  .team-menu-btn {
+    position: absolute; top: 8px; right: 8px; background: transparent;
+    border: none; font-size: 2rem; font-weight: bold; color: #fff;
+    cursor: pointer; z-index: 2; transition: color 0.2s;
+  }
+  .team-menu-btn:hover { color: #000; }
+
+  .team-info { padding: 0.5rem; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+  .info-item { display: flex; align-items: center; gap: 0.5rem; margin: 0.4rem 0; }
+  .info-title { font-size: 0.8rem; font-weight: 400; color: #4b5563; min-width: 80px; text-align: left; }
+  .info-value { font-size: 1rem; font-weight: 700; color: #2d3748; text-align: center; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .team-menu-dialog {
+    position: absolute; top: 50px; right: 8px; background: #fff;
+    border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.5rem;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15); animation: fadeIn 0.2s ease-out;
+    display: flex; flex-direction: column; gap: 6px; z-index: 10; width: 150px;
+  }
+  .team-menu-item, .team-menu-item2 {
+    background: #f3f4f6; border: none; padding: 6px 8px; border-radius: 0.5rem;
+    cursor: pointer; font-size: 0.85rem; transition: background 0.2s; text-align: left; color: #2d3748;
+  }
+  .team-menu-item:hover { background: #e2e8f0; }
+  .team-menu-item2 { background: #ef4444; color: #fff; }
+  .team-menu-item2:hover { background: #b91c1c; }
+
+  .team-code-dialog {
+    position: absolute; top: 40px; right: 8px; background: #fff;
+    border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.8rem;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15); animation: fadeIn 0.2s ease-out;
+    display: flex; flex-direction: column; gap: 8px; text-align: center; z-index: 10;
+  }
+  .team-code-dialog p { margin: 0; font-weight: 600; color: #333; }
+  .team-code-dialog button { padding: 6px 10px; background: #0052d4; color: #fff; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: background 0.2s; }
+  .team-code-dialog button:hover { background: #0041ac; }
+
+  .add-card {
+    border: 2px dashed #d1d5db; border-radius: 1rem; color: #6b7280;
+    display: flex; align-items: center; justify-content: center; padding: 1rem;
+    transition: all 0.2s ease-in-out;
+  }
+  .add-card:hover { transform: translateY(-2px); border: 2px dashed #0052d4; }
+  .add-card-content { display: flex; flex-direction: column; align-items: center; font-size: 0.9rem; }
+  .plus-icon { font-size: 2rem; font-weight: 600; margin-bottom: 0.2rem; color: #999; }
+
+  .add-dialog-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); display: flex; align-items: center;
+    justify-content: center; animation: fadeIn 0.2s ease-out; z-index: 9999;
+  }
+  .add-dialog-content2 {
+    background: #fff; border-radius: 1rem; padding: 1.5rem; width: 600px;
+    max-width: 90%; box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    position: relative; display: flex; flex-direction: column; gap: 1rem;
+  }
+  .close-dialog-btn {
+    background: transparent; border: none; font-size: 1.5rem; color: #666;
+    position: absolute; top: 1rem; right: 1rem; cursor: pointer; transition: color 0.2s;
+  }
+  .close-dialog-btn:hover { color: #333; }
+
+  .join-create-options { display: flex; flex-direction: row; gap: 3rem; justify-content: space-between; }
+  .join-team-box, .create-team-box { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+  .join-team-box h3, .create-team-box h3 { margin: 0; color: #2d3748; font-size: 1.1rem; text-align: center; font-weight: 600; }
+  .join-input, .create-input { padding: 0.6rem; border: 1px solid #ddd; border-radius: 0.5rem; font-size: 0.9rem; transition: border-color 0.2s; }
+  .create-input:focus { outline: none; border-color: #4dabf7; box-shadow: 0 0 0 2px rgba(77,171,247,0.1); }
+  .join-input:focus { outline: none; border-color: #c98bff; }
+  .join-btn, .create-btn { padding: 0.6rem; border-radius: 0.5rem; border: none; cursor: pointer; font-size: 0.9rem; transition: background 0.2s, transform 0.2s; font-weight: 600; color: #fff; }
+  .join-btn { background: #8e2de2; }
+  .join-btn:hover { background: #671da7; transform: translateY(-2px); }
+  .create-btn { background: #0052d4; }
+  .create-btn:hover { background: #0041ac; transform: translateY(-2px); box-shadow: 0 0 0 3px rgba(77,171,247,0.1); }
+
+  /* Leave modal */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); display: flex; align-items: center;
+    justify-content: center; z-index: 9999;
+  }
+  .modal-content {
+    background: #fff; border-radius: 12px; padding: 2rem; text-align: center;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2); max-width: 400px; width: 90%;
+  }
+  .modal-content h3 { margin: 0 0 10px; }
+  .modal-content p { margin: 0 0 20px; color: #666; }
+  .modal-actions { display: flex; gap: 10px; justify-content: center; }
+  .btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+  .confirm-btn { background: #ef4444; color: #fff; }
+  .confirm-btn:hover { background: #b91c1c; }
+  .cancel-btn { background: #e2e8f0; color: #333; }
+  .cancel-btn:hover { background: #cbd5e0; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 </style>
