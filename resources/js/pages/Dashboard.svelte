@@ -154,8 +154,8 @@
           <li style="color:gray">No tasks yet</li>
         {:else}
           {#each tasks as task (task.id)}
-            <li class="task-item" on:click={() => goto('/workspace/tasks')}>
-              <div class="task-left" on:click|stopPropagation>
+            <li class="task-item">
+              <div class="task-left">
                 <input
                   type="checkbox"
                   class="circular-checkbox2"
