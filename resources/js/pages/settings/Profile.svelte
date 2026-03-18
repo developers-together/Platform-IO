@@ -57,7 +57,7 @@
     <div class="profile-page" data-test="settings-profile-page">
         <div class="profile-grid">
             <!-- Read-only snapshot of the currently authenticated user -->
-            <section class="panel profile-summary">
+            <section class="panel profile-summary" data-test="settings-profile-summary">
                 <div class="summary-header">
                     <Avatar
                         name={authUser?.name || 'User'}
@@ -165,7 +165,7 @@
             </section>
 
             <!-- Team membership is displayed from server props for now -->
-            <section class="panel teams-panel">
+            <section class="panel teams-panel" data-test="settings-teams-panel">
                 <h3>My Teams</h3>
                 <p class="panel-subtitle">Your workspace memberships.</p>
 
@@ -187,7 +187,7 @@
             </section>
 
             <!-- Existing delete-account flow kept intact -->
-            <section class="panel delete-panel">
+            <section class="panel delete-panel" data-test="settings-danger-zone">
                 <h3>Danger Zone</h3>
                 <p class="panel-subtitle">Delete your account permanently.</p>
                 <DeleteUser />
