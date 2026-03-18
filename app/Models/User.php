@@ -69,7 +69,7 @@ class User extends Authenticatable
     }
     public function chats(): HasMany
     {
-        return $this->hasMany(chat::class);
+        return $this->hasMany(Chat::class);
     }
     // public function ai_chats(): HasMany
     // {
