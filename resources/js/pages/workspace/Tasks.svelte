@@ -220,6 +220,15 @@
   .check-button { background: none; border: none; cursor: pointer; padding: 0; }
   .check-icon { color: #cbd5e0; transition: var(--transition); }
   .check-button:hover .check-icon { color: #4299e1; transform: scale(1.1); }
+  .check-button:focus-visible,
+  .caret-button:focus-visible,
+  .icon-btn:focus-visible,
+  .add-button:focus-visible,
+  .completed-header:focus-visible {
+    outline: 2px solid #2b5ce7;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
 
   .caret-button { background: none; border: none; cursor: pointer; color: #718096; transition: transform 0.2s ease; padding: 0; }
   .caret-button:hover { transform: scale(1.2); }
