@@ -2,14 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+use Laravel\Fortify\Features;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\TaskController;
-use App\Http\Controllers\TeamController;
-use App\Http\Controllers\ChatController;
-use App\Http\Controllers\MessageController;
-use App\Http\Controllers\Ai_chatController;
-use App\Http\Controllers\Ai_messagesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +20,44 @@ use App\Http\Controllers\Ai_messagesController;
 
 // Landing / Welcome page (public)
 Route::inertia('/', 'Welcome')->name('home');
+Route::redirect('/home', '/dashboard');
+
+Route::middleware('guest')->group(function () {
+    Route::get('/login', fn (Request $request) => Inertia::render('auth/Login', [
+        'canResetPassword' => Features::enabled(Features::resetPasswords()),
+        'canRegister' => Features::enabled(Features::registration()),
+        'status' => $request->session()->get('status'),
+    ]))->name('login');
+
+    Route::get('/register', fn () => Inertia::render('auth/Register'))->name('register');
+
+    Route::get('/forgot-password', fn (Request $request) => Inertia::render('auth/ForgotPassword', [
+        'status' => $request->session()->get('status'),
+    ]))->name('password.request');
+
+    Route::get('/reset-password/{token}', fn (Request $request, string $token) => Inertia::render('auth/ResetPassword', [
+        'email' => $request->string('email')->toString(),
+        'token' => $token,
+    ]))->name('password.reset');
+
+    Route::get('/two-factor-challenge', fn () => Inertia::render('auth/TwoFactorChallenge'))
+        ->name('two-factor.login');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/email/verify', fn (Request $request) => Inertia::render('auth/VerifyEmail', [
+        'status' => $request->session()->get('status'),
+    ]))->name('verification.notice');
+
+    Route::get('/user/confirm-password', fn () => Inertia::render('auth/ConfirmPassword'))
+        ->name('password.confirm');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::inertia('/dashboard', 'Dashboard')->name('dashboard');
+    Route::inertia('/workspace/chat', 'workspace/Chat')->name('workspace.chat');
+    Route::redirect('/workspace', '/workspace/chat');
+});
 
 /*
 |--------------------------------------------------------------------------
