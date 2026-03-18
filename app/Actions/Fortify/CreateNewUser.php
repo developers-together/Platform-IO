@@ -44,7 +44,7 @@ class CreateNewUser implements CreatesNewUsers
             'gender'   => $input['gender'] ?? null,
             'job'      => $input['job'] ?? null,
             'phone'    => $input['phone'] ?? null,
-            'timezone' => $input['timezone'] ?? null,
+            'timezone' => $input['timezone'] ?? 'UTC',
             'profile'  => $profilePath,
         ]);
     }
