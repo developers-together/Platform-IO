@@ -78,7 +78,7 @@
 <AppLayout>
 <div class="ai-page">
   <div class="feature-preview-banner" data-test="ai-preview-banner">{FEATURE_STATUS_NOTE}</div>
-  <div class="feature-preview-disabled" aria-disabled="true" inert>
+  <div class="feature-preview-disabled" aria-disabled="true" title={FEATURE_STATUS_NOTE} inert>
   <div class="ai-sidebar">
     <div class="ai-sidebar-header">
       <h3>🤖 AI Chats</h3>
