@@ -276,6 +276,14 @@
     border: none; background: transparent; padding: 0;
   }
   .fan-icon-container:hover { opacity: 0.8; }
+  .fan-icon-container:focus-visible,
+  .team-menu-btn:focus-visible,
+  .add-card:focus-visible,
+  .team-menu-item:focus-visible,
+  .team-menu-item2:focus-visible {
+    outline: 2px solid #2b5ce7;
+    outline-offset: 2px;
+  }
   .fan-icon-container :global(svg path) {
     fill: #8e44ad !important;
     stroke: #fff !important;
