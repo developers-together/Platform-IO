@@ -173,7 +173,7 @@
         {/if}
 
         {#if menuTeamId === team.id && showTeamCode}
-          <div class="team-code-dialog" on:click|stopPropagation>
+          <div class="team-code-dialog">
             <p>Team Code: {team.code}</p>
             <button on:click={() => { menuTeamId = null; showTeamCode = false; }}>Close</button>
           </div>
