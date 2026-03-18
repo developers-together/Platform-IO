@@ -135,7 +135,7 @@
               </div>
 
               <div class="task-right">
-                <button class="caret-button" on:click={() => expandedId = expandedId === task.id ? null : task.id}>
+                <button class="caret-button" aria-label={`Toggle details for ${task.title}`} on:click={() => expandedId = expandedId === task.id ? null : task.id}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points={expandedId === task.id ? "18 15 12 9 6 15" : "6 9 12 15 18 9"}/></svg>
                 </button>
                 <span class="star-icon" class:active={task.stared} role="button" tabindex="0" on:click={() => toggleStar(task)} on:keydown={(e) => { if (e.key === 'Enter') toggleStar(task); }}>★</span>
