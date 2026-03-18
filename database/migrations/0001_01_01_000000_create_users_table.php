@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('job', 100)->nullable();
             // $table->string('location')->nullable(); // Location
             $table->string('phone', 20)->nullable()->unique();
-            $table->string('timezone',50);
+            $table->string('timezone',50)->default('UTC');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

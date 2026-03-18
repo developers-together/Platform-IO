@@ -25,7 +25,7 @@ class CreateNewUser implements CreatesNewUsers
             'gender' => 'nullable|string',
             'job' => 'nullable|string',
             'phone' => 'nullable|string',
-            'timezone' => 'required|string|max:50',
+            'timezone' => 'nullable|string|max:50',
             'profile' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
 
         ])->validate();
