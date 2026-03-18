@@ -44,9 +44,9 @@
 <AppHead title="Profile" />
 
 <AppLayout>
-    <div class="profile-page">
+    <div class="profile-page" data-test="user-profile-page">
         <div class="profile-grid">
-            <section class="panel user-card">
+            <section class="panel user-card" data-test="user-profile-summary">
                 <div class="user-header">
                     <Avatar
                         name={user_data?.name || 'User'}
@@ -85,7 +85,7 @@
                 </a>
             </section>
 
-            <section class="panel contacts-card">
+            <section class="panel contacts-card" data-test="user-profile-contacts">
                 <h2>Contacts</h2>
                 <p class="subtitle">People connected to this profile.</p>
 
