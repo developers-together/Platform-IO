@@ -154,12 +154,10 @@
       </div>
     {/if}
 
-    <ul class="folder-list">
-      {#if currentPath !== ROOT}
-        <li on:click={goUp} role="button" tabindex="0" on:keydown={(e) => {
-          if (e.key === 'Enter') goUp();
-        }}>
-          ⬅ Back
+      <ul class="folder-list">
+        {#if currentPath !== ROOT}
+        <li class="has-nav-button">
+          <button type="button" class="folder-nav-btn" on:click={goUp}>⬅ Back</button>
         </li>
       {/if}
 
@@ -331,6 +329,20 @@
   .folder-list li.active {
     background: #e3f2fd;
     font-weight: 600;
+  }
+
+  .folder-list li.has-nav-button {
+    padding: 0;
+  }
+
+  .folder-nav-btn {
+    width: 100%;
+    border: none;
+    background: transparent;
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
   }
 
   .folder-list .empty-entry {
