@@ -130,16 +130,18 @@
   <div class="feature-preview-disabled" aria-disabled="true" inert>
   <!-- Header -->
   <div class="teams-header">
-    <div
+    <button
+      type="button"
       class="fan-icon-container"
       on:mouseenter={() => fanHovered = true}
       on:mouseleave={() => fanHovered = false}
       on:click={() => fanFastMode = !fanFastMode}
+      aria-label="Toggle fan animation speed"
     >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="60" height="60" fill="currentColor" style="transform: rotate({fanRotation}deg); cursor: pointer;">
         <path d={fanPath} />
       </svg>
-    </div>
+    </button>
     <h2 class="teams-headline">Which team do you want to log into?</h2>
   </div>
 
@@ -271,6 +273,7 @@
     width: 60px; height: 60px;
     display: inline-flex; align-items: center; justify-content: center;
     cursor: pointer; transition: opacity 0.2s ease;
+    border: none; background: transparent; padding: 0;
   }
   .fan-icon-container:hover { opacity: 0.8; }
   .fan-icon-container :global(svg path) {
