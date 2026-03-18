@@ -77,7 +77,7 @@
 
 <AppLayout>
 <div class="ai-page">
-  <div class="feature-preview-banner">{FEATURE_STATUS_NOTE}</div>
+  <div class="feature-preview-banner" data-test="ai-preview-banner">{FEATURE_STATUS_NOTE}</div>
   <div class="feature-preview-disabled" aria-disabled="true" inert>
   <div class="ai-sidebar">
     <div class="ai-sidebar-header">
@@ -92,7 +92,7 @@
       </div>
     {/if}
 
-    <ul class="session-list">
+    <ul class="session-list" data-test="ai-session-list">
       {#each chatSessions as session (session.id)}
         <li class:active={activeSession?.id === session.id}>
           {#if editSessionId === session.id}
@@ -143,8 +143,8 @@
           on:keydown={(e) => { if (e.key === 'Enter') sendMessage(); }}
           disabled={isLoading}
         />
-        <button type="button" aria-label="Send message" on:click={sendMessage} disabled={isLoading}>📤</button>
-        <button type="button" aria-label="Search web" on:click={webSearch} disabled={isLoading} title="Web Search">🔍</button>
+        <button type="button" data-test="ai-send-button" aria-label="Send message" on:click={sendMessage} disabled={isLoading}>📤</button>
+        <button type="button" data-test="ai-web-search-button" aria-label="Search web" on:click={webSearch} disabled={isLoading} title="Web Search">🔍</button>
       </div>
     {:else}
       <div class="no-session">
