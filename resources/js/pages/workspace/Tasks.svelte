@@ -89,7 +89,7 @@
 <AppLayout>
 <div class="tasks-page">
   <p class="feature-preview-banner" data-test="tasks-preview-banner">{FEATURE_STATUS_NOTE}</p>
-  <div class="feature-preview-disabled" aria-disabled="true" inert>
+  <div class="feature-preview-disabled" aria-disabled="true" title={FEATURE_STATUS_NOTE} inert>
   <div class="tasks-header">
     <h1>Tasks</h1>
   </div>
