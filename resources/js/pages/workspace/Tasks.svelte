@@ -138,7 +138,7 @@
                 <button type="button" class="caret-button" aria-label={`Toggle details for ${task.title}`} on:click={() => expandedId = expandedId === task.id ? null : task.id}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points={expandedId === task.id ? "18 15 12 9 6 15" : "6 9 12 15 18 9"}/></svg>
                 </button>
-                <span class="star-icon" class:active={task.stared} role="button" tabindex="0" on:click={() => toggleStar(task)} on:keydown={(e) => { if (e.key === 'Enter') toggleStar(task); }}>★</span>
+                <button type="button" class="star-icon icon-btn" class:active={task.stared} aria-label={`Toggle star for ${task.title}`} on:click={() => toggleStar(task)}>★</button>
                 <span class="edit-icon" role="button" tabindex="0" on:click={() => { editingTask = {...task}; }} on:keydown={(e) => { if (e.key === 'Enter') editingTask = {...task}; }}>✏️</span>
                 <span class="delete-icon" role="button" tabindex="0" on:click={() => { confirmDeleteId = task.id; }} on:keydown={(e) => { if (e.key === 'Enter') confirmDeleteId = task.id; }}>🗑️</span>
               </div>
@@ -225,6 +225,7 @@
   .caret-button:hover { transform: scale(1.2); }
 
   .star-icon, .edit-icon, .delete-icon { font-size: 1.3rem; cursor: pointer; transition: var(--transition); }
+  .icon-btn { border: none; background: transparent; padding: 0; line-height: 1; }
   .star-icon:hover { transform: scale(1.2); color: #f6ad55; }
   .star-icon.active { color: #f6ad55; }
   .edit-icon:hover { color: #4299e1; transform: scale(1.1); }
