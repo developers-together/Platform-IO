@@ -161,10 +161,8 @@
         </li>
       {/if}
 
-      <li class:active={currentPath === ROOT} on:click={() => openFolder(ROOT)} role="button" tabindex="0" on:keydown={(e) => {
-        if (e.key === 'Enter') openFolder(ROOT);
-      }}>
-        📂 Root
+      <li class:active={currentPath === ROOT} class="has-nav-button">
+        <button type="button" class="folder-nav-btn" on:click={() => openFolder(ROOT)}>📂 Root</button>
       </li>
 
       {#each visibleDirectories as folder (folder.path)}
