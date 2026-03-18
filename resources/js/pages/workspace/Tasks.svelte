@@ -109,8 +109,8 @@
                 <textarea id={`task-description-${task.id}`} class="task-edit-description" bind:value={editingTask.description}></textarea>
               </div>
               <div class="edit-field">
-                <label>Due Date</label>
-                <input type="date" class="task-edit-due" bind:value={editingTask.end} />
+                <label for={`task-due-${task.id}`}>Due Date</label>
+                <input id={`task-due-${task.id}`} type="date" class="task-edit-due" bind:value={editingTask.end} />
               </div>
             </div>
             <div class="edit-form-actions">
