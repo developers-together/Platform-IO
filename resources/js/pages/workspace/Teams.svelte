@@ -126,7 +126,7 @@
 
 <AppLayout>
 <div class="teams-page">
-  <p class="feature-preview-banner">{FEATURE_STATUS_NOTE}</p>
+  <p class="feature-preview-banner" data-test="teams-preview-banner">{FEATURE_STATUS_NOTE}</p>
   <div class="feature-preview-disabled" aria-disabled="true" inert>
   <!-- Header -->
   <div class="teams-header">
@@ -146,9 +146,9 @@
   </div>
 
   <!-- Cards container -->
-  <div class="teams-cards-container">
+  <div class="teams-cards-container" data-test="teams-cards-container">
     {#each teams as team (team.id)}
-      <div class="team-card">
+      <div class="team-card" data-test={`team-card-${team.id}`}>
         <div class="team-avatar-container">
           <!-- Square, full-width avatar banner for each team card -->
           <Avatar
@@ -182,7 +182,7 @@
     {/each}
 
     <!-- Add card -->
-    <button type="button" class="team-card add-card" on:click={() => showAddDialog = true}>
+    <button type="button" class="team-card add-card" data-test="teams-add-card" on:click={() => showAddDialog = true}>
       <div class="add-card-content">
         <span class="plus-icon">+</span>
         <p>Add</p>
@@ -192,7 +192,7 @@
 
   <!-- Add Dialog -->
   {#if showAddDialog}
-    <div class="add-dialog-overlay">
+    <div class="add-dialog-overlay" data-test="teams-add-dialog">
       <div class="add-dialog-content2">
         <button type="button" class="close-dialog-btn" aria-label="Close add team dialog" on:click={closeAddDialog}>&times;</button>
         <div class="join-create-options">
