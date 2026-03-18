@@ -166,7 +166,7 @@
         </div>
 
         {#if menuTeamId === team.id && !showTeamCode}
-          <div class="team-menu-dialog" on:click|stopPropagation>
+          <div class="team-menu-dialog">
             <button class="team-menu-item" on:click={(e) => handleShowCode(team.id, e)}>Show Code</button>
             <button class="team-menu-item2" on:click={(e) => handleLeaveTeam(team.id, e)}>Leave</button>
           </div>
