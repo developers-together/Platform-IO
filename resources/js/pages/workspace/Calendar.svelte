@@ -59,7 +59,7 @@
 <AppLayout>
 <div class="calendar-page">
   <p class="feature-preview-banner" data-test="calendar-preview-banner">{FEATURE_STATUS_NOTE}</p>
-  <div class="feature-preview-disabled" aria-disabled="true" inert>
+  <div class="feature-preview-disabled" aria-disabled="true" title={FEATURE_STATUS_NOTE} inert>
   <div class="calendar-header" data-test="calendar-header">
     <button type="button" class="nav-btn" data-test="calendar-prev-month" on:click={prevMonth}>◀</button>
     <h1>{monthName} {year}</h1>
