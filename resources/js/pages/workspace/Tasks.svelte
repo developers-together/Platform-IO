@@ -139,7 +139,7 @@
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points={expandedId === task.id ? "18 15 12 9 6 15" : "6 9 12 15 18 9"}/></svg>
                 </button>
                 <button type="button" class="star-icon icon-btn" class:active={task.stared} aria-label={`Toggle star for ${task.title}`} on:click={() => toggleStar(task)}>★</button>
-                <span class="edit-icon" role="button" tabindex="0" on:click={() => { editingTask = {...task}; }} on:keydown={(e) => { if (e.key === 'Enter') editingTask = {...task}; }}>✏️</span>
+                <button type="button" class="edit-icon icon-btn" aria-label={`Edit ${task.title}`} on:click={() => { editingTask = {...task}; }}>✏️</button>
                 <span class="delete-icon" role="button" tabindex="0" on:click={() => { confirmDeleteId = task.id; }} on:keydown={(e) => { if (e.key === 'Enter') confirmDeleteId = task.id; }}>🗑️</span>
               </div>
             </div>
