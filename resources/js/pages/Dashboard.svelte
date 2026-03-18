@@ -173,7 +173,7 @@
 
     <!-- RECENT CHAT CARD -->
     <div class="card chat-card">
-      <h3 on:click={() => goto('/workspace/chat')} style="cursor:pointer">Recent Chat</h3>
+      <button type="button" class="card-title-link" on:click={() => goto('/workspace/chat')}>Recent Chat</button>
       <ul>
         {#if chatGroups.length === 0}
           <li style="color:gray">{chatStatusMessage}</li>
