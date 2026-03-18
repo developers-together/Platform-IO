@@ -238,9 +238,9 @@
 
     <!-- CALENDAR CARD -->
     <div class="card calendar-card">
-      <h3 on:click={() => goto('/workspace/calendar')} style="cursor:pointer">
+      <button type="button" class="card-title-link" on:click={() => goto('/workspace/calendar')}>
         Calendar <span class="locked-tag">Preview</span>
-      </h3>
+      </button>
       <div class="calendar-grid">
         {#each days as day}
           <div class="calendar-day" on:click={() => goto('/workspace/calendar')} style="cursor:pointer">
