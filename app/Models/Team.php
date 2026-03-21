@@ -22,14 +22,14 @@ class Team extends Model
 
     protected $fillable = ['name','description','project_name'];
 
-    public function tasks(): HasMany
+    public function taskLists(): HasMany
     {
-        return $this->hasMany(Task::class);
+        return $this->hasMany(TaskList::class);
     }
 
     public function comms(): HasMany
     {
-        return $this->hasMany(Comm::class);
+        return $this->hasMany(Communication::class);
     }
     // public function ai_chats(): HasMany
     // {

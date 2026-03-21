@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\TaskList;
+use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,7 +19,8 @@ class TaskListFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => fake()->words(fake()->numberBetween(1, 4), true),
+            'title'   => fake()->words(fake()->numberBetween(1, 4), true),
+            'team_id' => Team::factory(),
         ];
     }
 }

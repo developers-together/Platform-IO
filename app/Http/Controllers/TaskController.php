@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use App\Models\TaskList;
 use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -19,93 +20,93 @@ class TaskController extends Controller
     // Display all team tasks
     public function index(Team $team)
     {
-        $tasks = $team->tasks()->paginate(10);
-        // return response()->json($tasks);
+        Gate::authorize('viewAny',Auth::user(), $team);
+        $lists = TaskList::wherePivot('team_id',$team->id);
 
-        return Inertia::render('teams/{team}/tasks');
+        return Inertia::render('tasks/task',['task_lists' => $lists]);
     }
 
 
-    public function show(Team $team,Task $task)
+    public function show(TaskList $list)
     {
         $user = Auth::user();
 
+        Gate::authorize('view',Auth::user(),$list);
 
         // return $task->toJson();
-        if($user->teams->findOrFail($team) && $team->tasks->findOrFail($task->id))
-        return Inertia::render('teams/{team}/tasks/{task}');
+        // if($user->teams->findOrFail($team) && $team->tasks->findOrFail($task->id))
+        $tasks = $list->tasks()->all();
+        return Inertia::render('tasklists/tasklist',['data' => $tasks]);
     }
 
      // Store a new task in the database
-     public function store(Request $request, Team $team)
-     {
-         Gate::authorize('create', Task::class);
+     public function store(Request $request, TaskList $list)
+    {
+        $team = $list->team()->first();
+         Gate::authorize('create', Auth::user(),$team);
 
          $validated = $request->validate([
              'title' => 'required|string|max:255',
              'description' => 'nullable|string',
-             'starred'=> 'nullable|boolean',
+             // 'starred'=> 'nullable|boolean',
              // 'end' => 'nullable|date',
              // 'start' => 'nullable|date',
              'deadline' => 'nullable|date',
              'completed' => 'nullable|boolean',
              // 'category' => 'nullable|string|max:255',
-             'priority' => 'in:must,should,could,willnot',
-             'parent_task' => 'exists:tasks',
+             'priority' => 'sometimes|in:high,medium,low',
+             // 'parent_task' => 'exists:tasks',
+
          ]);
 
-         $user = Auth::user();
-
-         // Check if the user belongs to this team
-         if (!$team->users()->where('user_id', $user->id)->exists()) {
-             return response()->json(['error' => 'Unauthorized: not a member of this team'], 403);
-         }
 
          // Create the task with the team_id from route
          $task = Task::create([
              'title' => $validated['title'],
              'description' => $validated['description'] ?? null,
-             'starred' => $validated['starred'] ?? false,
+             // 'starred' => $validated['starred'] ?? false,
              // 'end' => $validated['end'] ?? null,
              // 'start' => $validated['start'] ?? null,
              'deadline' => $validated['deadline'],
              // 'category' => $validated['category'] ?? null,
              'completed' => $validated['completed'] ?? false,
              'team_id' => $team->id, // ← from route!
-             'priority' => $validated['priority'],
-             'parent_task' => $validated['parent_task']
+             'priority' => $validated['priority'] ?? 'medium',
+             // 'parent_task' => $validated['parent_task']
+             'task_list_id' => $list->id
          ]);
 
-         return Inertia::render('/teams/{team}/tasks');
+         return redirect('/dashboard');
      }
 
 
     // Update an existing task in the database
     public function update(Request $request , Task $task)
     {
-        Gate::authorize('update', $task);
 
         $user = AUTH::user();
+        $list = $task->taskList()->first();
 
-        $team = $task->team()->first();
+        Gate::authorize('update',$user, $list);
+
+        $team = $list->team()->first();
 
          $validated = $request->validate([
              'title' => 'required|string|max:255',
              'description' => 'nullable|string',
-             'starred'=> 'nullable|boolean',
+             // 'starred'=> 'nullable|boolean',
              // 'end' => 'nullable|date',
              // 'start' => 'nullable|date',
              'deadline' => 'nullable|date',
              'completed' => 'nullable|boolean',
              // 'category' => 'nullable|string|max:255',
-             'priority' => 'in:must,should,could,willnot',
-             'parent_task' => 'exists:tasks',
+             'priority' => 'sometimes|in:high,medium,low',
+
+             // 'parent_task' => 'exists:tasks',
          ]);
 
-        if($task->team->users()->where('user_id', $user->id)){
 
-        $task
-        ->update([
+        $task->update([
              'title' => $validated['title'],
              'description' => $validated['description'] ?? null,
              'starred' => $validated['starred'] ?? false,
@@ -115,19 +116,19 @@ class TaskController extends Controller
              // 'category' => $validated['category'] ?? null,
              'completed' => $validated['completed'] ?? false,
              'team_id' => $team->id, // ← from route!
-             'priority' => $validated['priority'],
-             'parent_task' => $validated['parent_task']
+             'priority' => $validated['priority'] ?? 'medium',
+             // 'parent_task' => $validated['parent_task']
+             'task_list_id' => $list->id
         ]);
 
-    }
-
-        return Inertia::render('/teams/{team}/tasks/{task}');
+        // return Inertia::render('/teams/{team}/tasks/{task}');
+        return back()->with(['success'=> 'task changed successfully']);
     }
 
     // Delete a task from the database
     public function destroy(Task $task)
     {
-        $this->authorize('delete', $task);
+        $this->authorize('delete', Auth::user(), $task->taskList()->first());
 
         // $validated = $request->validate([
         //     'task_id' => 'required|exists:tasks,id',
@@ -136,12 +137,13 @@ class TaskController extends Controller
         // $task = Task::find($validated['task_id']);
 
         if (!$task) {
-            return response()->json(['success' => false, 'message' => 'Task not found'], 404);
+            return back()->with(['success' => false, 'message' => 'Task not found'], 404);
         }
 
         $task->delete();
 
-        return Inertia::render('/');
+        // return Inertia::render('/');
+        return redirect('/');
         // return response()->json(['success' => true, 'message' => 'Task deleted successfully']);
     }
 

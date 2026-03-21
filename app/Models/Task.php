@@ -20,10 +20,6 @@ class Task extends Model
     //     'completed' => 'boolean',
     // ];
 
-    public function team(): BelongsTo
-    {
-        return $this->belongsTo(Team::class);
-    }
 
     public function taskList(): BelongsTo
     {

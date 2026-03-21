@@ -2,29 +2,27 @@
 
 namespace App\Policies;
 
-use App\Models\Task;
 use App\Models\TaskList;
-use App\Models\Team;
 use App\Models\User;
+use App\Models\Team;
 use Illuminate\Auth\Access\Response;
 
-class TaskPolicy
+class TaskListPolicy
 {
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user, Team $team): bool
     {
-        return $user->teams()->wherePivot('team_id',$team->id)->exists();
+        return $user->teams()->wherePivot('Team_id',$team->id)->exists();
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, TaskList $list): bool
+    public function view(User $user, TaskList $taskList): bool
     {
-        return $list->team->users()->where('user_id', $user->id)->exists();
-
+        return $user->teams()->wherePivot('team_id',$taskList->team()->first()->id)->exists();
     }
 
     /**
@@ -32,29 +30,29 @@ class TaskPolicy
      */
     public function create(User $user, Team $team): bool
     {
-        return $team->users()->wherePivot('user_id',$user->id)->exists();
+        return $user->teams()->wherePivot('team_id',$team->id)->exists();
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, TaskList $list): bool
+    public function update(User $user, TaskList $taskList): bool
     {
-        return $list->team->users()->where('user_id', $user->id)->exists();
+        return $user->teams()->wherePivot('team_id',$taskList->team()->first()->id)->exists();
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, TaskList $list): bool
+    public function delete(User $user, TaskList $taskList): bool
     {
-        return $list->team->users()->where('user_id', $user->id)->exists();
+        return $user->teams()->wherePivot('team_id',$taskList->team()->first()->id)->exists();
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Task $task): bool
+    public function restore(User $user, TaskList $taskList): bool
     {
         return false;
     }
@@ -62,7 +60,7 @@ class TaskPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Task $task): bool
+    public function forceDelete(User $user, TaskList $taskList): bool
     {
         return false;
     }
