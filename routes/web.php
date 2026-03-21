@@ -55,7 +55,12 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('/dashboard', 'Dashboard')->name('dashboard');
+    Route::inertia('/workspace/teams', 'workspace/Teams')->name('workspace.teams');
+    Route::inertia('/workspace/tasks', 'workspace/Tasks')->name('workspace.tasks');
+    Route::inertia('/workspace/calendar', 'workspace/Calendar')->name('workspace.calendar');
     Route::inertia('/workspace/chat', 'workspace/Chat')->name('workspace.chat');
+    Route::inertia('/workspace/files', 'workspace/Files')->name('workspace.files');
+    Route::inertia('/workspace/ai', 'workspace/Ai')->name('workspace.ai');
     Route::redirect('/workspace', '/workspace/chat');
 });
 

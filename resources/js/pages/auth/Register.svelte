@@ -1,10 +1,13 @@
 <script>
-    import { Form } from '@inertiajs/svelte';
+    import { Form, router } from '@inertiajs/svelte';
     import AppHead from '@/components/AppHead.svelte';
     import { store } from '@/routes/register';
 
+    // Keep links explicit so auth navigation stays predictable.
     const loginPath = '/login';
 
+    // Route helper generated from Laravel routes.
+    // `store.form()` points to POST /register handled by Fortify.
     const hasErrors = (errors) =>
         Boolean(
             errors?.name ||
@@ -12,25 +15,45 @@
                 errors?.password ||
                 errors?.password_confirmation,
         );
+
+    // After successful registration, move authenticated users to dashboard.
+    function redirectToDashboardIfAuthenticated(inertiaPage) {
+        const authenticatedUser = inertiaPage?.props?.auth?.user;
+        const componentName = inertiaPage?.component ?? '';
+
+        if (!authenticatedUser || componentName === 'Dashboard') {
+            return;
+        }
+
+        router.visit('/dashboard', {
+            replace: true,
+            preserveState: false,
+            preserveScroll: false,
+        });
+    }
 </script>
 
 <AppHead title="Register" />
 
-<div class="register-container">
-    <div class="register-card">
+<div class="register-container" data-test="register-page">
+    <div class="register-card" data-test="register-card">
         <div class="register-header">
             <h2 class="register-title">Create Account</h2>
             <p class="register-subtitle">Get started with your free account</p>
         </div>
 
+        <!-- Submit directly to backend register endpoint -->
         <Form
             {...store.form()}
             resetOnSuccess={['password', 'password_confirmation']}
+            resetOnError={['password', 'password_confirmation']}
+            options={{ preserveScroll: true }}
             class="register-form"
+            onSuccess={redirectToDashboardIfAuthenticated}
         >
             {#snippet children({ errors, processing })}
                 {#if hasErrors(errors)}
-                    <div class="error-message">
+                    <div class="error-message" role="alert">
                         <svg class="error-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                         <span>{errors.name ?? errors.email ?? errors.password ?? errors.password_confirmation}</span>
                     </div>
@@ -41,50 +64,66 @@
                     <input
                         type="text"
                         name="name"
+                        data-test="register-name-input"
                         class="register-input"
                         placeholder="Name"
                         required
                         autocomplete="name"
                     />
                 </div>
+                {#if errors.name}
+                    <p class="field-error">{errors.name}</p>
+                {/if}
 
                 <div class="input-group">
                     <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                     <input
                         type="email"
                         name="email"
+                        data-test="register-email-input"
                         class="register-input"
                         placeholder="Email"
                         required
                         autocomplete="email"
                     />
                 </div>
+                {#if errors.email}
+                    <p class="field-error">{errors.email}</p>
+                {/if}
 
                 <div class="input-group">
                     <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                     <input
                         type="password"
                         name="password"
+                        data-test="register-password-input"
                         class="register-input"
                         placeholder="Password"
                         required
                         autocomplete="new-password"
                     />
                 </div>
+                {#if errors.password}
+                    <p class="field-error">{errors.password}</p>
+                {/if}
 
                 <div class="input-group">
                     <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                     <input
                         type="password"
                         name="password_confirmation"
+                        data-test="register-password-confirmation-input"
                         class="register-input"
                         placeholder="Confirm Password"
                         required
                         autocomplete="new-password"
                     />
                 </div>
+                {#if errors.password_confirmation}
+                    <p class="field-error">{errors.password_confirmation}</p>
+                {/if}
 
-                <button type="submit" class="register-button" disabled={processing}>
+                <button type="submit" class="register-button" data-test="register-submit-button" disabled={processing}>
                     {#if processing}
                         <div class="spinner"></div>
                     {:else}
@@ -192,6 +231,14 @@
         color: #1e40af;
     }
 
+    .field-error {
+        margin: -4px 0 10px;
+        color: #fecaca;
+        font-size: 0.82rem;
+        padding-left: 6px;
+        width: 100%;
+    }
+
     .register-input {
         padding: 14px 14px 14px 44px;
         border-radius: 14px;
@@ -263,6 +310,10 @@
         transform: scale(1.02);
         box-shadow: 0 6px 20px rgba(0, 82, 212, 0.2);
     }
+    .register-button:focus-visible {
+        outline: 2px solid #93c5fd;
+        outline-offset: 2px;
+    }
 
     .register-button:disabled {
         opacity: 0.7;
@@ -303,6 +354,11 @@
     .login-link:hover {
         color: #003a9b;
         text-decoration: underline;
+    }
+    .login-link:focus-visible {
+        outline: 2px solid #93c5fd;
+        outline-offset: 2px;
+        border-radius: 4px;
     }
 
     @media (max-width: 768px) {
