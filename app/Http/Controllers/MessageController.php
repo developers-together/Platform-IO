@@ -19,8 +19,9 @@ class MessageController extends Controller
     use AuthorizesRequests;
     public function sendMessage(Request $request, Chat $chat)
     {
+        $user = Auth::user(); // Get the user object
         // Authorize the action
-        Gate::authorize('update', $chat);
+        Gate::authorize('sendMessage',$user, $chat);
 
         // Validate the request
         $validated = $request->validate([
@@ -29,7 +30,6 @@ class MessageController extends Controller
             'replyTo' => 'nullable|integer'
         ]);
 
-        $user = Auth::user(); // Get the user object
 
         // Store the image if provided
         $path = null;
@@ -37,6 +37,7 @@ class MessageController extends Controller
             $path = $request->file('image')->store('images', 'public');
         }
 
+        if($validated['message']|| $path){
         // Create the message
         $message = Message::create([
             'chat_id' => $chat->id,
@@ -44,62 +45,66 @@ class MessageController extends Controller
             'message' => $validated['message'] ?? null,
             'path' => $path,
             'replyTo' => $validated['replyTo'] ?? null,
-        ]);
+            ]);
+        }
+
+        return response($validated);
 
         // Build a custom response array
-        $response = [
-            'id' => $message->id,
-            'chat_id' => $message->chat_id,
-            'user_id' => $message->user_id,
-            'user_name' => $user->name,
-            'message' => $message->message,
-            'image_url' => $message->path ? Storage::url($message->path) : null,
-            'replyTo' => $message->replyTo,
-            'created_at' => $message->created_at->toDateTimeString(),
-        ];
+        // $response = [
+        //     'id' => $message->id,
+        //     'chat_id' => $message->chat_id,
+        //     'user_id' => $message->user_id,
+        //     'user_name' => $user->name,
+        //     'message' => $message->message,
+        //     'image_url' => $message->path ? Storage::url($message->path) : null,
+        //     'replyTo' => $message->replyTo,
+        //     'created_at' => $message->created_at->toDateTimeString(),
+        // ];
 
-        return response()->json([
-            'success' => true,
-            'message' => $response,
-        ]);
+        // return response()->json([
+        //     'success' => true,
+        //     'message' => $response,
+        // ]);
     }
 
     public function getMessages(Chat $chat)
     {
-        Gate::authorize('update', $chat);
+        $user = Auth::user();
+        Gate::authorize('getMessages',$user, $chat);
 
-        $messages = Message::where('chat_id', $chat->id)->paginate(1000);
+        $messages = Message::with('user.name')->where('chat_id', $chat->id)->paginate(50);
 
-        $messages->getCollection()->transform(function ($message) {
-            // Get the user's name manually without defining a user() relationship
-            $userName = DB::table('users')->where('id', $message->user_id)->value('name');
+        // $messages->getCollection()->transform(function ($message) {
+        //     // Get the user's name manually without defining a user() relationship
+        //     // $userName = DB::table('users')->where('id', $message->user_id)->value('name');
+        //     $userName = $message->user->name;
+        //
+        //     return [
+        //         'id' => $message->id,
+        //         'chat_id' => $message->chat_id,
+        //         'user_id' => $message->user_id,
+        //         'user_name' => $userName,
+        //         'message' => $message->message,
+        //         'image_url' => $message->path ? Storage::url($message->path) : null,
+        //         'replyTo' => $message->replyTo,
+        //         'created_at' => $message->created_at->toDateTimeString(),
+        //         // 'isAi' => $message->isAi,
+        //     ];
+        // });
 
-            return [
-                'id' => $message->id,
-                'chat_id' => $message->chat_id,
-                'user_id' => $message->user_id,
-                'user_name' => $userName,
-                'message' => $message->message,
-                'image_url' => $message->path ? Storage::url($message->path) : null,
-                'replyTo' => $message->replyTo,
-                'created_at' => $message->created_at->toDateTimeString(),
-                'isAi' => $message->isAi,
-            ];
-        });
+
 
         return response()->json($messages);
     }
 
     public function destroy(Message $message)
     {
-        $this->authorize('delete', $message); // Assuming your policy handles user ownership
-
-        // Extra fallback check (if no policy or just to double secure it)
         $user = Auth::user();
 
-        if ($message->user_id !== $user->id) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
+        $this->authorize('delete', $user, $message->chat); // Assuming your policy handles user ownership
+
+
 
         // Delete the image from storage if it exists
         if ($message->path) {

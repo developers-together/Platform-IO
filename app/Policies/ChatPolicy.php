@@ -12,9 +12,9 @@ class ChatPolicy
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user, Team $team): bool
     {
-        return $user->teams()->exists();
+        return $user->teams()->wherePivot('team_id',$team->id)->exists();
     }
 
     /**
@@ -29,9 +29,9 @@ class ChatPolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user, Team $team): bool
     {
-        return $user->teams()->exists();
+        return $user->teams()->wherePivot('team_id',$team->id)->exists();
     }
 
     /**

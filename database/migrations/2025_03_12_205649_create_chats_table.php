@@ -20,6 +20,8 @@ return new class extends Migration
         });
 
         Schema::create('chat_permissions',function (Blueprint $table){
+            $table->id();
+            $table->timestamps();
             $table->foreignId('chat_id')->constrained()->cascadeOnDelete();
             $table->boolean('write');
             $table->boolean('read');

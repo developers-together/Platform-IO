@@ -13,13 +13,13 @@ class Message extends Model
     protected $fillable = ['user_id', 'chat_id', 'message', 'path', 'reply_to'];
 
 
-    public function users(): BelongsTo
+    public function user(): BelongsTo
     {
         return $this->BelongsTo(User::class);
     }
 
 
-    public function chats(): BelongsTo
+    public function chat(): BelongsTo
     {
         return $this->BelongsTo(Chat::class);
     }

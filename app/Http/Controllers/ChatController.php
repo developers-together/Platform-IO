@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Chat;
+use App\Models\ChatPerm;
 use App\Models\Team;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Gate;
@@ -17,7 +18,7 @@ class ChatController extends Controller
     // Display all chats
     public function index(Team $team)
     {
-        Gate::authorize('viewAny', Chat::class);
+        Gate::authorize('viewAny', Auth::User(), $team);
 
         $chats = Chat::where('team_id', $team->id)->get();
 
@@ -27,22 +28,31 @@ class ChatController extends Controller
 
     public function store(Request $request, Team $team)
     {
-
-        Gate::authorize('create', Chat::class);
-
-       $validated = $request->validate([
-            'name' => 'required|string|max:255'
-        ]);
-
         $user = Auth::user();
 
-        if($team->users()->where('user_id', $user->id)){
+        Gate::authorize('create', $user, $team);
+
+       $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:text,voice'
+        ]);
 
             $chat = Chat::create([
                 'name'=> $validated['name'],
+                'type'=> $validated['type'],
                 'team_id' => $team->id
                 ]);
-        }
+
+        ChatPerm::create([
+
+            'write' => true,
+            'read' => true,
+            'modify' => true,
+            'notify' => true,
+            'delete' => true,
+            'allow_ai' => false,
+            'chat_id' => $chat->id
+        ]);
 
         return $chat->toJson();
     }
@@ -50,7 +60,7 @@ class ChatController extends Controller
     public function show(Chat $chat)
     {
         // Authorize the action
-        Gate::authorize('view', $chat);
+        Gate::authorize('view',Auth::user(), $chat->with('chatPerm'));
 
         // Return the chat details as a JSON response
         return $chat->toJson();
@@ -58,13 +68,15 @@ class ChatController extends Controller
 
     public function update(Request $request , Chat $chat)
     {
-        Gate::authorize('update', $chat);
+        $user = Auth::user();
+        Gate::authorize('update',$user, $chat);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'type' => 'required|in:text,voice'
+
         ]);
 
-        $user = Auth::user();
 
         if($chat->team->users()->where('user_id', $user->id)){
 
@@ -78,7 +90,8 @@ class ChatController extends Controller
 
     public function destroy(Chat $chat, Request $request)
     {
-        $this->authorize('delete', $chat);
+        $user = Auth::user();
+        Gate::authorize('delete',$user, $chat);
 
         $validated = $request->validate([
             'chat_id' => 'required|exists:chats,id',
@@ -90,12 +103,7 @@ class ChatController extends Controller
             return response()->json(['success' => false, 'message' => 'Chat not found'], 404);
         }
 
-        $user = Auth::user();
-
-        if($chat->team->users()->where('user_id', $user->id)){
-
         $chat->delete();
-        }
 
         return response()->json(['success' => true]);
     }

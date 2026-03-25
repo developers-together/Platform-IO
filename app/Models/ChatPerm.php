@@ -9,6 +9,8 @@ class ChatPerm extends Model
 {
     use HasFactory;
 
+    protected $table = 'chat_permissions';
+
     protected $fillable = ['chat_id', 'write', 'read', 'delete', 'modify', 'notify', 'allow_ai'];
 
     public function chat()
@@ -16,3 +18,4 @@ class ChatPerm extends Model
         return $this->belongsTo(Chat::class);
     }
 }
+
