@@ -13,6 +13,7 @@
         "inertiajs/inertia-laravel": "*",
         "laravel/fortify": "*",
         "laravel/framework": "*",
+        "laravel/reverb": "^1.0",
         "laravel/sanctum": "*",
         "laravel/tinker": "*",
         "laravel/wayfinder": "*",

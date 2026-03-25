@@ -18,7 +18,7 @@ class MessagePolicy
 
         $perm = $chat->ChatPerm->first();
 
-        return $perm && $perm->delete == true;
+        return $pivot && $perm && $perm->delete == true;
     }
 
     public function sendMessage(User $user, Chat $chat){
@@ -31,8 +31,31 @@ class MessagePolicy
 
         $perm = $chat->ChatPerm->first();
 
-        return $perm && $perm->write == true;
+        return $pivot && $perm && $perm->write == true;
 
+    }
+
+    public function update(User $user, Chat $chat){
+
+        $pivot = $chat->team->users()->wherePivot('user_id',$user->id)->first()?->pivot;
+
+        if($pivot && in_array($pivot->role,['admin','owner'])){
+            return true;
+        }
+
+        $perm = $chat->ChatPerm->first();
+
+        return $pivot && $perm && $perm->modify == true;
+
+    }
+
+    public function notify(User $user, Chat $chat){
+
+
+
+        $perm = $chat->ChatPerm->first();
+
+        return $perm && $perm->notify == true;
     }
 
 
@@ -46,6 +69,6 @@ class MessagePolicy
 
         $perm = $chat->ChatPerm->first();
 
-        return $perm && $perm->read == true;
+        return $pivot && $perm && $perm->read == true;
     }
 }

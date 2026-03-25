@@ -11,7 +11,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Http;
-
+use App\Events\NewMessage;
+use App\Events\EditMessage;
+use App\Notifications\NewChatMessage;
 
 
 class MessageController extends Controller
@@ -44,10 +46,26 @@ class MessageController extends Controller
             'user_id' => $user->id,
             'message' => $validated['message'] ?? null,
             'path' => $path,
-            'replyTo' => $validated['replyTo'] ?? null,
+            'reply_to' => $validated['replyTo'] ?? null,
             ]);
         }
 
+
+
+        NewMessage::dispatch($message);
+
+        $perm = $chat->ChatPerm->first();
+
+        if($perm && $perm->notify){
+
+            $usersToNotify = $chat->team->users()
+            ->where('user_id', '!=', $user->id)  // don't notify sender
+            ->get();
+            foreach ($usersToNotify as $teamMember) {
+                $teamMember->notify(new NewChatMessage($message));
+
+            }
+        }
         return response($validated);
 
         // Build a custom response array
@@ -73,7 +91,7 @@ class MessageController extends Controller
         $user = Auth::user();
         Gate::authorize('getMessages',$user, $chat);
 
-        $messages = Message::with('user.name')->where('chat_id', $chat->id)->paginate(50);
+        $messages = Message::with('user:id,name')->where('chat_id', $chat->id)->latest()->paginate(50);
 
         // $messages->getCollection()->transform(function ($message) {
         //     // Get the user's name manually without defining a user() relationship
@@ -98,11 +116,35 @@ class MessageController extends Controller
         return response()->json($messages);
     }
 
+    public function update(Message $message, Request $request){
+
+        $user = Auth::user();
+        $chat = $message->chat;
+
+        Gate::authorize('update',$user,$chat);
+
+        $validated = $request->validate([
+            'message' => 'required|string',
+        ]);
+
+
+
+        // Create the message
+        $message->update([
+            'message' => $validated['message'],
+            ]);
+
+
+        // NewMessage::dispatch($message);
+
+        return response($validated);
+    }
+
     public function destroy(Message $message)
     {
         $user = Auth::user();
 
-        $this->authorize('delete', $user, $message->chat); // Assuming your policy handles user ownership
+        Gate::authorize('delete', $user, $message->chat); // Assuming your policy handles user ownership
 
 
 
@@ -117,56 +159,56 @@ class MessageController extends Controller
     }
 
 
-    public function sendtogemini($prompt){
-
-        // Call Gemini API
-        $response = Http::withHeaders([
-           'Content-Type' => 'application/json',
-       ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=' . env('GEMINI_API_KEY'), [
-           'contents' => [
-               [
-                   'parts' => [
-                       ['text' => $prompt],
-                   ]
-               ]
-           ]
-       ]);
-
-       $responseData = $response->json();
-       $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
-       return $aiResponse;
-      }
-
-
-      public function askgemini(Request $request, Chat $chat){
-        $validated = $request->validate([
-            'prompt' => ['required', 'string'],
-        ]);
-
-        $aiResponse = $this->sendtogemini($validated['prompt']);
-
-        $message1 = Message::create([
-            'user_id' => Auth::id(),
-            'chat_id' => $chat->id,
-            'user_name' => Auth::user()->name,
-            'message' => $validated['prompt'],
-            'replyTo' => $aiResponse
-        ]);
-
-        $message2 = Message::create([
-            'user_id' => Auth::id(),
-            'chat_id' => $chat->id,
-            'user_name' => 'Gemini',
-            'message' => $aiResponse,
-            'isAi' => true
-        ]);
-        // $message2 = Message::create([
-        //     'user_id' => Auth::id(),
-        //     'chat_id' => $chat->id,
-        //     'message' => $aiResponse
-        // ]);
-
-        return response()->json(['success' => true, 'messages' => [$message1, $message2]]);
-      }
-
+    // public function sendtogemini($prompt){
+    //
+    //     // Call Gemini API
+    //     $response = Http::withHeaders([
+    //        'Content-Type' => 'application/json',
+    //    ])->post('https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=' . env('GEMINI_API_KEY'), [
+    //        'contents' => [
+    //            [
+    //                'parts' => [
+    //                    ['text' => $prompt],
+    //                ]
+    //            ]
+    //        ]
+    //    ]);
+    //
+    //    $responseData = $response->json();
+    //    $aiResponse = $responseData['candidates'][0]['content']['parts'][0]['text'] ?? '';
+    //    return $aiResponse;
+    //   }
+    //
+    //
+    //   public function askgemini(Request $request, Chat $chat){
+    //     $validated = $request->validate([
+    //         'prompt' => ['required', 'string'],
+    //     ]);
+    //
+    //     $aiResponse = $this->sendtogemini($validated['prompt']);
+    //
+    //     $message1 = Message::create([
+    //         'user_id' => Auth::id(),
+    //         'chat_id' => $chat->id,
+    //         'user_name' => Auth::user()->name,
+    //         'message' => $validated['prompt'],
+    //         'replyTo' => $aiResponse
+    //     ]);
+    //
+    //     $message2 = Message::create([
+    //         'user_id' => Auth::id(),
+    //         'chat_id' => $chat->id,
+    //         'user_name' => 'Gemini',
+    //         'message' => $aiResponse,
+    //         'isAi' => true
+    //     ]);
+    //     // $message2 = Message::create([
+    //     //     'user_id' => Auth::id(),
+    //     //     'chat_id' => $chat->id,
+    //     //     'message' => $aiResponse
+    //     // ]);
+    //
+    //     return response()->json(['success' => true, 'messages' => [$message1, $message2]]);
+    //   }
+    //
 }

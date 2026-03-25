@@ -338,3 +338,50 @@ it('denies a member from getting messages when ChatPerm read is false', function
     expect($policy->getMessages($member, $chat))->toBeFalse();
 });
 
+/*
+|--------------------------------------------------------------------------
+| Policy – non-member rejection
+|--------------------------------------------------------------------------
+*/
+
+it('denies a non-member from deleting messages even when ChatPerm allows it', function () {
+    $policy  = new MessagePolicy();
+    $team    = Team::factory()->create();
+    $outsider = User::factory()->create();
+    $chat    = Chat::factory()->create(['team_id' => $team->id]);
+
+    ChatPerm::create([
+        'chat_id' => $chat->id, 'write' => true, 'read' => true,
+        'delete' => true, 'modify' => true, 'notify' => true, 'allow_ai' => true,
+    ]);
+
+    expect($policy->delete($outsider, $chat))->toBeFalse();
+});
+
+it('denies a non-member from sending messages even when ChatPerm allows it', function () {
+    $policy  = new MessagePolicy();
+    $team    = Team::factory()->create();
+    $outsider = User::factory()->create();
+    $chat    = Chat::factory()->create(['team_id' => $team->id]);
+
+    ChatPerm::create([
+        'chat_id' => $chat->id, 'write' => true, 'read' => true,
+        'delete' => true, 'modify' => true, 'notify' => true, 'allow_ai' => true,
+    ]);
+
+    expect($policy->sendMessage($outsider, $chat))->toBeFalse();
+});
+
+it('denies a non-member from getting messages even when ChatPerm allows it', function () {
+    $policy  = new MessagePolicy();
+    $team    = Team::factory()->create();
+    $outsider = User::factory()->create();
+    $chat    = Chat::factory()->create(['team_id' => $team->id]);
+
+    ChatPerm::create([
+        'chat_id' => $chat->id, 'write' => true, 'read' => true,
+        'delete' => true, 'modify' => true, 'notify' => true, 'allow_ai' => true,
+    ]);
+
+    expect($policy->getMessages($outsider, $chat))->toBeFalse();
+});
