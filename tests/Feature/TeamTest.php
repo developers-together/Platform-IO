@@ -73,10 +73,10 @@ it('belongs to many users', function () {
     expect($team->users())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsToMany::class);
 });
 
-it('has many tasks', function () {
+it('has many task lists', function () {
     $team = Team::factory()->create();
 
-    expect($team->tasks())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class);
+    expect($team->taskLists())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class);
 });
 
 it('cascades user deletion from pivot', function () {

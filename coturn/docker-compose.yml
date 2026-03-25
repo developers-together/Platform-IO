@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  coturn:
+    build: .
+    container_name: coturn-server
+    # Network mode host is recommended for Turn to properly allocate relay ports 
+    # and map public/private IPs easily. 
+    network_mode: "host"
+    restart: unless-stopped
+    volumes:
+      # Mount the turnserver config file
+      - ./turnserver.conf:/etc/coturn/turnserver.conf:ro
+    # If not using host network, you MUST publish both the signaling ports 
+    # and the entire UDP relay port range:
+    # ports:
+    #   - "3478:3478"
+    #   - "3478:3478/udp"
+    #   - "5349:5349"
+    #   - "5349:5349/udp"
+    #   - "49152-65535:49152-65535/udp"

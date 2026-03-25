@@ -29,7 +29,7 @@ it('broadcasts on the correct private channel', function () {
 
     expect($channels)->toHaveCount(1)
         ->and($channels[0])->toBeInstanceOf(PrivateChannel::class)
-        ->and($channels[0]->name)->toBe('private-team.' . $team->id . '.chat.' . $chat->id);
+        ->and($channels[0]->name)->toBe('private-team.' . $team->id . '.chat.' . $chat->id . '.get');
 });
 
 /*

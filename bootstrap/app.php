@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
+        api: __DIR__.'/../routes/api.php',
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
         channels: __DIR__.'/../routes/channels.php',
@@ -19,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/settings.php'));
         },
     )
+    ->withCommands([
+        __DIR__.'/../app/Console/Commands',
+    ])
+    ->withEvents()
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 

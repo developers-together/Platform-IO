@@ -1,5 +1,19 @@
 <?php
 
+use App\Http\Controllers\TurnCredentialController;
+use Illuminate\Support\Facades\Route;
+
+Route::middleware('auth:sanctum')->group(function () {
+
+    // Issue TURN credentials before starting a call.
+    // Keep GET for backward compatibility; prefer POST from clients.
+    Route::match(['GET', 'POST'], '/turn/credentials', [TurnCredentialController::class, 'issue']);
+
+    // Terminate TURN sessions when leaving a call
+    Route::post('/turn/terminate', [TurnCredentialController::class, 'terminate']);
+
+});
+
 // use Illuminate\Http\Request;
 // use Illuminate\Support\Facades\Route;
 // use App\Http\Controllers\UserController;

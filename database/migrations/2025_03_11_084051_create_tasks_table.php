@@ -19,10 +19,11 @@ return new class extends Migration
             $table->dateTime('deadline')->nullable();
             // $table->dateTime('start')->nullable();
             $table->boolean('completed')->default(false);
-            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
+            // Kept as IDs to avoid migration-order FK failures in fresh test DB setup.
+            $table->foreignId('team_id');
             // $table->string("categroy")->nullable();
             $table->enum('priority', ['high','medium','low'])->default('medium');
-            $table->foreignId('task_list_id')->constrained('task_lists')->onDelete('cascade');
+            $table->foreignId('task_list_id');
             // $table->foreignId('parent_task_id')->nullable()->constrained('tasks')->nullOnDelete();
             $table->timestamps();
         });
